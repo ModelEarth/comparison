@@ -6,6 +6,8 @@
     <title>International Trade & Environmental Impact Comparison</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Flag Icons CSS for reliable flag display -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css" />
 </head>
 <body>
     <header class="hero">
@@ -48,15 +50,15 @@
                             </button>
                             <div id="region-americas" class="country-buttons-region">
                                 <button class="country-btn" data-country="US" onclick="toggleCountry('US')">
-                                    <span class="btn-flag">🇺🇸</span>
+                                    <span class="fi fi-us btn-flag"></span>
                                     <span class="btn-name">United States <span class="country-code">US</span></span>
                                 </button>
                                 <button class="country-btn" data-country="CA" onclick="toggleCountry('CA')">
-                                    <span class="btn-flag">🇨🇦</span>
+                                    <span class="fi fi-ca btn-flag"></span>
                                     <span class="btn-name">Canada <span class="country-code">CA</span></span>
                                 </button>
                                 <button class="country-btn" data-country="BR" onclick="toggleCountry('BR')">
-                                    <span class="btn-flag">🇧🇷</span>
+                                    <span class="fi fi-br btn-flag"></span>
                                     <span class="btn-name">Brazil <span class="country-code">BR</span></span>
                                 </button>
                             </div>
@@ -70,23 +72,23 @@
                             </button>
                             <div id="region-europe" class="country-buttons-region" style="display: none;">
                                 <button class="country-btn" data-country="GB" onclick="toggleCountry('GB')">
-                                    <span class="btn-flag">🇬🇧</span>
+                                    <span class="fi fi-gb btn-flag"></span>
                                     <span class="btn-name">United Kingdom <span class="country-code">GB</span></span>
                                 </button>
                                 <button class="country-btn" data-country="DE" onclick="toggleCountry('DE')">
-                                    <span class="btn-flag">🇩🇪</span>
+                                    <span class="fi fi-de btn-flag"></span>
                                     <span class="btn-name">Germany <span class="country-code">DE</span></span>
                                 </button>
                                 <button class="country-btn" data-country="FR" onclick="toggleCountry('FR')">
-                                    <span class="btn-flag">🇫🇷</span>
+                                    <span class="fi fi-fr btn-flag"></span>
                                     <span class="btn-name">France <span class="country-code">FR</span></span>
                                 </button>
                                 <button class="country-btn" data-country="IT" onclick="toggleCountry('IT')">
-                                    <span class="btn-flag">🇮🇹</span>
+                                    <span class="fi fi-it btn-flag"></span>
                                     <span class="btn-name">Italy <span class="country-code">IT</span></span>
                                 </button>
                                 <button class="country-btn" data-country="RU" onclick="toggleCountry('RU')">
-                                    <span class="btn-flag">🇷🇺</span>
+                                    <span class="fi fi-ru btn-flag"></span>
                                     <span class="btn-name">Russia <span class="country-code">RU</span></span>
                                 </button>
                             </div>
@@ -100,19 +102,19 @@
                             </button>
                             <div id="region-asia" class="country-buttons-region" style="display: none;">
                                 <button class="country-btn" data-country="CN" onclick="toggleCountry('CN')">
-                                    <span class="btn-flag">🇨🇳</span>
+                                    <span class="fi fi-cn btn-flag"></span>
                                     <span class="btn-name">China <span class="country-code">CN</span></span>
                                 </button>
                                 <button class="country-btn" data-country="JP" onclick="toggleCountry('JP')">
-                                    <span class="btn-flag">🇯🇵</span>
+                                    <span class="fi fi-jp btn-flag"></span>
                                     <span class="btn-name">Japan <span class="country-code">JP</span></span>
                                 </button>
                                 <button class="country-btn" data-country="IN" onclick="toggleCountry('IN')">
-                                    <span class="btn-flag">🇮🇳</span>
+                                    <span class="fi fi-in btn-flag"></span>
                                     <span class="btn-name">India <span class="country-code">IN</span></span>
                                 </button>
                                 <button class="country-btn" data-country="KR" onclick="toggleCountry('KR')">
-                                    <span class="btn-flag">🇰🇷</span>
+                                    <span class="fi fi-kr btn-flag"></span>
                                     <span class="btn-name">South Korea <span class="country-code">KR</span></span>
                                 </button>
                             </div>
@@ -126,11 +128,11 @@
                             </button>
                             <div id="region-other" class="country-buttons-region" style="display: none;">
                                 <button class="country-btn" data-country="AU" onclick="toggleCountry('AU')">
-                                    <span class="btn-flag">🇦🇺</span>
+                                    <span class="fi fi-au btn-flag"></span>
                                     <span class="btn-name">Australia <span class="country-code">AU</span></span>
                                 </button>
                                 <button class="country-btn" data-country="WM" onclick="toggleCountry('WM')">
-                                    <span class="btn-flag">🌍</span>
+                                    <span class="btn-flag globe-icon">🌍</span>
                                     <span class="btn-name">Middle East <span class="country-code">WM</span></span>
                                 </button>
                             </div>

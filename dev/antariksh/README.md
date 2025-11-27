@@ -91,6 +91,16 @@ also, be cautious because the current version has a runaway loop that overwhelms
 # Follow up: 
 Claude gave me only 3 countries again so added a screendump of the dataset repo explaining we have data for 14 countries available. 
 
+
+## Prompt 4:
+I cant see the country flags on the webpage, (uploaded screenshot).
+
+# Follow up: 
+Add Hover animations to the flags.
+
+## Prompt 5:
+Add country flags to storyline comparison section also
+
 ## What this experiment achieved
 - Claude generated `index.html`, `script.js`, and `styles.css` in one response as requested.
 - Dashboard UI renders with map, cards, dropdown, charts, and insights panel.
@@ -98,12 +108,12 @@ Claude gave me only 3 countries again so added a screendump of the dataset repo 
 - Debug console panel currently prints which CSVs load successfully vs missing.
 - Currently it generates creative visualizations and has more comparision charts.
 - It seems that claude misunderstood and has added countries which are not present in the Dataset.
+- Claude added expected countries and reduced load times
+- Improved UI
 
 ## Next Goal 
 - Enhance the data representaion
 - Add better visualizations
-- Train Claude to only select countries from the dataset.
-- add country flags.
 - Add a storyline feature.
 
 ## Notes for collaborators

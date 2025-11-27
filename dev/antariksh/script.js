@@ -95,6 +95,24 @@ function formatNumber(num) {
     return num.toFixed(2);
 }
 
+function getCountryFlag(code) {
+    // Return HTML for flag icon in charts
+    if (code === 'WM') {
+        return '🌍'; // Globe emoji for Middle East
+    }
+    return `{flag|}{name|${COUNTRIES[code]?.name || code}}`;
+}
+
+function getCountryFlagHTML(code) {
+    // Return actual HTML with flag for rich text in charts
+    if (code === 'WM') {
+        return `🌍 ${COUNTRIES[code]?.name || code}`;
+    }
+    // Using Unicode combining characters for flag representation in charts
+    const countryName = COUNTRIES[code]?.name || code;
+    return `{flag|}{a|${countryName}}`;
+}
+
 function initMap() {
     debugLog('Initializing map...');
     map = L.map('map').setView([30, 20], 2);
@@ -202,7 +220,7 @@ function updateCountryCards() {
         
         card.innerHTML = `
             <div class="card-header">
-                <span class="flag">${country.flag}</span>
+                <span class="flag"><span class="fi fi-${code.toLowerCase()}" style="display:inline-block;width:24px;height:18px;margin-right:8px;"></span></span>
                 <h3>${country.name}</h3>
                 <button class="remove-btn" onclick="toggleCountry('${code}')">×</button>
             </div>
@@ -322,7 +340,7 @@ function updateStoryline() {
         storylineHTML += `
             <div class="storyline-card" style="border-left: 5px solid ${country.color}">
                 <div class="storyline-header">
-                    <span class="storyline-flag">${country.flag}</span>
+                    <span class="storyline-flag"><span class="fi fi-${code.toLowerCase()}" style="display:inline-block;width:28px;height:21px;"></span></span>
                     <h3>${country.name}</h3>
                     <span class="storyline-chapter">Chapter ${index + 1}</span>
                 </div>
@@ -421,6 +439,7 @@ function updateComparisonChart() {
     const countries = Array.from(selectedCountries).filter(code => COUNTRIES[code]);
     const data = countries.map(code => ({
         name: COUNTRIES[code].name,
+        code: code,
         value: calculateTotalForCountry(code, currentFactorGroup),
         itemStyle: { 
             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
@@ -440,7 +459,7 @@ function updateComparisonChart() {
         grid: {
             left: '3%',
             right: '4%',
-            bottom: '3%',
+            bottom: '15%',
             top: '8%',
             containLabel: true
         },
@@ -449,7 +468,9 @@ function updateComparisonChart() {
             axisPointer: { type: 'shadow' },
             formatter: params => {
                 const p = params[0];
-                return `<strong>${p.name}</strong><br/>${formatNumber(p.value)}`;
+                const code = data[p.dataIndex].code;
+                const flagClass = code === 'WM' ? '' : `<span class="fi fi-${code.toLowerCase()}" style="display:inline-block;width:20px;height:15px;margin-right:8px;vertical-align:middle;"></span>`;
+                return `${flagClass}<strong>${p.name}</strong><br/>${formatNumber(p.value)}`;
             },
             backgroundColor: 'rgba(50,50,50,0.9)',
             borderColor: '#333',
@@ -462,13 +483,14 @@ function updateComparisonChart() {
         },
         xAxis: {
             type: 'category',
-            data: data.map(d => d.name),
+            data: data.map(d => d.code + '\n' + d.name.split(' ')[0]),
             axisLabel: { 
                 interval: 0, 
-                rotate: 0,
+                rotate: countries.length > 4 ? 25 : 0,
                 color: '#666',
-                fontSize: 12,
-                fontWeight: 500
+                fontSize: 11,
+                fontWeight: 500,
+                lineHeight: 16
             },
             axisLine: {
                 lineStyle: {
@@ -675,6 +697,7 @@ function updateBubbleChart() {
         
         return {
             name: COUNTRIES[code].name,
+            code: code,
             value: [domestic, exports, total],
             itemStyle: { 
                 color: COUNTRIES[code].color,
@@ -698,7 +721,9 @@ function updateBubbleChart() {
         },
         tooltip: {
             formatter: params => {
-                return `<strong>${params.name}</strong><br/>
+                const code = params.data.code;
+                const flagHTML = code === 'WM' ? '' : `<span class="fi fi-${code.toLowerCase()}" style="display:inline-block;width:20px;height:15px;margin-right:8px;vertical-align:middle;"></span>`;
+                return `${flagHTML}<strong>${params.name}</strong><br/>
                         Domestic: ${formatNumber(params.value[0])}<br/>
                         Exports: ${formatNumber(params.value[1])}<br/>
                         <strong>Total Impact: ${formatNumber(params.value[2])}</strong>`;
@@ -773,9 +798,11 @@ function updateBubbleChart() {
             label: {
                 show: true,
                 position: 'top',
-                formatter: '{a}',
-                fontSize: 12,
-                fontWeight: 600,
+                formatter: function(params) {
+                    return params.data.code;
+                },
+                fontSize: 13,
+                fontWeight: 700,
                 color: '#333',
                 distance: 8
             },
@@ -807,7 +834,7 @@ function updatePieChart() {
             const value = calculateTotalByFlow(code, currentFactorGroup, flow);
             if (value > 0) {
                 data.push({
-                    name: `${COUNTRIES[code].name} - ${flow}`,
+                    name: `[${code}] ${COUNTRIES[code].name} - ${flow}`,
                     value: value,
                     itemStyle: {
                         color: COUNTRIES[code].color,
@@ -905,21 +932,25 @@ function updateRadarChart() {
         max: Math.max(...countries.map(code => calculateTotalForCountry(code, group) || 1))
     }));
 
-    const series = countries.map(code => ({
-        name: COUNTRIES[code].name,
-        type: 'radar',
-        data: [{
-            value: ALL_FACTOR_GROUPS.map(group => calculateTotalForCountry(code, group)),
-            name: COUNTRIES[code].name,
-            itemStyle: { color: COUNTRIES[code].color },
-            areaStyle: { opacity: 0.3 }
-        }]
-    }));
+    const series = countries.map(code => {
+        return {
+            name: `[${code}] ${COUNTRIES[code].name}`,
+            type: 'radar',
+            data: [{
+                value: ALL_FACTOR_GROUPS.map(group => calculateTotalForCountry(code, group)),
+                name: `[${code}] ${COUNTRIES[code].name}`,
+                itemStyle: { color: COUNTRIES[code].color },
+                areaStyle: { opacity: 0.3 }
+            }]
+        };
+    });
 
     const option = {
         tooltip: {},
         legend: {
-            data: countries.map(code => COUNTRIES[code].name)
+            data: countries.map(code => {
+                return `[${code}] ${COUNTRIES[code].name}`;
+            })
         },
         radar: {
             indicator: indicator,
@@ -954,7 +985,7 @@ function updateHeatmapChart() {
             formatter: params => {
                 const country = countries[params.value[1]];
                 const group = ALL_FACTOR_GROUPS[params.value[0]];
-                return `${COUNTRIES[country].name}<br/>${group}: ${formatNumber(params.value[2])}`;
+                return `[${country}] ${COUNTRIES[country].name}<br/>${group}: ${formatNumber(params.value[2])}`;
             }
         },
         grid: {
@@ -968,7 +999,9 @@ function updateHeatmapChart() {
         },
         yAxis: {
             type: 'category',
-            data: countries.map(code => COUNTRIES[code].name),
+            data: countries.map(code => {
+                return `[${code}] ${COUNTRIES[code].name}`;
+            }),
             splitArea: { show: true }
         },
         visualMap: {
@@ -1414,6 +1447,7 @@ async function loadCSV(path) {
 }
 
 async function loadAllData() {
+    const startTime = performance.now();
     showStatus('Starting data load...');
     loadingErrors = [];
     
@@ -1451,7 +1485,7 @@ async function loadAllData() {
     
     debugLog('=== LOADING COUNTRY TRADE DATA ===');
     
-    // ONLY LOAD VERIFIED COUNTRIES - NO LOOP THROUGH NON-EXISTENT DATA
+    // LOAD ALL 14 COUNTRIES
     for (const code of Object.keys(COUNTRIES)) {
         debugLog(`--- Loading ${COUNTRIES[code].name} (${code}) ---`);
         showStatus(`Loading data for ${COUNTRIES[code].name}...`);
@@ -1486,13 +1520,24 @@ async function loadAllData() {
     
     dataLoadingComplete = true;
     
+    const endTime = performance.now();
+    const loadTime = ((endTime - startTime) / 1000).toFixed(2);
+    const filesLoaded = 2 + (Object.keys(COUNTRIES).length * 3 * 2);
+    
     if (loadingErrors.length > 0) {
         showStatus(`⚠ Data load complete with ${loadingErrors.length} errors. Check debug panel.`, true);
         debugLog(`=== LOAD SUMMARY: ${loadingErrors.length} ERRORS ===`, true);
     } else {
-        showStatus('✓ All data loaded successfully!');
+        showStatus(`✓ All data loaded successfully in ${loadTime}s!`);
         debugLog('=== ALL DATA LOADED SUCCESSFULLY ===');
     }
+    
+    debugLog(`📊 PERFORMANCE METRICS:`);
+    debugLog(`   • Total files loaded: ${filesLoaded}`);
+    debugLog(`   • Countries: ${Object.keys(COUNTRIES).length}`);
+    debugLog(`   • Load time: ${loadTime} seconds`);
+    debugLog(`   • Files per second: ${(filesLoaded / loadTime).toFixed(1)}`);
+    debugLog(`   • Errors: ${loadingErrors.length}`);
     
     debugLog('Updating UI...');
     updateUI();

@@ -241,6 +241,8 @@ h3 {
 
 .region-icon {
     font-size: 1.25rem;
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Android Emoji", sans-serif;
+    display: inline-block;
 }
 
 .region-toggle span:nth-child(2) {
@@ -308,7 +310,55 @@ h3 {
 }
 
 .btn-flag {
-    font-size: 1.35rem;
+    font-size: 1.5rem;
+    line-height: 1;
+    flex-shrink: 0;
+    margin-right: 0.75rem;
+    display: inline-block;
+    width: 1.5rem;
+    text-align: center;
+    border-radius: 3px;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+}
+
+/* For flag-icons library */
+.btn-flag.fi {
+    width: 1.5rem;
+    height: 1.125rem;
+    background-size: cover;
+    border-radius: 2px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    transform-origin: left center;
+    transition: all 0.3s ease;
+}
+
+/* Waving animation */
+@keyframes wave {
+    0%, 100% {
+        transform: perspective(400px) rotateY(0deg);
+    }
+    25% {
+        transform: perspective(400px) rotateY(-15deg);
+    }
+    75% {
+        transform: perspective(400px) rotateY(15deg);
+    }
+}
+
+/* Wave on hover */
+.country-btn:hover .btn-flag.fi {
+    animation: wave 0.6s ease-in-out;
+}
+
+/* Continuous gentle wave on active/selected countries */
+.country-btn.active .btn-flag.fi {
+    animation: wave 2s ease-in-out infinite;
+}
+
+/* For emoji fallback (globe icon) */
+.btn-flag.globe-icon {
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Android Emoji", sans-serif;
 }
 
 .btn-name {
@@ -1058,4 +1108,69 @@ h3 {
 #debug-log::-webkit-scrollbar-thumb:hover,
 .country-selector-panel::-webkit-scrollbar-thumb:hover {
     background: #999;
+}
+
+/* Mobile Warning Banner */
+.mobile-warning {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem;
+    background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%);
+    border: 2px solid #FF9800;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 12px rgba(255, 152, 0, 0.2);
+    animation: slideDown 0.5s ease-out;
+}
+
+.warning-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+
+.warning-content {
+    flex: 1;
+}
+
+.warning-content strong {
+    display: block;
+    font-size: 1.1rem;
+    color: #E65100;
+    margin-bottom: 0.25rem;
+}
+
+.warning-content p {
+    margin: 0;
+    font-size: 0.95rem;
+    color: #5D4037;
+    line-height: 1.5;
+}
+
+.warning-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #E65100;
+    cursor: pointer;
+    padding: 0.5rem;
+    line-height: 1;
+    transition: all 0.2s ease;
+    border-radius: 4px;
+}
+
+.warning-close:hover {
+    background: rgba(230, 81, 0, 0.1);
+    transform: scale(1.1);
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
