@@ -27,6 +27,11 @@
             <h2>Select Countries for Comparison</h2>
             <p class="section-description">Select countries from the map or use the regional panels below</p>
             
+            <!-- Sidebar Toggle Button -->
+            <button id="sidebar-toggle" class="sidebar-toggle-btn" aria-label="Toggle sidebar">
+                <span class="toggle-icon">◀</span>
+            </button>
+            
             <div class="map-controls-wrapper">
                 <div class="country-selector-panel">
                     <div class="selector-header">
@@ -163,13 +168,27 @@
         <!-- Storyline Section -->
         <section class="storyline-section">
             <div class="section-header">
-                <div class="section-icon">📖</div>
+                <div class="section-icon">🌍</div>
                 <div class="section-title-group">
-                    <h2>Environmental Impact Story</h2>
-                    <p class="section-subtitle">A narrative journey through each country's environmental footprint</p>
+                    <h2>Environmental Impact Journey</h2>
+                    <p class="section-subtitle">An interactive timeline of trade flows and their environmental footprint</p>
                 </div>
             </div>
-            <div id="storyline-content"></div>
+            
+            <!-- Timeline View Toggle -->
+            <div class="timeline-controls">
+                <button class="timeline-view-btn active" data-view="journey" onclick="switchTimelineView('journey')">
+                    <span class="btn-icon">🗺️</span> Journey View
+                </button>
+                <button class="timeline-view-btn" data-view="comparison" onclick="switchTimelineView('comparison')">
+                    <span class="btn-icon">⚖️</span> Side-by-Side
+                </button>
+                <button class="timeline-view-btn" data-view="flow" onclick="switchTimelineView('flow')">
+                    <span class="btn-icon">🌊</span> Flow Animation
+                </button>
+            </div>
+            
+            <div id="storyline-content" class="timeline-journey"></div>
         </section>
 
         <!-- Core Comparison Charts -->

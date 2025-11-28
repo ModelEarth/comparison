@@ -202,16 +202,26 @@ function updateCountryCards() {
     
     if (selectedCountries.size === 0) {
         container.innerHTML = '<p class="empty-message">Select countries on the map to view data</p>';
+        container.classList.remove('carousel-mode');
+        stopCarouselAnimation();
+        removeCarouselNavigation();
         return;
     }
     
-    selectedCountries.forEach(code => {
+    // Enable carousel mode for 3+ countries
+    const isCarousel = selectedCountries.size >= 3;
+    container.classList.toggle('carousel-mode', isCarousel);
+    
+    const countriesArray = Array.from(selectedCountries);
+    
+    countriesArray.forEach((code, index) => {
         if (!COUNTRIES[code]) return;
         
         const country = COUNTRIES[code];
         const card = document.createElement('div');
         card.className = 'country-card';
         card.style.borderLeft = `4px solid ${country.color}`;
+        card.dataset.index = index;
         
         const total = calculateTotalForCountry(code, currentFactorGroup);
         const domestic = calculateTotalByFlow(code, currentFactorGroup, 'domestic');
@@ -245,6 +255,14 @@ function updateCountryCards() {
         `;
         container.appendChild(card);
     });
+    
+    // Add carousel controls
+    if (isCarousel) {
+        addCarouselNavigation();
+    } else {
+        removeCarouselNavigation();
+        stopCarouselAnimation();
+    }
 }
 
 function calculateTotalForCountry(code, factorGroup) {
@@ -311,15 +329,44 @@ function calculateByIndustry(code, factorGroup) {
     return result;
 }
 
+let currentTimelineView = 'journey';
+
+function switchTimelineView(view) {
+    currentTimelineView = view;
+    
+    // Update button states
+    document.querySelectorAll('.timeline-view-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.view === view);
+    });
+    
+    // Update content
+    updateStoryline();
+}
+
 function updateStoryline() {
     const container = document.getElementById('storyline-content');
     
     if (selectedCountries.size === 0) {
-        container.innerHTML = '<p class="storyline-empty">Select countries to see their environmental impact story</p>';
+        container.innerHTML = '<p class="storyline-empty">Select countries to begin your environmental impact journey 🌍</p>';
+        container.className = 'timeline-journey';
         return;
     }
     
-    let storylineHTML = '<div class="storyline-wrapper">';
+    // Set view class
+    container.className = `timeline-journey view-${currentTimelineView}`;
+    
+    // Render based on current view
+    if (currentTimelineView === 'journey') {
+        container.innerHTML = renderJourneyView();
+    } else if (currentTimelineView === 'comparison') {
+        container.innerHTML = renderComparisonView();
+    } else if (currentTimelineView === 'flow') {
+        container.innerHTML = renderFlowView();
+    }
+}
+
+function renderJourneyView() {
+    let html = '';
     
     Array.from(selectedCountries).forEach((code, index) => {
         if (!COUNTRIES[code]) return;
@@ -330,62 +377,204 @@ function updateStoryline() {
         const exports = calculateTotalByFlow(code, currentFactorGroup, 'exports');
         const imports = calculateTotalByFlow(code, currentFactorGroup, 'imports');
         
-        const dominantFlow = Math.max(domestic, exports, imports);
-        let flowType = 'domestic production';
-        if (dominantFlow === exports) flowType = 'export activities';
-        if (dominantFlow === imports) flowType = 'import activities';
+        const maxFlow = Math.max(domestic, exports, imports);
+        const domesticHeight = total > 0 ? (domestic / maxFlow) * 100 : 0;
+        const exportsHeight = total > 0 ? (exports / maxFlow) * 100 : 0;
+        const importsHeight = total > 0 ? (imports / maxFlow) * 100 : 0;
         
-        const percentage = total > 0 ? ((dominantFlow / total) * 100).toFixed(0) : 0;
-        
-        storylineHTML += `
-            <div class="storyline-card" style="border-left: 5px solid ${country.color}">
-                <div class="storyline-header">
-                    <span class="storyline-flag"><span class="fi fi-${code.toLowerCase()}" style="display:inline-block;width:28px;height:21px;"></span></span>
-                    <h3>${country.name}</h3>
-                    <span class="storyline-chapter">Chapter ${index + 1}</span>
-                </div>
-                <div class="storyline-body">
-                    <p class="storyline-lead">
-                        In 2019, <strong>${country.name}</strong>'s ${currentFactorGroup} impact story begins with 
-                        <strong>${flowType}</strong>, accounting for <strong>${percentage}%</strong> of its total footprint.
-                    </p>
-                    <div class="storyline-metrics">
-                        <div class="storyline-metric">
-                            <div class="metric-icon">🏭</div>
-                            <div class="metric-content">
-                                <span class="metric-label">Domestic Impact</span>
-                                <span class="metric-value">${formatNumber(domestic)}</span>
+        html += `
+            <div class="journey-node">
+                ${index % 2 === 0 ? `
+                    <div class="journey-content" style="border-top: 4px solid ${country.color}">
+                        <div class="journey-header">
+                            <span class="journey-flag"><span class="fi fi-${code.toLowerCase()}"></span></span>
+                            <h3 class="journey-title">${country.name}</h3>
+                        </div>
+                        <div class="journey-stats">
+                            <div class="journey-stat" style="background: linear-gradient(135deg, ${country.color}20, ${country.color}10)">
+                                <div class="stat-icon-large">🏭</div>
+                                <span class="stat-label-large">Domestic</span>
+                                <span class="stat-value-large">${formatNumber(domestic)}</span>
+                            </div>
+                            <div class="journey-stat" style="background: linear-gradient(135deg, ${country.color}15, ${country.color}08)">
+                                <div class="stat-icon-large">📤</div>
+                                <span class="stat-label-large">Exports</span>
+                                <span class="stat-value-large">${formatNumber(exports)}</span>
+                            </div>
+                            <div class="journey-stat" style="background: linear-gradient(135deg, ${country.color}10, ${country.color}05)">
+                                <div class="stat-icon-large">📥</div>
+                                <span class="stat-label-large">Imports</span>
+                                <span class="stat-value-large">${formatNumber(imports)}</span>
                             </div>
                         </div>
-                        <div class="storyline-metric">
-                            <div class="metric-icon">📤</div>
-                            <div class="metric-content">
-                                <span class="metric-label">Export Impact</span>
-                                <span class="metric-value">${formatNumber(exports)}</span>
-                            </div>
-                        </div>
-                        <div class="storyline-metric">
-                            <div class="metric-icon">📥</div>
-                            <div class="metric-content">
-                                <span class="metric-label">Import Impact</span>
-                                <span class="metric-value">${formatNumber(imports)}</span>
+                        <div class="journey-flow-viz">
+                            <div class="flow-bars">
+                                <div class="flow-bar" style="height: ${domesticHeight}%; background: ${country.color}">
+                                    <span class="flow-label">Domestic</span>
+                                </div>
+                                <div class="flow-bar" style="height: ${exportsHeight}%; background: ${country.color}; opacity: 0.7">
+                                    <span class="flow-label">Exports</span>
+                                </div>
+                                <div class="flow-bar" style="height: ${importsHeight}%; background: ${country.color}; opacity: 0.4">
+                                    <span class="flow-label">Imports</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="storyline-progress">
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: ${total > 0 ? (domestic/total)*100 : 0}%; background: ${country.color}"></div>
-                            <div class="progress-fill" style="width: ${total > 0 ? (exports/total)*100 : 0}%; background: ${country.color}; opacity: 0.7"></div>
-                            <div class="progress-fill" style="width: ${total > 0 ? (imports/total)*100 : 0}%; background: ${country.color}; opacity: 0.4"></div>
+                    <div class="journey-marker" style="background: ${country.color}; color: white;">
+                        ${index + 1}
+                    </div>
+                ` : `
+                    <div class="journey-marker" style="background: ${country.color}; color: white;">
+                        ${index + 1}
+                    </div>
+                    <div class="journey-content" style="border-top: 4px solid ${country.color}">
+                        <div class="journey-header">
+                            <h3 class="journey-title">${country.name}</h3>
+                            <span class="journey-flag"><span class="fi fi-${code.toLowerCase()}"></span></span>
                         </div>
+                        <div class="journey-stats">
+                            <div class="journey-stat" style="background: linear-gradient(135deg, ${country.color}20, ${country.color}10)">
+                                <div class="stat-icon-large">🏭</div>
+                                <span class="stat-label-large">Domestic</span>
+                                <span class="stat-value-large">${formatNumber(domestic)}</span>
+                            </div>
+                            <div class="journey-stat" style="background: linear-gradient(135deg, ${country.color}15, ${country.color}08)">
+                                <div class="stat-icon-large">📤</div>
+                                <span class="stat-label-large">Exports</span>
+                                <span class="stat-value-large">${formatNumber(exports)}</span>
+                            </div>
+                            <div class="journey-stat" style="background: linear-gradient(135deg, ${country.color}10, ${country.color}05)">
+                                <div class="stat-icon-large">📥</div>
+                                <span class="stat-label-large">Imports</span>
+                                <span class="stat-value-large">${formatNumber(imports)}</span>
+                            </div>
+                        </div>
+                        <div class="journey-flow-viz">
+                            <div class="flow-bars">
+                                <div class="flow-bar" style="height: ${domesticHeight}%; background: ${country.color}">
+                                    <span class="flow-label">Domestic</span>
+                                </div>
+                                <div class="flow-bar" style="height: ${exportsHeight}%; background: ${country.color}; opacity: 0.7">
+                                    <span class="flow-label">Exports</span>
+                                </div>
+                                <div class="flow-bar" style="height: ${importsHeight}%; background: ${country.color}; opacity: 0.4">
+                                    <span class="flow-label">Imports</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `}
+            </div>
+        `;
+    });
+    
+    return html;
+}
+
+function renderComparisonView() {
+    let html = '';
+    
+    Array.from(selectedCountries).forEach((code) => {
+        if (!COUNTRIES[code]) return;
+        
+        const country = COUNTRIES[code];
+        const total = calculateTotalForCountry(code, currentFactorGroup);
+        const domestic = calculateTotalByFlow(code, currentFactorGroup, 'domestic');
+        const exports = calculateTotalByFlow(code, currentFactorGroup, 'exports');
+        const imports = calculateTotalByFlow(code, currentFactorGroup, 'imports');
+        
+        const domesticPct = total > 0 ? ((domestic / total) * 100).toFixed(1) : 0;
+        const exportsPct = total > 0 ? ((exports / total) * 100).toFixed(1) : 0;
+        const importsPct = total > 0 ? ((imports / total) * 100).toFixed(1) : 0;
+        
+        html += `
+            <div class="comparison-card" style="border-top: 5px solid ${country.color}">
+                <div class="journey-header">
+                    <span class="journey-flag"><span class="fi fi-${code.toLowerCase()}"></span></span>
+                    <h3 class="journey-title">${country.name}</h3>
+                </div>
+                <div class="journey-stats">
+                    <div class="journey-stat">
+                        <div class="stat-icon-large">🏭</div>
+                        <span class="stat-label-large">Domestic</span>
+                        <span class="stat-value-large" title="${formatNumber(domestic)}">${formatNumber(domestic)}</span>
+                        <span style="color: ${country.color};">${domesticPct}%</span>
+                    </div>
+                    <div class="journey-stat">
+                        <div class="stat-icon-large">📤</div>
+                        <span class="stat-label-large">Exports</span>
+                        <span class="stat-value-large" title="${formatNumber(exports)}">${formatNumber(exports)}</span>
+                        <span style="color: ${country.color};">${exportsPct}%</span>
+                    </div>
+                    <div class="journey-stat">
+                        <div class="stat-icon-large">📥</div>
+                        <span class="stat-label-large">Imports</span>
+                        <span class="stat-value-large" title="${formatNumber(imports)}">${formatNumber(imports)}</span>
+                        <span style="color: ${country.color};">${importsPct}%</span>
+                    </div>
+                </div>
+                <div class="comparison-total">
+                    <div class="comparison-total-label">Total Impact</div>
+                    <div class="comparison-total-value" style="color: ${country.color}" title="${formatNumber(total)}">${formatNumber(total)}</div>
+                </div>
+            </div>
+        `;
+    });
+    
+    return html;
+}
+
+function renderFlowView() {
+    let html = '';
+    
+    Array.from(selectedCountries).forEach((code, index) => {
+        if (!COUNTRIES[code]) return;
+        
+        const country = COUNTRIES[code];
+        const total = calculateTotalForCountry(code, currentFactorGroup);
+        const domestic = calculateTotalByFlow(code, currentFactorGroup, 'domestic');
+        const exports = calculateTotalByFlow(code, currentFactorGroup, 'exports');
+        const imports = calculateTotalByFlow(code, currentFactorGroup, 'imports');
+        
+        html += `
+            <div class="flow-node" style="border-left: 6px solid ${country.color}">
+                <div class="journey-header" style="justify-content: flex-start;">
+                    <span class="journey-flag"><span class="fi fi-${code.toLowerCase()}"></span></span>
+                    <h3 class="journey-title">${country.name}</h3>
+                    <div style="margin-left: auto; font-size: 1.4rem; font-weight: 700; color: ${country.color}">
+                        ${formatNumber(total)}
+                    </div>
+                </div>
+                
+                <div class="flow-animation">
+                    <div class="flow-particle" style="background: ${country.color}"></div>
+                    <div class="flow-particle" style="background: ${country.color}; opacity: 0.7"></div>
+                    <div class="flow-particle" style="background: ${country.color}; opacity: 0.4"></div>
+                </div>
+                
+                <div class="journey-stats">
+                    <div class="journey-stat" style="background: linear-gradient(135deg, ${country.color}20, ${country.color}10)">
+                        <div class="stat-icon-large">🏭</div>
+                        <span class="stat-label-large">Domestic Flow</span>
+                        <span class="stat-value-large">${formatNumber(domestic)}</span>
+                    </div>
+                    <div class="journey-stat" style="background: linear-gradient(135deg, ${country.color}15, ${country.color}08)">
+                        <div class="stat-icon-large">📤</div>
+                        <span class="stat-label-large">Export Flow</span>
+                        <span class="stat-value-large">${formatNumber(exports)}</span>
+                    </div>
+                    <div class="journey-stat" style="background: linear-gradient(135deg, ${country.color}10, ${country.color}05)">
+                        <div class="stat-icon-large">📥</div>
+                        <span class="stat-label-large">Import Flow</span>
+                        <span class="stat-value-large">${formatNumber(imports)}</span>
                     </div>
                 </div>
             </div>
         `;
     });
     
-    storylineHTML += '</div>';
-    container.innerHTML = storylineHTML;
+    return html;
 }
 
 function updateCharts() {
@@ -838,7 +1027,7 @@ function updatePieChart() {
                     value: value,
                     itemStyle: {
                         color: COUNTRIES[code].color,
-                        opacity: flow === 'domestic' ? 1 : (flow === 'exports' ? 0.8 : 0.6)
+                        opacity: flow === 'domestic' ? 1 : (flow === 'exports' ? 0.7 : 0.5)
                     }
                 });
             }
@@ -847,70 +1036,82 @@ function updatePieChart() {
 
     const option = {
         animationDuration: 1500,
-        animationEasing: 'cubicInOut',
+        animationEasing: 'elasticOut',
         tooltip: {
             trigger: 'item',
-            formatter: params => `${params.name}<br/>${formatNumber(params.value)} (${params.percent}%)`,
-            backgroundColor: 'rgba(50,50,50,0.9)',
-            borderColor: '#333',
+            formatter: params => `<strong>${params.name}</strong><br/>${formatNumber(params.value)} <span style="color: #888">(${params.percent}%)</span>`,
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            borderColor: '#ddd',
             borderWidth: 1,
             textStyle: {
-                color: '#fff',
-                fontSize: 13
-            }
+                color: '#333',
+                fontSize: 12
+            },
+            padding: 12,
+            extraCssText: 'box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 8px;'
         },
         legend: {
             type: 'scroll',
             orient: 'vertical',
-            right: 10,
+            right: 20,
             top: 'center',
             textStyle: { 
                 fontSize: 11,
-                lineHeight: 16
+                lineHeight: 18,
+                color: '#555'
             },
-            pageIconSize: 12,
+            pageIconSize: 14,
             pageTextStyle: {
                 fontSize: 11
-            }
+            },
+            itemGap: 12,
+            icon: 'circle'
         },
         series: [{
             type: 'pie',
-            radius: ['35%', '65%'],
-            center: ['40%', '50%'],
-            roseType: 'area',
+            radius: ['45%', '75%'],
+            center: ['50%', '50%'],
+            roseType: 'radius',
             avoidLabelOverlap: true,
             itemStyle: {
-                borderRadius: 8,
+                borderRadius: 10,
                 borderColor: '#fff',
-                borderWidth: 3
+                borderWidth: 3,
+                shadowBlur: 8,
+                shadowColor: 'rgba(0, 0, 0, 0.15)'
             },
             label: {
                 show: true,
                 position: 'outside',
-                fontSize: 11,
-                lineHeight: 14,
+                fontSize: 12,
+                fontWeight: 'bold',
+                lineHeight: 16,
                 formatter: '{d}%',
                 color: '#333'
             },
             labelLine: {
                 show: true,
-                length: 10,
-                length2: 10,
-                smooth: 0.3
+                length: 15,
+                length2: 15,
+                smooth: 0.5,
+                lineStyle: {
+                    width: 2
+                }
             },
             emphasis: {
                 label: {
                     show: true,
-                    fontSize: 13,
+                    fontSize: 14,
                     fontWeight: 'bold'
                 },
                 itemStyle: {
-                    shadowBlur: 15,
+                    shadowBlur: 20,
                     shadowOffsetX: 0,
-                    shadowColor: 'rgba(0, 0, 0, 0.4)'
+                    shadowOffsetY: 5,
+                    shadowColor: 'rgba(0, 0, 0, 0.3)'
                 },
                 scale: true,
-                scaleSize: 8
+                scaleSize: 10
             },
             data: data
         }]
@@ -1532,15 +1733,124 @@ async function loadAllData() {
         debugLog('=== ALL DATA LOADED SUCCESSFULLY ===');
     }
     
-    debugLog(`📊 PERFORMANCE METRICS:`);
-    debugLog(`   • Total files loaded: ${filesLoaded}`);
-    debugLog(`   • Countries: ${Object.keys(COUNTRIES).length}`);
-    debugLog(`   • Load time: ${loadTime} seconds`);
-    debugLog(`   • Files per second: ${(filesLoaded / loadTime).toFixed(1)}`);
-    debugLog(`   • Errors: ${loadingErrors.length}`);
-    
-    debugLog('Updating UI...');
+    dataLoadingComplete = true;
     updateUI();
+}
+
+// ==========================================
+// SIDEBAR TOGGLE FUNCTIONALITY
+// ==========================================
+
+function initializeSidebarToggle() {
+    const toggleBtn = document.getElementById('sidebar-toggle');
+    const mapWrapper = document.querySelector('.map-controls-wrapper');
+    
+    if (toggleBtn && mapWrapper) {
+        toggleBtn.addEventListener('click', () => {
+            const isCollapsed = mapWrapper.classList.toggle('sidebar-collapsed');
+            toggleBtn.classList.toggle('collapsed', isCollapsed);
+            
+            // Resize map when sidebar toggles
+            setTimeout(() => {
+                if (map) {
+                    map.invalidateSize();
+                }
+            }, 300);
+        });
+    }
+}
+
+// ==========================================
+// CAROUSEL NAVIGATION FOR COUNTRY CARDS
+// ==========================================
+
+function addCarouselNavigation() {
+    removeCarouselNavigation(); // Remove existing buttons first
+    
+    const summarySection = document.querySelector('.summary-section');
+    if (!summarySection) return;
+    
+    // Create prev button
+    const prevBtn = document.createElement('button');
+    prevBtn.className = 'carousel-nav prev';
+    prevBtn.innerHTML = '&#8249;'; // Left arrow
+    prevBtn.setAttribute('aria-label', 'Previous cards');
+    prevBtn.onclick = () => scrollCarousel('left');
+    
+    // Create next button
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'carousel-nav next';
+    nextBtn.innerHTML = '&#8250;'; // Right arrow
+    nextBtn.setAttribute('aria-label', 'Next cards');
+    nextBtn.onclick = () => scrollCarousel('right');
+    
+    summarySection.appendChild(prevBtn);
+    summarySection.appendChild(nextBtn);
+    
+    // Update button states
+    updateCarouselButtons();
+    
+    // Add scroll listener to update buttons
+    const container = document.getElementById('country-cards');
+    if (container) {
+        container.addEventListener('scroll', updateCarouselButtons);
+    }
+}
+
+function removeCarouselNavigation() {
+    const buttons = document.querySelectorAll('.carousel-nav');
+    buttons.forEach(btn => btn.remove());
+}
+
+function scrollCarousel(direction) {
+    const container = document.getElementById('country-cards');
+    if (!container) return;
+    
+    const scrollAmount = 350; // Card width + gap
+    const currentScroll = container.scrollLeft;
+    
+    if (direction === 'left') {
+        container.scrollTo({
+            left: currentScroll - scrollAmount,
+            behavior: 'smooth'
+        });
+    } else {
+        container.scrollTo({
+            left: currentScroll + scrollAmount,
+            behavior: 'smooth'
+        });
+    }
+    
+    // Update buttons after scroll
+    setTimeout(updateCarouselButtons, 300);
+}
+
+function updateCarouselButtons() {
+    const container = document.getElementById('country-cards');
+    const prevBtn = document.querySelector('.carousel-nav.prev');
+    const nextBtn = document.querySelector('.carousel-nav.next');
+    
+    if (!container || !prevBtn || !nextBtn) return;
+    
+    const isAtStart = container.scrollLeft <= 10;
+    const isAtEnd = container.scrollLeft >= (container.scrollWidth - container.clientWidth - 10);
+    
+    prevBtn.disabled = isAtStart;
+    nextBtn.disabled = isAtEnd;
+}
+
+function positionCarouselCards(count) {
+    // Cards position themselves naturally with flexbox
+    // No manual positioning needed
+}
+
+function startCarouselAnimation() {
+    // Auto-scroll is now handled by user interaction only
+    // Removed auto-scrolling to let users control with buttons/scroll
+}
+
+function stopCarouselAnimation() {
+    // Nothing to stop - no auto animation
 }
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -1559,6 +1869,9 @@ window.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+    
+    // Initialize sidebar toggle
+    initializeSidebarToggle();
     
     initMap();
     
@@ -1589,3 +1902,4 @@ window.toggleCountry = toggleCountry;
 window.selectAllCountries = selectAllCountries;
 window.clearAllCountries = clearAllCountries;
 window.toggleRegion = toggleRegion;
+window.switchTimelineView = switchTimelineView;

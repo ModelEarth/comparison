@@ -101,6 +101,24 @@ Add Hover animations to the flags.
 ## Prompt 5:
 Add country flags to storyline comparison section also
 
+
+## Prompt 6:
+so currently to select the countries u can either select from map or from sidebar. I want you to make the sidebar collapsible and once the sidebar is colapsed the map area should expand in the remaining space. also, just beneath the map we have a small section where we show selected countries and some basic information from the dataset,  I want you to resize those cards and use creative animations so once the number of selected countires goes more than 2 it would appear like a round table carousal.
+
+# Follow up: 
+the carousal animation is going all over the place, what i want you to do is make it a sliding carousal and make sure it stays in the placeholder that is already there
+
+## Prompt 7: 
+this works perfectly fine. now i want you to represent the 'Environmental Impact Story' section in a better way because we are redisplaying the data that we are already showing the selected countries carousel section. for the environmental impact story section try to come up with cool animations or a storyline or a unique graphical representation
+
+# Follow Up: 
+
+-this is great but try to adjust the size of this section it should look professional. Also, in the side by side section the charts go out of the placeholder.
+-refer this image, this is how the data is going out of the box(Added Image to explain)
+-this section is not representing the data as intented. bring the pie chart in center and make it look aesthetic(added image to explain)
+
+
+
 ## What this experiment achieved
 - Claude generated `index.html`, `script.js`, and `styles.css` in one response as requested.
 - Dashboard UI renders with map, cards, dropdown, charts, and insights panel.
@@ -110,11 +128,15 @@ Add country flags to storyline comparison section also
 - It seems that claude misunderstood and has added countries which are not present in the Dataset.
 - Claude added expected countries and reduced load times
 - Improved UI
+- Added Country Flags
+- Made the country selection section collapsible
+- Improved Storyline section with better flow.
+- Improved Pie chart representation. 
 
 ## Next Goal 
 - Enhance the data representaion
-- Add better visualizations
-- Add a storyline feature.
+- Add better visualizations.
+- Improve current visualizations.
 
 ## Notes for collaborators
 - GitHub RAW CSV links were used intentionally so the app can run directly from the browser without needing local dataset folders.
