@@ -134,7 +134,7 @@ Focus on reusable prompts and modular components.
 ### Data Source Display Implementation
 - Expandable views with Tabulator tables
 - Optimized lazy loading for performance
-- Link: https://model.earth/comparison/harsh
+- Link: - Link: https://model.earth/comparison/dev/harsh
 
 ## Resources
 
