@@ -228,7 +228,8 @@ h3 {
     border: 1px solid #e0e0e0;
     height: fit-content;
     max-height: 600px;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -501,6 +502,37 @@ h3 {
     gap: 1.5rem;
     transition: all 0.4s ease;
     position: relative;
+    max-height: 500px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 0.5rem;
+}
+
+/* Scrollbar for grid mode */
+#country-cards::-webkit-scrollbar {
+    width: 12px;
+}
+
+#country-cards::-webkit-scrollbar-track {
+    background: var(--notion-surface);
+    border-radius: 6px;
+    border: 1px solid var(--notion-border);
+}
+
+#country-cards::-webkit-scrollbar-thumb {
+    background: var(--notion-accent);
+    border-radius: 6px;
+    border: 2px solid var(--notion-surface);
+}
+
+#country-cards::-webkit-scrollbar-thumb:hover {
+    background: var(--notion-accent-hover);
+}
+
+/* Firefox scrollbar */
+#country-cards {
+    scrollbar-width: thin;
+    scrollbar-color: var(--notion-accent) var(--notion-surface);
 }
 
 /* Carousel mode for 3+ countries */
@@ -522,21 +554,23 @@ h3 {
 
 /* Custom scrollbar styling */
 #country-cards.carousel-mode::-webkit-scrollbar {
-    height: 8px;
+    height: 12px;
 }
 
 #country-cards.carousel-mode::-webkit-scrollbar-track {
-    background: #f0f0f0;
-    border-radius: 4px;
+    background: var(--notion-surface);
+    border-radius: 6px;
+    border: 1px solid var(--notion-border);
 }
 
 #country-cards.carousel-mode::-webkit-scrollbar-thumb {
-    background: #4A90E2;
-    border-radius: 4px;
+    background: var(--notion-accent);
+    border-radius: 6px;
+    border: 2px solid var(--notion-surface);
 }
 
 #country-cards.carousel-mode::-webkit-scrollbar-thumb:hover {
-    background: #357ABD;
+    background: var(--notion-accent-hover);
 }
 
 /* Carousel wrapper for navigation */
@@ -919,11 +953,13 @@ h3 {
 
 .journey-node {
     position: relative;
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     gap: 1.5rem;
     margin-bottom: 2.5rem;
     animation: fadeInUp 0.6s ease forwards;
     opacity: 0;
+    align-items: center;
 }
 
 .journey-node:nth-child(1) { animation-delay: 0.1s; }
@@ -943,26 +979,11 @@ h3 {
     }
 }
 
-/* Alternating left/right layout */
-.journey-node:nth-child(odd) {
-    flex-direction: row;
-}
-
-.journey-node:nth-child(even) {
-    flex-direction: row-reverse;
-}
-
-.journey-node:nth-child(odd) .journey-content {
-    text-align: right;
-}
-
-.journey-node:nth-child(even) .journey-content {
-    text-align: left;
-}
+/* Remove old alternating styles - no longer needed */
+/* Grid handles the layout automatically */
 
 .journey-content {
-    flex: 1;
-    max-width: 45%;
+    width: 100%;
     background: rgba(255,255,255,0.95);
     backdrop-filter: blur(10px);
     border-radius: 12px;
@@ -1477,6 +1498,10 @@ h3 {
 }
 
 #chart-pie {
+    height: 500px;
+}
+
+#chart-pie {
     height: 450px;
     position: relative;
 }
@@ -1799,23 +1824,42 @@ h3 {
 /* Scrollbar styling */
 #debug-log::-webkit-scrollbar,
 .country-selector-panel::-webkit-scrollbar {
-    width: 6px;
+    width: 10px;
 }
 
-#debug-log::-webkit-scrollbar-track,
 .country-selector-panel::-webkit-scrollbar-track {
+    background: var(--notion-surface);
+    border-radius: 5px;
+    border: 1px solid var(--notion-border);
+}
+
+.country-selector-panel::-webkit-scrollbar-thumb {
+    background: var(--notion-accent);
+    border-radius: 5px;
+    border: 2px solid #f8f9fa;
+}
+
+.country-selector-panel::-webkit-scrollbar-thumb:hover {
+    background: var(--notion-accent-hover);
+}
+
+/* Firefox scrollbar for sidebar */
+.country-selector-panel {
+    scrollbar-width: thin;
+    scrollbar-color: var(--notion-accent) var(--notion-surface);
+}
+
+#debug-log::-webkit-scrollbar-track {
     background: #f1f1f1;
     border-radius: 3px;
 }
 
-#debug-log::-webkit-scrollbar-thumb,
-.country-selector-panel::-webkit-scrollbar-thumb {
+#debug-log::-webkit-scrollbar-thumb {
     background: #ccc;
     border-radius: 3px;
 }
 
-#debug-log::-webkit-scrollbar-thumb:hover,
-.country-selector-panel::-webkit-scrollbar-thumb:hover {
+#debug-log::-webkit-scrollbar-thumb:hover {
     background: #999;
 }
 
@@ -1881,5 +1925,384 @@ h3 {
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+/* ==========================================
+   NOTION THEME & NEW FEATURES
+   ========================================== */
+
+:root {
+    --notion-bg: #FFFFFF;
+    --notion-surface: #F7F6F3;
+    --notion-border: #E9E9E7;
+    --notion-text: #37352F;
+    --notion-text-secondary: #787774;
+    --notion-accent: #2EAADC;
+    --notion-blue: #0B6E99;
+    --notion-blue-bg: #E7F3F8;
+    --notion-yellow: #DFAB01;
+    --notion-yellow-bg: #FBF3DB;
+    --notion-shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+    --notion-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+body {
+    background-color: var(--notion-surface);
+    color: var(--notion-text);
+}
+
+/* Factor Selection Buttons */
+.factor-selection-section {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--notion-bg);
+    padding: 1.25rem 2rem;
+    margin: 0 0 2rem 0;
+    border-radius: 0;
+    border-bottom: 2px solid var(--notion-border);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.95);
+}
+
+.factor-header {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.factor-header h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--notion-text);
+    margin-bottom: 0.25rem;
+}
+
+.factor-subtitle {
+    font-size: 0.85rem;
+    color: var(--notion-text-secondary);
+}
+
+.factor-buttons {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.75rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.factor-btn {
+    background: var(--notion-surface);
+    border: 2px solid var(--notion-border);
+    border-radius: 6px;
+    padding: 0.75rem 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    position: relative;
+    overflow: hidden;
+    min-height: 85px;
+}
+
+.factor-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--notion-accent);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.factor-btn:hover {
+    background: var(--notion-bg);
+    border-color: var(--notion-accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.factor-btn:hover::before {
+    transform: scaleX(1);
+}
+
+.factor-btn.active {
+    background: var(--notion-blue-bg);
+    border-color: var(--notion-blue);
+    box-shadow: 0 2px 6px rgba(11, 110, 153, 0.2);
+}
+
+.factor-btn.active::before {
+    transform: scaleX(1);
+    background: var(--notion-blue);
+}
+
+.factor-icon {
+    font-size: 1.75rem;
+    transition: transform 0.2s ease;
+}
+
+.factor-btn:hover .factor-icon {
+    transform: scale(1.1);
+}
+
+.factor-name {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--notion-text);
+    text-align: center;
+    line-height: 1.2;
+}
+
+.factor-btn.active .factor-name {
+    color: var(--notion-blue);
+}
+
+/* Pie Chart with External Legend */
+.pie-chart-full-row {
+    display: grid !important;
+    grid-template-columns: 2fr 1fr !important;
+    gap: 1.5rem !important;
+}
+
+.pie-chart-main {
+    grid-column: 1 / 2;
+}
+
+.pie-legend-panel {
+    grid-column: 2 / 3;
+    display: flex;
+    flex-direction: column;
+}
+
+.pie-legend-container {
+    background: var(--notion-surface);
+    border: 1px solid var(--notion-border);
+    border-radius: 8px;
+    padding: 1rem;
+    max-height: 450px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.pie-legend-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--notion-text);
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--notion-border);
+}
+
+.pie-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.pie-legend-item:hover {
+    background: var(--notion-blue-bg);
+}
+
+.pie-legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.pie-legend-text {
+    flex: 1;
+    font-size: 0.85rem;
+    color: var(--notion-text);
+}
+
+.pie-legend-value {
+    font-weight: 600;
+    color: var(--notion-text-secondary);
+    font-size: 0.8rem;
+}
+
+/* Timeline Insights */
+.journey-insight {
+    width: 100%;
+    background: var(--notion-yellow-bg);
+    border: 2px solid var(--notion-yellow);
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 200px;
+}
+
+.insight-badge {
+    display: inline-block;
+    background: var(--notion-yellow);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    width: fit-content;
+}
+
+.insight-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--notion-text);
+    margin-bottom: 0.75rem;
+}
+
+.insight-points {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.insight-points li {
+    padding: 0.5rem 0;
+    padding-left: 1.5rem;
+    position: relative;
+    color: var(--notion-text-secondary);
+    line-height: 1.6;
+    font-size: 0.95rem;
+}
+
+.insight-points li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--notion-yellow);
+    font-weight: bold;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .factor-buttons {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .pie-chart-full-row {
+        grid-template-columns: 1fr !important;
+    }
+    
+    .pie-legend-container {
+        max-height: 300px;
+    }
+}
+
+/* Dual Pie Chart Layout */
+.dual-pie-row {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 1.5rem !important;
+}
+
+.pie-chart-half {
+    min-height: 550px;
+}
+
+.pie-chart-half .chart {
+    height: 450px;
+}
+
+@media (max-width: 968px) {
+    .dual-pie-row {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* Firefox scrollbar for carousel mode */
+#country-cards.carousel-mode {
+    scrollbar-width: thin;
+    scrollbar-color: var(--notion-accent) var(--notion-surface);
+}
+
+/* Responsive zigzag for mobile */
+@media (max-width: 768px) {
+    .journey-node {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+        gap: 1rem;
+    }
+    
+    .journey-content,
+    .journey-insight {
+        max-width: 100%;
+    }
+    
+    .journey-marker {
+        justify-self: center;
+    }
+}
+
+/* Responsive sticky factor section */
+@media (max-width: 1200px) {
+    .factor-buttons {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .factor-selection-section {
+        padding: 1rem;
+        top: 0;
+    }
+    
+    .factor-header h3 {
+        font-size: 1.1rem;
+    }
+    
+    .factor-subtitle {
+        font-size: 0.75rem;
+    }
+    
+    .factor-buttons {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+    }
+    
+    .factor-btn {
+        padding: 0.6rem 0.4rem;
+        min-height: 75px;
+    }
+    
+    .factor-icon {
+        font-size: 1.5rem;
+    }
+    
+    .factor-name {
+        font-size: 0.7rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .factor-buttons {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .factor-btn {
+        padding: 0.5rem 0.3rem;
+        min-height: 70px;
+    }
+    
+    .factor-icon {
+        font-size: 1.4rem;
+    }
+    
+    .factor-name {
+        font-size: 0.65rem;
     }
 }
