@@ -6,7 +6,6 @@
     <title>International Trade & Environmental Impact Comparison</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <!-- Flag Icons CSS for reliable flag display -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css" />
 </head>
 <body>
@@ -27,7 +26,6 @@
             <h2>Select Countries for Comparison</h2>
             <p class="section-description">Select countries from the map or use the regional panels below</p>
             
-            <!-- Sidebar Toggle Button -->
             <button id="sidebar-toggle" class="sidebar-toggle-btn" aria-label="Toggle sidebar">
                 <span class="toggle-icon">◀</span>
             </button>
@@ -153,7 +151,6 @@
             <div id="country-cards"></div>
         </section>
 
-        <!-- Environmental Factor Selection -->
         <section class="factor-selection-section">
             <div class="factor-header">
                 <h3>🌍 Environmental Factor Group</h3>
@@ -186,8 +183,6 @@
                 </button>
             </div>
         </section>
-
-        <!-- Storyline Section -->
         <section class="storyline-section">
             <div class="section-header">
                 <div class="section-icon">🌍</div>
@@ -197,7 +192,6 @@
                 </div>
             </div>
             
-            <!-- Timeline View Toggle -->
             <div class="timeline-controls">
                 <button class="timeline-view-btn active" data-view="journey" onclick="switchTimelineView('journey')">
                     <span class="btn-icon">🗺️</span> Journey View
@@ -213,7 +207,6 @@
             <div id="storyline-content" class="timeline-journey"></div>
         </section>
 
-        <!-- Core Comparison Charts -->
         <section class="charts-section category-section">
             <div class="section-header">
                 <div class="section-icon">📊</div>
@@ -251,7 +244,6 @@
             </div>
         </section>
 
-        <!-- Impact Intensity Gauges -->
         <section class="gauges-section category-section">
             <div class="section-header">
                 <div class="section-icon">⚡</div>
@@ -263,7 +255,6 @@
             <div id="gauges-container" class="gauges-grid"></div>
         </section>
 
-        <!-- Multi-Dimensional Analysis -->
         <section class="multidim-section category-section">
             <div class="section-header">
                 <div class="section-icon">🎯</div>
@@ -304,7 +295,6 @@
             </div>
         </section>
 
-        <!-- Distribution & Composition -->
         <section class="distribution-section category-section">
             <div class="section-header">
                 <div class="section-icon">📈</div>
@@ -344,7 +334,6 @@
             </div>
         </section>
 
-        <!-- Pattern Recognition -->
         <section class="pattern-section category-section">
             <div class="section-header">
                 <div class="section-icon">🔍</div>
@@ -366,8 +355,110 @@
             </div>
         </section>
 
-        <!-- Flow Visualization -->
+        <section class="relationships-section category-section">
+            <div class="section-header">
+                <div class="section-icon">🔗</div>
+                <div class="section-title-group">
+                    <h2>Trade Relationships</h2>
+                    <p class="section-subtitle">Interconnections and trade network visualization</p>
+                </div>
+            </div>
+            
+            <div class="chart-row">
+                <div class="chart-container-wide featured-chart">
+                    <div class="chart-header">
+                        <h3>Trade Relationships Chord Diagram</h3>
+                        <span class="chart-badge">Network View</span>
+                    </div>
+                    <p class="chart-description">Visual network showing trade flow relationships and connections between countries</p>
+                    <div id="chart-chord" class="chart-large"></div>
+                </div>
+            </div>
+        </section>
+
         <section class="flow-section category-section">
+            <div class="section-header">
+        <!-- ==========================================
+             FLOW-RINGS VISUALIZATION SECTION
+             ========================================== -->
+        
+        <section class="flow-rings-section category-section">
+            <div class="section-header">
+                <div class="section-icon">💫</div>
+                <div class="section-title-group">
+                    <h2>Flow-Rings Visualization</h2>
+                    <p class="section-subtitle">Concentric trade flow analysis with dynamic country selection</p>
+                </div>
+            </div>
+            
+            <!-- Control Panel -->
+            <div class="flow-rings-controls">
+                <div class="control-group">
+                    <label>Category Toggles:</label>
+                    <div id="category-toggles" class="category-toggles">
+                        <!-- Populated dynamically by JavaScript -->
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <button class="flow-btn" onclick="if(typeof initFlowRingsSimple === 'function') initFlowRingsSimple(); else alert('Script not loaded yet!');" 
+                            style="background: #f59e0b; font-size: 16px; padding: 12px 24px;">
+                        🔄 CLICK HERE TO RENDER
+                    </button>
+                    <button class="flow-btn" onclick="if(typeof renderFlowRings === 'function') renderFlowRings();">
+                        ↻ Refresh
+                    </button>
+                </div>
+                
+                <div class="control-group">
+                    <label>Export Options:</label>
+                    <div class="button-group">
+                        <button class="flow-btn export-btn" onclick="exportFlowSVG()">
+                            <span>📥</span> Export SVG
+                        </button>
+                        <button class="flow-btn export-btn" onclick="exportFlowPNG()">
+                            <span>📥</span> Export PNG
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Visualization Container -->
+            <div class="flow-rings-container">
+                <div id="flow-rings-viz" class="flow-rings-viz">
+                    <!-- SVG generated by D3.js -->
+                </div>
+                
+                <!-- Side Panel for Details -->
+                <div id="flow-rings-panel" class="flow-rings-panel">
+                    <div class="panel-header">
+                        <h4>Selection Details</h4>
+                        <button class="close-panel" onclick="closeFlowPanel()">×</button>
+                    </div>
+                    <div id="flow-panel-content" class="panel-content">
+                        <p class="panel-placeholder">Click on an arc to see detailed breakdown</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tooltip -->
+            <div id="flow-tooltip" class="flow-tooltip"></div>
+            
+            <!-- Usage Instructions -->
+            <div class="flow-instructions">
+                <h4>How to Use:</h4>
+                <ul>
+                    <li><strong>Country Selection:</strong> Uses countries selected in the main dashboard selector above</li>
+                    <li><strong>Toggle Categories:</strong> Click category buttons to show/hide specific environmental factors</li>
+                    <li><strong>Hover:</strong> Mouse over arcs and connectors to see detailed information in tooltips</li>
+                    <li><strong>Click:</strong> Click on any arc to open the side panel with detailed breakdown and sparkline</li>
+                    <li><strong>Export:</strong> Save high-resolution SVG or PNG images of the current view</li>
+                </ul>
+            </div>
+        </section>
+        </section>
+        
+        <section class="charts-section category-section">
             <div class="section-header">
                 <div class="section-icon">🌊</div>
                 <div class="section-title-group">
@@ -388,6 +479,68 @@
             </div>
         </section>
 
+        <section class="charts-section category-section">
+            <div class="section-header">
+                <div class="section-icon">🌐</div>
+                <div class="section-title-group">
+                    <h2>Global Trade Flow Network</h2>
+                    <p class="section-subtitle">Chord-Sankey hybrid showing trade relationships and environmental impacts</p>
+                </div>
+            </div>
+            
+            <div class="chart-row">
+                <div class="chart-container-wide featured-chart">
+                    <div class="chart-header">
+                        <h3>Trade Flow Connections</h3>
+                        <span class="chart-badge">Interactive Network</span>
+                    </div>
+                    <p class="chart-description">
+                        Circular network showing trade relationships • Ribbon width = trade volume • Color = environmental impact
+                    </p>
+                    <div class="chart-controls">
+                        <button class="chart-control-btn active" data-mode="all" onclick="setChordMode('all')">
+                            🌍 All Flows
+                        </button>
+                        <button class="chart-control-btn" data-mode="exports" onclick="setChordMode('exports')">
+                            📤 Exports
+                        </button>
+                        <button class="chart-control-btn" data-mode="imports" onclick="setChordMode('imports')">
+                            📥 Imports
+                        </button>
+                        <button class="chart-control-btn" onclick="initChordSankey()">
+                            🔄 Refresh
+                        </button>
+                        <button class="chart-control-btn" onclick="exportChordSankeyAsSVG()">
+                            📥 SVG
+                        </button>
+                        <button class="chart-control-btn" onclick="exportChordSankeyAsPNG()">
+                            📥 PNG
+                        </button>
+                    </div>
+                    <div id="chart-chord-sankey" class="chart-xlarge"></div>
+                    <div id="chord-tooltip" class="flow-tooltip"></div>
+                </div>
+            </div>
+
+            <div class="chart-instructions">
+                <div class="instruction-item">
+                    <span class="instruction-icon">👆</span>
+                    <strong>Hover</strong> over country arcs or ribbons to see detailed trade statistics
+                </div>
+                <div class="instruction-item">
+                    <span class="instruction-icon">🖱️</span>
+                    <strong>Click</strong> on a country to lock focus on its trade connections
+                </div>
+                <div class="instruction-item">
+                    <span class="instruction-icon">🎨</span>
+                    <strong>Color</strong> indicates environmental impact: 
+                    <span style="color: #2ecc71;">Green (Low)</span> → 
+                    <span style="color: #f39c12;">Orange (Med)</span> → 
+                    <span style="color: #e74c3c;">Red (High)</span>
+                </div>
+            </div>
+        </section>
+
         <section class="insights-section">
             <h2>Key Insights</h2>
             <div id="insights"></div>
@@ -396,6 +549,7 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="script.js"></script>
 </body>
