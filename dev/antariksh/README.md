@@ -117,6 +117,42 @@ this works perfectly fine. now i want you to represent the 'Environmental Impact
 -refer this image, this is how the data is going out of the box(Added Image to explain)
 -this section is not representing the data as intented. bring the pie chart in center and make it look aesthetic(added image to explain)
 
+## Prompt 8:
+-Currently in the 'Environmental Factor Group' section has a dropdown menu to choose from different catoegories, I want you to replace that with individual buttons horizontally to select those categories. 
+
+Also, in the Environmental Impact Journey section, we have a nice timeline flow but if we see closely we have empty sections on the opposite side of each card. I want you to fill that section with one or two major points explaining a little about the adjecent country card. 
+
+In the pie chart section I want you to keep the country selection option out of the card to improve visibility of the pie chart better. 
+
+also, currently we are using apache charts, why dnt you go and use echarts to make the charts look even better and interactive. also, I want you to use the space and sections we have used to present the comparisons in a very creative way so that it should not look like wasted white space. 
+
+also I want you to use the following colour code for the entire UI 
+
+https://model.earth/localsite/css/styles/#style=notion
+
+# Follow up:
+-refer the screenshots 
+
+in the timeline section in the empty space some 1-2 pointers descriptive content should be there. 
+
+the industry chart is empty
+
+the pie chart legend is covering the chart. take that legen out of that box so pie  chart and legend both are visible and user can select accordingly
+
+# Follow Up:
+-i liked this way. but now, the right side looks too empty, so instead of clubbing everything in same pie chart make sure to make two different pie charts one for just domestic, exports and one for domestic, imports. use the same way to keep the legend and make both of them fit in the same section sideways
+
+-add a scroll bar in the country selection section next to the map
+
+-in the storyline section, make the country and information follow a zig zag pattern
+
+-Impact Intensity Meters this section has impact gauge meters. when the page loads, the impact gauge meters for all countries go out of the placeholder, but if I resize the page zoom level say from 100% to 90 and then again back to 100% then these impact gauge meters magically appear inside the placeholder properly.
+
+-🌍 Environmental Factor Group
+Select a category to analyze environmental impacts
+
+this section should freeze once we scroll down so that to select a different factor user should not be required to scroll all the way to the top. also resize the buttons inside to make it look professional
+
 
 
 ## What this experiment achieved
@@ -132,6 +168,9 @@ this works perfectly fine. now i want you to represent the 'Environmental Impact
 - Made the country selection section collapsible
 - Improved Storyline section with better flow.
 - Improved Pie chart representation. 
+- Improved the story line section and loaded more data
+- Improved the charts
+- Improved the current factor selection method
 
 ## Next Goal 
 - Enhance the data representaion

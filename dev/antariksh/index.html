@@ -153,16 +153,38 @@
             <div id="country-cards"></div>
         </section>
 
-        <section class="controls-section">
-            <label for="factor-group">Environmental Factor Group:</label>
-            <select id="factor-group">
-                <option value="air">Air Emissions</option>
-                <option value="water">Water Use & Pollution</option>
-                <option value="energy">Energy Consumption</option>
-                <option value="land">Land Use</option>
-                <option value="materials">Material Resources</option>
-                <option value="employment">Employment</option>
-            </select>
+        <!-- Environmental Factor Selection -->
+        <section class="factor-selection-section">
+            <div class="factor-header">
+                <h3>🌍 Environmental Factor Group</h3>
+                <p class="factor-subtitle">Select a category to analyze environmental impacts</p>
+            </div>
+            <div class="factor-buttons">
+                <button class="factor-btn active" data-factor="air">
+                    <span class="factor-icon">💨</span>
+                    <span class="factor-name">Air Emissions</span>
+                </button>
+                <button class="factor-btn" data-factor="water">
+                    <span class="factor-icon">💧</span>
+                    <span class="factor-name">Water Use</span>
+                </button>
+                <button class="factor-btn" data-factor="energy">
+                    <span class="factor-icon">⚡</span>
+                    <span class="factor-name">Energy</span>
+                </button>
+                <button class="factor-btn" data-factor="land">
+                    <span class="factor-icon">🌳</span>
+                    <span class="factor-name">Land Use</span>
+                </button>
+                <button class="factor-btn" data-factor="materials">
+                    <span class="factor-icon">📦</span>
+                    <span class="factor-name">Materials</span>
+                </button>
+                <button class="factor-btn" data-factor="employment">
+                    <span class="factor-icon">👥</span>
+                    <span class="factor-name">Employment</span>
+                </button>
+            </div>
         </section>
 
         <!-- Storyline Section -->
@@ -292,15 +314,25 @@
                 </div>
             </div>
             
-            <div class="chart-row">
-                <div class="chart-container">
+            <div class="chart-row dual-pie-row">
+                <div class="chart-container pie-chart-half">
                     <div class="chart-header">
-                        <h3>Trade Flow Distribution</h3>
+                        <h3>Domestic vs Exports</h3>
                         <span class="chart-badge">Proportional</span>
                     </div>
-                    <p class="chart-description">Share of domestic, exports, and imports</p>
-                    <div id="chart-pie" class="chart"></div>
+                    <p class="chart-description">Production vs international trade outflow</p>
+                    <div id="chart-pie-exports" class="chart"></div>
                 </div>
+                <div class="chart-container pie-chart-half">
+                    <div class="chart-header">
+                        <h3>Domestic vs Imports</h3>
+                        <span class="chart-badge">Proportional</span>
+                    </div>
+                    <p class="chart-description">Production vs international trade inflow</p>
+                    <div id="chart-pie-imports" class="chart"></div>
+                </div>
+            </div>
+            <div class="chart-row">
                 <div class="chart-container-wide">
                     <div class="chart-header">
                         <h3>Comparative Tree Map</h3>

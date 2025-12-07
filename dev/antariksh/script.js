@@ -382,88 +382,83 @@ function renderJourneyView() {
         const exportsHeight = total > 0 ? (exports / maxFlow) * 100 : 0;
         const importsHeight = total > 0 ? (imports / maxFlow) * 100 : 0;
         
+        // Generate insights for this country
+        const insights = generateCountryInsights(code, { total, domestic, exports, imports });
+        
+        // Country card content
+        const countryCard = `
+            <div class="journey-content" style="border-top: 4px solid ${country.color}">
+                <div class="journey-header">
+                    ${index % 2 === 0 ? `
+                        <span class="journey-flag"><span class="fi fi-${code.toLowerCase()}"></span></span>
+                        <h3 class="journey-title">${country.name}</h3>
+                    ` : `
+                        <h3 class="journey-title">${country.name}</h3>
+                        <span class="journey-flag"><span class="fi fi-${code.toLowerCase()}"></span></span>
+                    `}
+                </div>
+                <div class="journey-stats">
+                    <div class="journey-stat" style="background: linear-gradient(135deg, ${country.color}20, ${country.color}10)">
+                        <div class="stat-icon-large">🏭</div>
+                        <span class="stat-label-large">Domestic</span>
+                        <span class="stat-value-large">${formatNumber(domestic)}</span>
+                    </div>
+                    <div class="journey-stat" style="background: linear-gradient(135deg, ${country.color}15, ${country.color}08)">
+                        <div class="stat-icon-large">📤</div>
+                        <span class="stat-label-large">Exports</span>
+                        <span class="stat-value-large">${formatNumber(exports)}</span>
+                    </div>
+                    <div class="journey-stat" style="background: linear-gradient(135deg, ${country.color}10, ${country.color}05)">
+                        <div class="stat-icon-large">📥</div>
+                        <span class="stat-label-large">Imports</span>
+                        <span class="stat-value-large">${formatNumber(imports)}</span>
+                    </div>
+                </div>
+                <div class="journey-flow-viz">
+                    <div class="flow-bars">
+                        <div class="flow-bar" style="height: ${domesticHeight}%; background: ${country.color}">
+                            <span class="flow-label">Domestic</span>
+                        </div>
+                        <div class="flow-bar" style="height: ${exportsHeight}%; background: ${country.color}; opacity: 0.7">
+                            <span class="flow-label">Exports</span>
+                        </div>
+                        <div class="flow-bar" style="height: ${importsHeight}%; background: ${country.color}; opacity: 0.4">
+                            <span class="flow-label">Imports</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Insight card content
+        const insightCard = `
+            <div class="journey-insight">
+                <span class="insight-badge">💡 Key Insights</span>
+                <h4 class="insight-title">${country.name} Analysis</h4>
+                <ul class="insight-points">
+                    ${insights.map(i => `<li>${i}</li>`).join('')}
+                </ul>
+            </div>
+        `;
+        
+        // Marker
+        const marker = `
+            <div class="journey-marker" style="background: ${country.color}; color: white;">
+                ${index + 1}
+            </div>
+        `;
+        
+        // Zigzag pattern: even indices go left, odd indices go right
         html += `
             <div class="journey-node">
                 ${index % 2 === 0 ? `
-                    <div class="journey-content" style="border-top: 4px solid ${country.color}">
-                        <div class="journey-header">
-                            <span class="journey-flag"><span class="fi fi-${code.toLowerCase()}"></span></span>
-                            <h3 class="journey-title">${country.name}</h3>
-                        </div>
-                        <div class="journey-stats">
-                            <div class="journey-stat" style="background: linear-gradient(135deg, ${country.color}20, ${country.color}10)">
-                                <div class="stat-icon-large">🏭</div>
-                                <span class="stat-label-large">Domestic</span>
-                                <span class="stat-value-large">${formatNumber(domestic)}</span>
-                            </div>
-                            <div class="journey-stat" style="background: linear-gradient(135deg, ${country.color}15, ${country.color}08)">
-                                <div class="stat-icon-large">📤</div>
-                                <span class="stat-label-large">Exports</span>
-                                <span class="stat-value-large">${formatNumber(exports)}</span>
-                            </div>
-                            <div class="journey-stat" style="background: linear-gradient(135deg, ${country.color}10, ${country.color}05)">
-                                <div class="stat-icon-large">📥</div>
-                                <span class="stat-label-large">Imports</span>
-                                <span class="stat-value-large">${formatNumber(imports)}</span>
-                            </div>
-                        </div>
-                        <div class="journey-flow-viz">
-                            <div class="flow-bars">
-                                <div class="flow-bar" style="height: ${domesticHeight}%; background: ${country.color}">
-                                    <span class="flow-label">Domestic</span>
-                                </div>
-                                <div class="flow-bar" style="height: ${exportsHeight}%; background: ${country.color}; opacity: 0.7">
-                                    <span class="flow-label">Exports</span>
-                                </div>
-                                <div class="flow-bar" style="height: ${importsHeight}%; background: ${country.color}; opacity: 0.4">
-                                    <span class="flow-label">Imports</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="journey-marker" style="background: ${country.color}; color: white;">
-                        ${index + 1}
-                    </div>
+                    ${countryCard}
+                    ${marker}
+                    ${insightCard}
                 ` : `
-                    <div class="journey-marker" style="background: ${country.color}; color: white;">
-                        ${index + 1}
-                    </div>
-                    <div class="journey-content" style="border-top: 4px solid ${country.color}">
-                        <div class="journey-header">
-                            <h3 class="journey-title">${country.name}</h3>
-                            <span class="journey-flag"><span class="fi fi-${code.toLowerCase()}"></span></span>
-                        </div>
-                        <div class="journey-stats">
-                            <div class="journey-stat" style="background: linear-gradient(135deg, ${country.color}20, ${country.color}10)">
-                                <div class="stat-icon-large">🏭</div>
-                                <span class="stat-label-large">Domestic</span>
-                                <span class="stat-value-large">${formatNumber(domestic)}</span>
-                            </div>
-                            <div class="journey-stat" style="background: linear-gradient(135deg, ${country.color}15, ${country.color}08)">
-                                <div class="stat-icon-large">📤</div>
-                                <span class="stat-label-large">Exports</span>
-                                <span class="stat-value-large">${formatNumber(exports)}</span>
-                            </div>
-                            <div class="journey-stat" style="background: linear-gradient(135deg, ${country.color}10, ${country.color}05)">
-                                <div class="stat-icon-large">📥</div>
-                                <span class="stat-label-large">Imports</span>
-                                <span class="stat-value-large">${formatNumber(imports)}</span>
-                            </div>
-                        </div>
-                        <div class="journey-flow-viz">
-                            <div class="flow-bars">
-                                <div class="flow-bar" style="height: ${domesticHeight}%; background: ${country.color}">
-                                    <span class="flow-label">Domestic</span>
-                                </div>
-                                <div class="flow-bar" style="height: ${exportsHeight}%; background: ${country.color}; opacity: 0.7">
-                                    <span class="flow-label">Exports</span>
-                                </div>
-                                <div class="flow-bar" style="height: ${importsHeight}%; background: ${country.color}; opacity: 0.4">
-                                    <span class="flow-label">Imports</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    ${insightCard}
+                    ${marker}
+                    ${countryCard}
                 `}
             </div>
         `;
@@ -1010,28 +1005,47 @@ function updateBubbleChart() {
 }
 
 function updatePieChart() {
-    const chartDiv = document.getElementById('chart-pie');
-    if (!charts.pie) {
-        charts.pie = echarts.init(chartDiv);
+    updatePieChartExports();
+    updatePieChartImports();
+}
+
+function updatePieChartExports() {
+    const chartDiv = document.getElementById('chart-pie-exports');
+    if (!chartDiv) return;
+    
+    if (!charts.pieExports) {
+        charts.pieExports = echarts.init(chartDiv);
     }
 
     const data = [];
     selectedCountries.forEach(code => {
         if (!COUNTRIES[code]) return;
         
-        TRADE_FLOWS.forEach(flow => {
-            const value = calculateTotalByFlow(code, currentFactorGroup, flow);
-            if (value > 0) {
-                data.push({
-                    name: `[${code}] ${COUNTRIES[code].name} - ${flow}`,
-                    value: value,
-                    itemStyle: {
-                        color: COUNTRIES[code].color,
-                        opacity: flow === 'domestic' ? 1 : (flow === 'exports' ? 0.7 : 0.5)
-                    }
-                });
-            }
-        });
+        // Add domestic and exports only
+        const domestic = calculateTotalByFlow(code, currentFactorGroup, 'domestic');
+        const exports = calculateTotalByFlow(code, currentFactorGroup, 'exports');
+        
+        if (domestic > 0) {
+            data.push({
+                name: `[${code}] ${COUNTRIES[code].name} - domestic`,
+                value: domestic,
+                itemStyle: {
+                    color: COUNTRIES[code].color,
+                    opacity: 1
+                }
+            });
+        }
+        
+        if (exports > 0) {
+            data.push({
+                name: `[${code}] ${COUNTRIES[code].name} - exports`,
+                value: exports,
+                itemStyle: {
+                    color: COUNTRIES[code].color,
+                    opacity: 0.6
+                }
+            });
+        }
     });
 
     const option = {
@@ -1052,25 +1066,21 @@ function updatePieChart() {
         },
         legend: {
             type: 'scroll',
-            orient: 'vertical',
-            right: 20,
-            top: 'center',
+            orient: 'horizontal',
+            bottom: 5,
+            left: 'center',
             textStyle: { 
-                fontSize: 11,
-                lineHeight: 18,
+                fontSize: 10,
                 color: '#555'
             },
-            pageIconSize: 14,
-            pageTextStyle: {
-                fontSize: 11
-            },
-            itemGap: 12,
+            pageIconSize: 10,
+            itemGap: 15,
             icon: 'circle'
         },
         series: [{
             type: 'pie',
-            radius: ['45%', '75%'],
-            center: ['50%', '50%'],
+            radius: ['40%', '70%'],
+            center: ['50%', '42%'],
             roseType: 'radius',
             avoidLabelOverlap: true,
             itemStyle: {
@@ -1083,17 +1093,17 @@ function updatePieChart() {
             label: {
                 show: true,
                 position: 'outside',
-                fontSize: 12,
+                fontSize: 11,
                 fontWeight: 'bold',
-                lineHeight: 16,
+                lineHeight: 14,
                 formatter: '{d}%',
                 color: '#333'
             },
             labelLine: {
                 show: true,
-                length: 15,
-                length2: 15,
-                smooth: 0.5,
+                length: 10,
+                length2: 10,
+                smooth: 0.3,
                 lineStyle: {
                     width: 2
                 }
@@ -1101,7 +1111,7 @@ function updatePieChart() {
             emphasis: {
                 label: {
                     show: true,
-                    fontSize: 14,
+                    fontSize: 13,
                     fontWeight: 'bold'
                 },
                 itemStyle: {
@@ -1117,7 +1127,128 @@ function updatePieChart() {
         }]
     };
 
-    charts.pie.setOption(option, true);
+    charts.pieExports.setOption(option, true);
+}
+
+function updatePieChartImports() {
+    const chartDiv = document.getElementById('chart-pie-imports');
+    if (!chartDiv) return;
+    
+    if (!charts.pieImports) {
+        charts.pieImports = echarts.init(chartDiv);
+    }
+
+    const data = [];
+    selectedCountries.forEach(code => {
+        if (!COUNTRIES[code]) return;
+        
+        // Add domestic and imports only
+        const domestic = calculateTotalByFlow(code, currentFactorGroup, 'domestic');
+        const imports = calculateTotalByFlow(code, currentFactorGroup, 'imports');
+        
+        if (domestic > 0) {
+            data.push({
+                name: `[${code}] ${COUNTRIES[code].name} - domestic`,
+                value: domestic,
+                itemStyle: {
+                    color: COUNTRIES[code].color,
+                    opacity: 1
+                }
+            });
+        }
+        
+        if (imports > 0) {
+            data.push({
+                name: `[${code}] ${COUNTRIES[code].name} - imports`,
+                value: imports,
+                itemStyle: {
+                    color: COUNTRIES[code].color,
+                    opacity: 0.4
+                }
+            });
+        }
+    });
+
+    const option = {
+        animationDuration: 1500,
+        animationEasing: 'elasticOut',
+        tooltip: {
+            trigger: 'item',
+            formatter: params => `<strong>${params.name}</strong><br/>${formatNumber(params.value)} <span style="color: #888">(${params.percent}%)</span>`,
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            borderColor: '#ddd',
+            borderWidth: 1,
+            textStyle: {
+                color: '#333',
+                fontSize: 12
+            },
+            padding: 12,
+            extraCssText: 'box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 8px;'
+        },
+        legend: {
+            type: 'scroll',
+            orient: 'horizontal',
+            bottom: 5,
+            left: 'center',
+            textStyle: { 
+                fontSize: 10,
+                color: '#555'
+            },
+            pageIconSize: 10,
+            itemGap: 15,
+            icon: 'circle'
+        },
+        series: [{
+            type: 'pie',
+            radius: ['40%', '70%'],
+            center: ['50%', '42%'],
+            roseType: 'radius',
+            avoidLabelOverlap: true,
+            itemStyle: {
+                borderRadius: 10,
+                borderColor: '#fff',
+                borderWidth: 3,
+                shadowBlur: 8,
+                shadowColor: 'rgba(0, 0, 0, 0.15)'
+            },
+            label: {
+                show: true,
+                position: 'outside',
+                fontSize: 11,
+                fontWeight: 'bold',
+                lineHeight: 14,
+                formatter: '{d}%',
+                color: '#333'
+            },
+            labelLine: {
+                show: true,
+                length: 10,
+                length2: 10,
+                smooth: 0.3,
+                lineStyle: {
+                    width: 2
+                }
+            },
+            emphasis: {
+                label: {
+                    show: true,
+                    fontSize: 13,
+                    fontWeight: 'bold'
+                },
+                itemStyle: {
+                    shadowBlur: 20,
+                    shadowOffsetX: 0,
+                    shadowOffsetY: 5,
+                    shadowColor: 'rgba(0, 0, 0, 0.3)'
+                },
+                scale: true,
+                scaleSize: 10
+            },
+            data: data
+        }]
+    };
+
+    charts.pieImports.setOption(option, true);
 }
 
 function updateRadarChart() {
@@ -1327,9 +1458,25 @@ function updateGaugeChart() {
         const percentage = maxTotal > 0 ? (total / maxTotal * 100) : 0;
         
         const gaugeChartDiv = document.getElementById(`gauge-${code}`);
+        
+        // Ensure the div has dimensions before initializing chart
+        if (gaugeChartDiv.offsetWidth === 0 || gaugeChartDiv.offsetHeight === 0) {
+            console.warn(`Gauge div for ${code} has zero dimensions`);
+        }
+        
         const gaugeChart = echarts.init(gaugeChartDiv);
         
         charts[`gauge-${code}`] = gaugeChart;
+        
+        // Use ResizeObserver to handle container size changes
+        if (typeof ResizeObserver !== 'undefined') {
+            const resizeObserver = new ResizeObserver(() => {
+                if (gaugeChart && !gaugeChart.isDisposed()) {
+                    gaugeChart.resize();
+                }
+            });
+            resizeObserver.observe(gaugeChartDiv);
+        }
         
         const option = {
             series: [{
@@ -1401,6 +1548,11 @@ function updateGaugeChart() {
         
         gaugeChart.setOption(option);
         
+        // Resize immediately after creation to fix initial layout
+        setTimeout(() => {
+            gaugeChart.resize();
+        }, 50);
+        
         setTimeout(() => {
             gaugeChart.setOption({
                 series: [{
@@ -1409,8 +1561,21 @@ function updateGaugeChart() {
                     }]
                 }]
             });
+            // Resize again after animation
+            setTimeout(() => {
+                gaugeChart.resize();
+            }, 100);
         }, 100);
     });
+    
+    // Final resize of all gauges after all are created
+    setTimeout(() => {
+        selectedCountries.forEach(code => {
+            if (charts[`gauge-${code}`]) {
+                charts[`gauge-${code}`].resize();
+            }
+        });
+    }, 300);
 }
 
 function updateAreaChart() {
@@ -1853,6 +2018,92 @@ function stopCarouselAnimation() {
     // Nothing to stop - no auto animation
 }
 
+// ==========================================
+// FACTOR BUTTON SELECTION
+// ==========================================
+
+function initializeFactorButtons() {
+    const factorButtons = document.querySelectorAll('.factor-btn');
+    
+    factorButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            factorButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            currentFactorGroup = button.dataset.factor;
+            debugLog(`Factor group changed to: ${currentFactorGroup}`);
+            updateUI();
+        });
+    });
+}
+
+// ==========================================
+// TIMELINE INSIGHTS GENERATION
+// ==========================================
+
+function generateCountryInsights(code, data) {
+    const country = COUNTRIES[code];
+    if (!country) return [];
+    
+    const { total, domestic, exports, imports } = data;
+    
+    const domesticPct = total > 0 ? ((domestic / total) * 100).toFixed(1) : 0;
+    const exportsPct = total > 0 ? ((exports / total) * 100).toFixed(1) : 0;
+    const importsPct = total > 0 ? ((imports / total) * 100).toFixed(1) : 0;
+    
+    const flows = [
+        { type: 'domestic', value: domestic, pct: domesticPct },
+        { type: 'exports', value: exports, pct: exportsPct },
+        { type: 'imports', value: imports, pct: importsPct }
+    ];
+    flows.sort((a, b) => b.value - a.value);
+    
+    const dominant = flows[0];
+    const secondary = flows[1];
+    
+    const insights = [];
+    
+    if (dominant && dominant.pct > 50) {
+        insights.push(`${country.name}'s ${currentFactorGroup} impact is dominated by ${dominant.type} activities (${dominant.pct}%)`);
+    } else if (dominant) {
+        insights.push(`${country.name} has a balanced ${currentFactorGroup} footprint across different trade flows`);
+    }
+    
+    if (secondary && secondary.pct > 25) {
+        insights.push(`${secondary.type.charAt(0).toUpperCase() + secondary.type.slice(1)} contributes significantly at ${secondary.pct}% of total impact`);
+    } else if (imports < 1) {
+        insights.push(`Minimal import-related ${currentFactorGroup} impact suggests strong domestic production`);
+    } else if (exports > domestic) {
+        insights.push(`Export-oriented economy with ${exportsPct}% of ${currentFactorGroup} from exported goods`);
+    }
+    
+    return insights;
+}
+
+// ==========================================
+// EXTERNAL PIE LEGEND
+// ==========================================
+
+function createExternalLegend(data) {
+    const legendContainer = document.getElementById('pie-legend');
+    if (!legendContainer) return;
+    
+    let html = '';
+    const totalValue = data.reduce((sum, d) => sum + d.value, 0);
+    
+    data.forEach(item => {
+        const pct = totalValue > 0 ? ((item.value / totalValue) * 100).toFixed(1) : 0;
+        html += `
+            <div class="pie-legend-item">
+                <div class="pie-legend-color" style="background: ${item.itemStyle.color}; opacity: ${item.itemStyle.opacity}"></div>
+                <div class="pie-legend-text">${item.name}</div>
+                <div class="pie-legend-value">${pct}%</div>
+            </div>
+        `;
+    });
+    
+    legendContainer.innerHTML = html;
+}
+
 window.addEventListener('DOMContentLoaded', () => {
     debugLog('Page loaded, initializing...');
     
@@ -1875,21 +2126,20 @@ window.addEventListener('DOMContentLoaded', () => {
     
     initMap();
     
-    const factorSelect = document.getElementById('factor-group');
-    if (factorSelect) {
-        factorSelect.addEventListener('change', (e) => {
-            currentFactorGroup = e.target.value;
-            debugLog(`Factor group changed to: ${currentFactorGroup}`);
-            updateUI();
-        });
-    }
+    // Initialize factor buttons
+    initializeFactorButtons();
     
+    // Debounced resize handler for better performance
+    let resizeTimeout;
     window.addEventListener('resize', () => {
-        Object.values(charts).forEach(chart => {
-            if (chart && typeof chart.resize === 'function') {
-                chart.resize();
-            }
-        });
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            Object.values(charts).forEach(chart => {
+                if (chart && typeof chart.resize === 'function') {
+                    chart.resize();
+                }
+            });
+        }, 250);
     });
     
     // Update button states to show USA as selected
