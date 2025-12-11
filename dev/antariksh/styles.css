@@ -2306,3 +2306,587 @@ body {
         font-size: 0.65rem;
     }
 }
+
+
+/* ==========================================
+   FLOW-RINGS VISUALIZATION STYLES
+   ========================================== */
+
+.flow-rings-section {
+    background: white;
+    padding: 2.5rem;
+    margin: 2rem 0;
+}
+
+/* Control Panel */
+.flow-rings-controls {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: var(--notion-surface);
+    border-radius: 12px;
+    border: 2px solid var(--notion-border);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.control-group label {
+    font-weight: 600;
+    color: var(--notion-text);
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+}
+
+.country-multiselect {
+    width: 100%;
+    min-height: 140px;
+    padding: 0.5rem;
+    border: 2px solid var(--notion-border);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    background: white;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+.country-multiselect option {
+    padding: 0.5rem;
+    cursor: pointer;
+    border-radius: 4px;
+    margin: 2px 0;
+}
+
+.country-multiselect option:checked {
+    background: linear-gradient(var(--notion-blue-bg), var(--notion-blue-bg));
+    color: var(--notion-blue);
+    font-weight: 600;
+}
+
+.country-multiselect option:hover {
+    background: var(--notion-surface);
+}
+
+.button-group {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.flow-btn {
+    padding: 0.6rem 1.2rem;
+    background: var(--notion-accent);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.flow-btn:hover {
+    background: var(--notion-blue);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.flow-btn:active {
+    transform: translateY(0);
+}
+
+.flow-btn.export-btn {
+    background: #10b981;
+}
+
+.flow-btn.export-btn:hover {
+    background: #059669;
+}
+
+/* Category Toggles */
+.category-toggles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.category-toggle {
+    padding: 0.5rem 1rem;
+    background: white;
+    border: 2px solid var(--notion-border);
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.category-toggle.active {
+    background: var(--notion-blue-bg);
+    border-color: var(--notion-blue);
+    color: var(--notion-blue);
+}
+
+.category-toggle:hover {
+    border-color: var(--notion-accent);
+    transform: translateY(-1px);
+}
+
+/* Visualization Container */
+.flow-rings-container {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 2rem;
+    min-height: 700px;
+}
+
+.flow-rings-viz {
+    width: 100%;
+    min-height: 800px;
+    background: white;
+    border-radius: 12px;
+    border: 2px solid var(--notion-border);
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    position: relative;
+}
+
+.flow-rings-viz svg {
+    display: block;
+}
+
+/* Side Panel */
+.flow-rings-panel {
+    background: var(--notion-surface);
+    border-radius: 12px;
+    border: 2px solid var(--notion-border);
+    padding: 1.5rem;
+    max-height: 700px;
+    overflow-y: auto;
+    display: none;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+
+.flow-rings-panel.visible {
+    display: block;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--notion-border);
+}
+
+.panel-header h4 {
+    margin: 0;
+    color: var(--notion-text);
+    font-size: 1.2rem;
+}
+
+.close-panel {
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    cursor: pointer;
+    color: var(--notion-text-secondary);
+    transition: all 0.2s ease;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+}
+
+.close-panel:hover {
+    background: rgba(0,0,0,0.05);
+    color: var(--notion-text);
+}
+
+.panel-content {
+    color: var(--notion-text);
+}
+
+.panel-placeholder {
+    text-align: center;
+    color: var(--notion-text-secondary);
+    padding: 3rem 1rem;
+    font-style: italic;
+}
+
+.panel-section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--notion-border);
+}
+
+.panel-section:last-child {
+    border-bottom: none;
+}
+
+.panel-section h5 {
+    margin: 0 0 1rem 0;
+    color: var(--notion-text);
+    font-size: 1rem;
+}
+
+.panel-section p {
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+    color: var(--notion-text-secondary);
+}
+
+.panel-section p strong {
+    color: var(--notion-text);
+}
+
+.panel-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.panel-table thead {
+    background: var(--notion-surface);
+}
+
+.panel-table th {
+    padding: 0.5rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--notion-text);
+    border-bottom: 2px solid var(--notion-border);
+}
+
+.panel-table td {
+    padding: 0.5rem;
+    border-bottom: 1px solid var(--notion-border);
+    color: var(--notion-text-secondary);
+}
+
+.panel-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Tooltip */
+.flow-tooltip {
+    position: fixed;
+    display: block;
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    color: white;
+    padding: 14px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    z-index: 10000;
+    min-width: 200px;
+    max-width: 280px;
+    box-shadow: 
+        0 10px 30px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+    backdrop-filter: blur(10px);
+}
+
+.flow-tooltip.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.flow-tooltip strong {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+    color: #4fc3f7;
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+    padding-bottom: 0.25rem;
+}
+
+.flow-tooltip div {
+    margin: 0.25rem 0;
+    line-height: 1.4;
+}
+
+/* SVG Elements */
+.flow-arc {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    stroke: white;
+    stroke-width: 1;
+}
+
+.flow-arc:hover {
+    opacity: 0.85;
+    stroke-width: 2;
+    filter: brightness(1.1);
+}
+
+.flow-connector {
+    fill: none;
+    opacity: 0.25;
+    transition: all 0.2s ease;
+    pointer-events: stroke;
+}
+
+.flow-connector:hover {
+    opacity: 0.7;
+    stroke-width: 3 !important;
+}
+
+.flow-connector.highlighted {
+    opacity: 0.8;
+    stroke-width: 3;
+    filter: drop-shadow(0 0 4px rgba(255,255,255,0.8));
+}
+
+.ring-label {
+    font-size: 13px;
+    font-weight: 700;
+    fill: var(--notion-text);
+    text-anchor: middle;
+    letter-spacing: 1px;
+}
+
+.arc-label {
+    font-size: 10px;
+    fill: white;
+    font-weight: 600;
+    text-anchor: middle;
+    pointer-events: none;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+
+/* Instructions */
+.flow-instructions {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: var(--notion-blue-bg);
+    border-radius: 12px;
+    border-left: 4px solid var(--notion-blue);
+}
+
+.flow-instructions h4 {
+    margin: 0 0 1rem 0;
+    color: var(--notion-text);
+    font-size: 1rem;
+}
+
+.flow-instructions ul {
+    margin: 0;
+    padding-left: 1.5rem;
+}
+
+.flow-instructions li {
+    margin: 0.5rem 0;
+    color: var(--notion-text-secondary);
+    line-height: 1.6;
+}
+
+.flow-instructions strong {
+    color: var(--notion-text);
+}
+
+/* Responsive Design */
+@media (max-width: 1400px) {
+    .flow-rings-controls {
+        grid-template-columns: 1fr 1fr;
+    }
+    
+    .flow-rings-container {
+        grid-template-columns: 1fr 320px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .flow-rings-controls {
+        grid-template-columns: 1fr;
+    }
+    
+    .flow-rings-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .flow-rings-panel {
+        max-height: 400px;
+    }
+}
+
+@media (max-width: 768px) {
+    .flow-rings-section {
+        padding: 1.5rem;
+    }
+    
+    .flow-rings-viz {
+        min-height: 500px;
+    }
+    
+    .category-toggles {
+        flex-direction: column;
+    }
+    
+    .category-toggle {
+        width: 100%;
+        text-align: center;
+    }
+    
+    .button-group {
+        flex-direction: column;
+    }
+    
+    .flow-btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .flow-rings-viz {
+        min-height: 400px;
+    }
+    
+    .country-multiselect {
+        min-height: 100px;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .flow-rings-controls,
+    .flow-tooltip,
+    .close-panel {
+        display: none !important;
+    }
+    
+    .flow-rings-panel {
+        break-inside: avoid;
+    }
+}
+/* ==========================================
+   CHORD-SANKEY INTEGRATED STYLES
+   Matches existing page design
+   ========================================== */
+
+/* Chart controls styling to match existing buttons */
+.chart-controls {
+    display: flex;
+    gap: 10px;
+    margin: 15px 0;
+    flex-wrap: wrap;
+}
+
+.chart-control-btn {
+    padding: 8px 16px;
+    background: linear-gradient(135deg, rgba(74, 144, 226, 0.1), rgba(80, 227, 194, 0.1));
+    border: 2px solid rgba(74, 144, 226, 0.3);
+    border-radius: 8px;
+    color: #4A90E2;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.chart-control-btn:hover {
+    background: linear-gradient(135deg, rgba(74, 144, 226, 0.2), rgba(80, 227, 194, 0.2));
+    border-color: rgba(74, 144, 226, 0.5);
+    transform: translateY(-1px);
+}
+
+.chart-control-btn.active {
+    background: linear-gradient(135deg, #4A90E2, #50E3C2);
+    border-color: #4A90E2;
+    color: white;
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+}
+
+/* Extra large chart size for Chord-Sankey */
+.chart-xlarge {
+    width: 100%;
+    height: 700px;
+    min-height: 700px;
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    border-radius: 12px;
+    position: relative;
+}
+
+/* Instructions styling */
+.chart-instructions {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.instruction-item {
+    flex: 1;
+    min-width: 250px;
+    padding: 12px 16px;
+    background: rgba(74, 144, 226, 0.05);
+    border-left: 3px solid #4A90E2;
+    border-radius: 6px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #666;
+}
+
+.instruction-icon {
+    font-size: 18px;
+    margin-right: 8px;
+}
+
+.instruction-item strong {
+    color: #333;
+    font-weight: 600;
+}
+
+/* SVG container styling */
+#chart-chord-sankey svg {
+    width: 100%;
+    height: 100%;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .chart-xlarge {
+        height: 500px;
+        min-height: 500px;
+    }
+    
+    .chart-instructions {
+        flex-direction: column;
+    }
+    
+    .instruction-item {
+        min-width: 100%;
+    }
+}

@@ -608,12 +608,19 @@ function updateAdvancedCharts() {
     updatePieChart();
     updateRadarChart();
     updateHeatmapChart();
+    updateChordChart();
     updateSankeyChart();
     updateGaugeChart();
     updateAreaChart();
     updateTreemapChart();
+    
+    // Update Flow-Rings visualization when countries change
+    if (typeof updateFlowVisualization === 'function') {
+        updateFlowVisualization();
+    }
 }
 
+// ==========================================
 function updateComparisonChart() {
     const chartDiv = document.getElementById('chart-comparison');
     if (!charts.comparison) {
@@ -1362,6 +1369,179 @@ function updateHeatmapChart() {
     charts.heatmap.setOption(option, true);
 }
 
+function updateChordChart() {
+    const chartDiv = document.getElementById('chart-chord');
+    if (!charts.chord) {
+        charts.chord = echarts.init(chartDiv);
+    }
+
+    if (selectedCountries.size === 0) {
+        charts.chord.setOption({
+            title: {
+                text: 'Select countries to view relationships',
+                left: 'center',
+                top: 'middle',
+                textStyle: { color: '#999', fontSize: 14 }
+            }
+        });
+        return;
+    }
+
+    // Create data structure for circular graph
+    const countries = Array.from(selectedCountries);
+    const nodes = [];
+    const links = [];
+    
+    // Create nodes
+    countries.forEach((code, idx) => {
+        const total = calculateTotalForCountry(code, currentFactorGroup);
+        nodes.push({
+            id: code,
+            name: COUNTRIES[code]?.name || code,
+            value: total,
+            symbolSize: Math.max(30, Math.min(80, Math.sqrt(total) / 100)),
+            itemStyle: {
+                color: COUNTRIES[code]?.color || '#999',
+                borderColor: '#fff',
+                borderWidth: 3,
+                shadowBlur: 10,
+                shadowColor: 'rgba(0,0,0,0.3)'
+            },
+            label: {
+                show: true,
+                position: 'bottom',
+                distance: 15,
+                fontSize: 13,
+                fontWeight: 600,
+                color: '#2c3e50'
+            }
+        });
+    });
+    
+    // Create links between countries
+    countries.forEach((fromCode, fromIdx) => {
+        countries.forEach((toCode, toIdx) => {
+            if (fromCode === toCode) {
+                // Self-loop for domestic
+                const domestic = calculateTotalByFlow(fromCode, currentFactorGroup, 'domestic');
+                if (domestic > 0) {
+                    links.push({
+                        source: fromCode,
+                        target: fromCode,
+                        value: domestic,
+                        lineStyle: {
+                            width: Math.max(2, Math.min(15, Math.sqrt(domestic) / 500)),
+                            color: COUNTRIES[fromCode]?.color || '#999',
+                            opacity: 0.6,
+                            curveness: 0.8
+                        }
+                    });
+                }
+            } else {
+                // Connection between different countries
+                const exports = calculateTotalByFlow(fromCode, currentFactorGroup, 'exports');
+                const imports = calculateTotalByFlow(toCode, currentFactorGroup, 'imports');
+                const flow = (exports + imports) / 2;
+                
+                if (flow > 0) {
+                    links.push({
+                        source: fromCode,
+                        target: toCode,
+                        value: flow,
+                        lineStyle: {
+                            width: Math.max(1, Math.min(10, Math.sqrt(flow) / 1000)),
+                            color: COUNTRIES[fromCode]?.color || '#999',
+                            opacity: 0.4,
+                            curveness: 0.3
+                        }
+                    });
+                }
+            }
+        });
+    });
+
+    const option = {
+        title: {
+            text: 'Trade Flow Connections',
+            left: 'center',
+            top: 20,
+            textStyle: {
+                fontSize: 20,
+                fontWeight: 600,
+                color: '#2c3e50'
+            }
+        },
+        tooltip: {
+            trigger: 'item',
+            formatter: params => {
+                if (params.dataType === 'edge') {
+                    const source = params.data.source;
+                    const target = params.data.target;
+                    const value = params.data.value;
+                    if (source === target) {
+                        return `<b>${COUNTRIES[source]?.name}</b><br/>
+                                Domestic: ${formatNumber(value)}`;
+                    }
+                    return `<b>${COUNTRIES[source]?.name} → ${COUNTRIES[target]?.name}</b><br/>
+                            Flow: ${formatNumber(value)}`;
+                } else if (params.dataType === 'node') {
+                    const code = params.data.id;
+                    const domestic = calculateTotalByFlow(code, currentFactorGroup, 'domestic');
+                    const exports = calculateTotalByFlow(code, currentFactorGroup, 'exports');
+                    const imports = calculateTotalByFlow(code, currentFactorGroup, 'imports');
+                    return `<b>${params.data.name}</b><br/>
+                            Domestic: ${formatNumber(domestic)}<br/>
+                            Exports: ${formatNumber(exports)}<br/>
+                            Imports: ${formatNumber(imports)}<br/>
+                            Total: ${formatNumber(params.data.value)}`;
+                }
+            }
+        },
+        series: [{
+            type: 'graph',
+            layout: 'circular',
+            circular: {
+                rotateLabel: false
+            },
+            data: nodes,
+            links: links,
+            roam: true,
+            label: {
+                show: true,
+                position: 'bottom',
+                fontSize: 13,
+                fontWeight: 600
+            },
+            lineStyle: {
+                curveness: 0.3,
+                opacity: 0.5
+            },
+            emphasis: {
+                focus: 'adjacency',
+                label: {
+                    fontSize: 15,
+                    fontWeight: 700
+                },
+                lineStyle: {
+                    width: 'bolder',
+                    opacity: 0.8
+                }
+            },
+            animationDuration: 2000,
+            animationEasing: 'cubicOut'
+        }]
+    };
+    
+    charts.chord.setOption(option, true);
+    
+    // Resize after animation
+    setTimeout(() => {
+        if (charts.chord && !charts.chord.isDisposed()) {
+            charts.chord.resize();
+        }
+    }, 2100);
+}
+
 function updateSankeyChart() {
     const chartDiv = document.getElementById('chart-sankey');
     if (!charts.sankey) {
@@ -2032,6 +2212,16 @@ function initializeFactorButtons() {
             currentFactorGroup = button.dataset.factor;
             debugLog(`Factor group changed to: ${currentFactorGroup}`);
             updateUI();
+            
+            // Sync Flow-Rings visualization with selected factor
+            if (typeof syncFlowRingsWithFactor === 'function') {
+                syncFlowRingsWithFactor();
+            }
+            
+            // Sync Chord-Sankey visualization with selected factor
+            if (typeof updateChordSankey === 'function') {
+                updateChordSankey();
+            }
         });
     });
 }
@@ -2153,3 +2343,1594 @@ window.selectAllCountries = selectAllCountries;
 window.clearAllCountries = clearAllCountries;
 window.toggleRegion = toggleRegion;
 window.switchTimelineView = switchTimelineView;
+// ==========================================
+// SIMPLE FLOW-RINGS VISUALIZATION
+// Simplified version for debugging
+// ==========================================
+
+console.log('Flow-Rings Script Loading...');
+
+// Global state - MUST be declared before any functions use it
+if (typeof window.FlowRingsState === 'undefined') {
+    window.FlowRingsState = {
+        initialized: false,
+        svg: null,
+        data: null
+    };
+}
+
+// Make it easily accessible
+var FlowRingsState = window.FlowRingsState;
+
+console.log('FlowRingsState initialized:', FlowRingsState);
+
+// Simple initialization that definitely works
+function initFlowRingsSimple() {
+    console.log('=== FLOW-RINGS INIT START ===');
+    
+    // 1. Check D3
+    if (typeof d3 === 'undefined') {
+        console.error('❌ D3 not loaded!');
+        alert('D3.js not loaded! Check internet connection.');
+        return;
+    }
+    console.log('✓ D3.js loaded');
+    
+    // 2. Check container
+    const container = document.getElementById('flow-rings-viz');
+    if (!container) {
+        console.error('❌ Container not found!');
+        alert('Flow-Rings container not found! Check HTML.');
+        return;
+    }
+    console.log('✓ Container found');
+    
+    // 3. Check if already initialized
+    if (FlowRingsState.initialized) {
+        console.log('Already initialized, just updating...');
+        updateFlowRingsSimple();
+        return;
+    }
+    
+    // 4. Create SVG
+    const width = container.clientWidth || 800;
+    const height = 800; // Increased from 600 to 800 for full rings visibility
+    
+    console.log(`Creating SVG: ${width}x${height}`);
+    
+    // Remove old SVG if exists
+    d3.select('#flow-rings-viz').selectAll('*').remove();
+    
+    FlowRingsState.svg = d3.select('#flow-rings-viz')
+        .append('svg')
+        .attr('width', width)
+        .attr('height', height)
+        .style('border', '2px solid #ccc')
+        .style('background', '#f9f9f9');
+    
+    console.log('✓ SVG created');
+    
+    // 5. Add test circle to verify SVG works
+    FlowRingsState.svg.append('circle')
+        .attr('cx', width / 2)
+        .attr('cy', height / 2)
+        .attr('r', 50)
+        .attr('fill', '#4fc3f7');
+    
+    FlowRingsState.svg.append('text')
+        .attr('x', width / 2)
+        .attr('y', height / 2)
+        .attr('text-anchor', 'middle')
+        .attr('dy', '0.35em')
+        .attr('fill', 'white')
+        .attr('font-size', '14px')
+        .attr('font-weight', 'bold')
+        .text('FLOW-RINGS');
+    
+    console.log('✓ Test circle added');
+    
+    // 6. Initialize category toggles
+    initCategoryToggles();
+    
+    FlowRingsState.initialized = true;
+    console.log('=== FLOW-RINGS INIT COMPLETE ===');
+    
+    // 7. Sync with dashboard factor on first load
+    if (typeof currentFactorGroup !== 'undefined') {
+        syncFlowRingsWithFactor();
+    }
+    
+    // 8. Try to render actual visualization
+    setTimeout(() => {
+        console.log('Attempting full render...');
+        renderActualVisualization();
+    }, 1000);
+}
+
+function initCategoryToggles() {
+    const container = document.getElementById('category-toggles');
+    if (!container) {
+        console.warn('Category toggles container not found');
+        return;
+    }
+    
+    const categories = ['AIR', 'WATER', 'ENERGY', 'LAND', 'MATERIALS', 'EMPLOYMENT'];
+    
+    container.innerHTML = ''; // Clear existing
+    
+    // Initialize active categories based on current factor selection
+    if (!FlowRingsState.activeCategories) {
+        // Get current factor from dashboard
+        const currentFactor = typeof currentFactorGroup !== 'undefined' ? currentFactorGroup : 'air';
+        FlowRingsState.activeCategories = new Set([currentFactor.toUpperCase()]);
+    }
+    
+    categories.forEach(cat => {
+        const btn = document.createElement('button');
+        // Check if this category matches the current factor
+        const isActive = FlowRingsState.activeCategories.has(cat);
+        btn.className = isActive ? 'category-toggle active' : 'category-toggle';
+        btn.textContent = cat;
+        btn.onclick = () => {
+            btn.classList.toggle('active');
+            const isNowActive = btn.classList.contains('active');
+            
+            if (isNowActive) {
+                FlowRingsState.activeCategories.add(cat);
+            } else {
+                FlowRingsState.activeCategories.delete(cat);
+            }
+            
+            console.log(`Toggled ${cat}: ${isNowActive}`);
+            console.log('Active categories:', Array.from(FlowRingsState.activeCategories));
+            
+            // Re-render visualization
+            renderActualVisualization();
+        };
+        container.appendChild(btn);
+    });
+    
+    console.log('✓ Category toggles created');
+    console.log('Initial active category:', Array.from(FlowRingsState.activeCategories));
+}
+
+// Function to sync with dashboard factor selection
+function syncFlowRingsWithFactor() {
+    if (typeof currentFactorGroup === 'undefined') return;
+    
+    const factor = currentFactorGroup.toUpperCase();
+    console.log(`Syncing Flow-Rings with factor: ${factor}`);
+    
+    // Update active categories to match current factor
+    FlowRingsState.activeCategories = new Set([factor]);
+    
+    // Update toggle button states
+    document.querySelectorAll('.category-toggle').forEach(btn => {
+        const category = btn.textContent;
+        if (category === factor) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+    
+    // Re-render if initialized
+    if (FlowRingsState.initialized) {
+        renderActualVisualization();
+    }
+}
+
+function renderActualVisualization() {
+    console.log('=== RENDERING ACTUAL VISUALIZATION ===');
+    
+    // Check if we have selected countries
+    if (typeof selectedCountries === 'undefined') {
+        console.warn('selectedCountries not defined yet');
+        showMessage('Dashboard not fully loaded. Click "Render Visualization" button.');
+        return;
+    }
+    
+    if (selectedCountries.size === 0) {
+        console.log('No countries selected');
+        showMessage('Select countries from the dashboard above');
+        return;
+    }
+    
+    console.log(`Selected countries: ${Array.from(selectedCountries).join(', ')}`);
+    
+    // Check if we have COUNTRIES data
+    if (typeof COUNTRIES === 'undefined') {
+        console.error('COUNTRIES object not defined');
+        showMessage('Dashboard data not loaded');
+        return;
+    }
+    
+    console.log('✓ Dashboard data available');
+    
+    // Get active categories
+    const activeCategories = FlowRingsState.activeCategories 
+        ? Array.from(FlowRingsState.activeCategories).map(c => c.toLowerCase())
+        : ['air', 'water', 'energy', 'land', 'materials', 'employment'];
+    
+    if (activeCategories.length === 0) {
+        showMessage('Select at least one category to display');
+        return;
+    }
+    
+    console.log(`Active categories: ${activeCategories.join(', ')}`);
+    
+    // Clear SVG
+    FlowRingsState.svg.selectAll('*').remove();
+    
+    const width = parseInt(FlowRingsState.svg.attr('width'));
+    const height = parseInt(FlowRingsState.svg.attr('height'));
+    const centerX = width / 2;
+    const centerY = height / 2;
+    
+    // Draw simple concentric rings
+    const countries = Array.from(selectedCountries);
+    const categories = activeCategories;
+    const allColors = {
+        'air': '#FF6B6B',
+        'water': '#4ECDC4',
+        'energy': '#FFD93D',
+        'land': '#6BCF7F',
+        'materials': '#A78BFA',
+        'employment': '#FB923C'
+    };
+    
+    // Calculate ring dimensions to fit within SVG with padding
+    const padding = 60; // Padding from edges
+    const maxRadius = Math.min(width, height) / 2 - padding;
+    const innerRadius = 50;
+    const availableSpace = maxRadius - innerRadius;
+    const numRings = categories.length;
+    const ringWidth = availableSpace / (numRings * 1.2); // 1.2 for gaps
+    const ringGap = ringWidth * 0.2;
+    
+    console.log(`Drawing ${categories.length} rings for ${countries.length} countries`);
+    console.log(`SVG size: ${width}x${height}, Max radius: ${maxRadius}, Ring width: ${ringWidth.toFixed(1)}`);
+    
+    categories.forEach((category, catIndex) => {
+        const radius = innerRadius + catIndex * (ringWidth + ringGap);
+        const color = allColors[category] || '#999';
+        
+        // Draw ring background
+        FlowRingsState.svg.append('circle')
+            .attr('cx', centerX)
+            .attr('cy', centerY)
+            .attr('r', radius + ringWidth / 2)
+            .attr('fill', 'none')
+            .attr('stroke', color)
+            .attr('stroke-width', ringWidth)
+            .attr('opacity', 0.3);
+        
+        // Draw ring label
+        FlowRingsState.svg.append('text')
+            .attr('x', centerX)
+            .attr('y', centerY - radius - ringWidth - 5)
+            .attr('text-anchor', 'middle')
+            .attr('fill', color)
+            .attr('font-size', '12px')
+            .attr('font-weight', 'bold')
+            .text(category.toUpperCase());
+        
+        // Draw country arcs
+        const anglePerCountry = (Math.PI * 2) / countries.length;
+        
+        countries.forEach((countryCode, countryIndex) => {
+            const startAngle = anglePerCountry * countryIndex - Math.PI / 2;
+            const endAngle = startAngle + anglePerCountry * 0.9; // 90% to leave gaps
+            
+            const arc = d3.arc()
+                .innerRadius(radius)
+                .outerRadius(radius + ringWidth)
+                .startAngle(startAngle)
+                .endAngle(endAngle);
+            
+            FlowRingsState.svg.append('path')
+                .attr('d', arc)
+                .attr('transform', `translate(${centerX}, ${centerY})`)
+                .attr('fill', color)
+                .attr('opacity', 0.7)
+                .attr('stroke', 'white')
+                .attr('stroke-width', 2)
+                .attr('class', 'flow-arc')
+                .style('cursor', 'pointer')
+                .on('mouseenter', function(event) {
+                    d3.select(this).attr('opacity', 1);
+                    showTooltip(countryCode, category, event);
+                })
+                .on('mousemove', function(event) {
+                    updateTooltipPosition(event);
+                })
+                .on('mouseleave', function() {
+                    d3.select(this).attr('opacity', 0.7);
+                    hideTooltip();
+                });
+            
+            // Add country label if arc is big enough
+            if (countries.length <= 8) {
+                const labelAngle = (startAngle + endAngle) / 2;
+                const labelRadius = radius + ringWidth / 2;
+                const labelX = centerX + Math.cos(labelAngle) * labelRadius;
+                const labelY = centerY + Math.sin(labelAngle) * labelRadius;
+                
+                FlowRingsState.svg.append('text')
+                    .attr('x', labelX)
+                    .attr('y', labelY)
+                    .attr('text-anchor', 'middle')
+                    .attr('dy', '0.35em')
+                    .attr('fill', 'white')
+                    .attr('font-size', '10px')
+                    .attr('font-weight', 'bold')
+                    .style('pointer-events', 'none')
+                    .text(countryCode);
+            }
+        });
+    });
+    
+    // Add center label
+    FlowRingsState.svg.append('text')
+        .attr('x', centerX)
+        .attr('y', centerY)
+        .attr('text-anchor', 'middle')
+        .attr('fill', '#333')
+        .attr('font-size', '16px')
+        .attr('font-weight', 'bold')
+        .text(`${countries.length} Countries`);
+    
+    FlowRingsState.svg.append('text')
+        .attr('x', centerX)
+        .attr('y', centerY + 20)
+        .attr('text-anchor', 'middle')
+        .attr('fill', '#666')
+        .attr('font-size', '12px')
+        .text(`${categories.length} Active ${categories.length === 1 ? 'Category' : 'Categories'}`);
+    
+    console.log('✓ Visualization rendered successfully!');
+}
+
+function showMessage(text) {
+    if (!FlowRingsState.svg) return;
+    
+    FlowRingsState.svg.selectAll('*').remove();
+    
+    const width = parseInt(FlowRingsState.svg.attr('width'));
+    const height = parseInt(FlowRingsState.svg.attr('height'));
+    
+    FlowRingsState.svg.append('text')
+        .attr('x', width / 2)
+        .attr('y', height / 2)
+        .attr('text-anchor', 'middle')
+        .attr('fill', '#999')
+        .attr('font-size', '18px')
+        .text(text);
+}
+
+function showTooltip(countryCode, category, event) {
+    console.log('=== TOOLTIP SHOW CALLED ===');
+    console.log('Country:', countryCode);
+    console.log('Category:', category);
+    console.log('Event:', event);
+    
+    const tooltip = document.getElementById('flow-tooltip');
+    console.log('Tooltip element:', tooltip);
+    
+    if (!tooltip) {
+        console.error('❌ CRITICAL: Tooltip element #flow-tooltip not found in DOM!');
+        console.log('Available elements with "tooltip":', document.querySelectorAll('[id*="tooltip"]'));
+        alert('ERROR: Tooltip element not found! Check console.');
+        return;
+    }
+    
+    console.log('✓ Tooltip element found');
+    console.log('Current classes:', tooltip.className);
+    console.log('Current style:', tooltip.style.cssText);
+    
+    const countryName = COUNTRIES[countryCode]?.name || countryCode;
+    const countryFlag = COUNTRIES[countryCode]?.flag || '🌍';
+    
+    // Get data for this country and category
+    let value = 0;
+    let details = '';
+    
+    if (typeof calculateTotalByFlow === 'function') {
+        const domestic = calculateTotalByFlow(countryCode, category, 'domestic');
+        const exports = calculateTotalByFlow(countryCode, category, 'exports');
+        const imports = calculateTotalByFlow(countryCode, category, 'imports');
+        const total = domestic + exports + imports;
+        
+        value = total;
+        details = `
+            <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.2);">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                    <span style="opacity: 0.9;">🏭 Domestic:</span>
+                    <strong>${formatNumber(domestic)}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                    <span style="opacity: 0.9;">📤 Exports:</span>
+                    <strong>${formatNumber(exports)}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="opacity: 0.9;">📥 Imports:</span>
+                    <strong>${formatNumber(imports)}</strong>
+                </div>
+            </div>
+        `;
+        console.log('Data calculated - Total:', formatNumber(total));
+    }
+    
+    tooltip.innerHTML = `
+        <div style="display: flex; align-items: center; margin-bottom: 8px;">
+            <span style="font-size: 24px; margin-right: 8px;">${countryFlag}</span>
+            <div>
+                <div style="font-weight: bold; font-size: 14px;">${countryName}</div>
+                <div style="font-size: 11px; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px;">${category}</div>
+            </div>
+        </div>
+        ${value > 0 ? `
+            <div style="margin-bottom: 6px;">
+                <div style="font-size: 11px; opacity: 0.8; margin-bottom: 2px;">Total Impact:</div>
+                <div style="font-size: 16px; font-weight: bold; color: #4fc3f7;">${formatNumber(value)}</div>
+            </div>
+        ` : ''}
+        ${details}
+    `;
+    
+    console.log('✓ Tooltip content set');
+    
+    // Make visible using class
+    tooltip.classList.add('visible');
+    console.log('✓ Added "visible" class');
+    console.log('Classes after add:', tooltip.className);
+    
+    // Also set inline styles as backup
+    tooltip.style.display = 'block';
+    tooltip.style.opacity = '1';
+    tooltip.style.visibility = 'visible';
+    console.log('✓ Inline styles set');
+    
+    // Position immediately
+    if (event) {
+        updateTooltipPosition(event);
+        console.log('✓ Tooltip positioned');
+    }
+    
+    console.log('=== TOOLTIP SHOULD BE VISIBLE NOW ===');
+    console.log('Final computed style:', window.getComputedStyle(tooltip).display);
+    console.log('Final opacity:', window.getComputedStyle(tooltip).opacity);
+    console.log('Final visibility:', window.getComputedStyle(tooltip).visibility);
+}
+
+function updateTooltipPosition(event) {
+    const tooltip = document.getElementById('flow-tooltip');
+    if (!tooltip) return;
+    
+    const offsetX = 15;
+    const offsetY = 15;
+    
+    // Use clientX/clientY for fixed position elements
+    let x = event.clientX + offsetX;
+    let y = event.clientY + offsetY;
+    
+    // Keep tooltip on screen
+    const tooltipRect = tooltip.getBoundingClientRect();
+    if (x + tooltipRect.width > window.innerWidth) {
+        x = event.clientX - tooltipRect.width - offsetX;
+    }
+    if (y + tooltipRect.height > window.innerHeight) {
+        y = event.clientY - tooltipRect.height - offsetY;
+    }
+    
+    tooltip.style.left = x + 'px';
+    tooltip.style.top = y + 'px';
+}
+
+function positionTooltip(event) {
+    // Alias for compatibility
+    updateTooltipPosition(event);
+}
+
+function hideTooltip() {
+    const tooltip = document.getElementById('flow-tooltip');
+    if (tooltip) {
+        tooltip.classList.remove('visible');
+        // Also reset inline styles to ensure it hides
+        tooltip.style.opacity = '0';
+        tooltip.style.visibility = 'hidden';
+    }
+    console.log('✓ Tooltip hidden');
+}
+
+function updateFlowRingsSimple() {
+    console.log('Updating Flow-Rings...');
+    renderActualVisualization();
+}
+
+// Export functions globally
+window.initFlowRingsSimple = initFlowRingsSimple;
+window.updateFlowRingsSimple = updateFlowRingsSimple;
+window.renderFlowRings = renderActualVisualization;
+window.syncFlowRingsWithFactor = syncFlowRingsWithFactor;
+
+// Auto-initialize
+console.log('Setting up auto-initialization...');
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('DOM loaded, waiting 2 seconds...');
+        setTimeout(initFlowRingsSimple, 2000);
+    });
+} else {
+    console.log('DOM already loaded, initializing in 2 seconds...');
+    setTimeout(initFlowRingsSimple, 2000);
+}
+
+console.log('Flow-Rings Script Loaded!');
+console.log('Manual commands: initFlowRingsSimple(), renderFlowRings(), syncFlowRingsWithFactor()');
+
+// ==========================================
+// CHORD-SANKEY HYBRID FOR TRADE FLOWS
+// Advanced interactive visualization combining chord and sankey diagrams
+// ==========================================
+
+console.log('Chord-Sankey Hybrid Script Loading...');
+
+// Global state for Chord-Sankey
+if (typeof window.ChordSankeyState === 'undefined') {
+    window.ChordSankeyState = {
+        initialized: false,
+        svg: null,
+        data: null,
+        selectedFlow: null,
+        animating: false,
+        hoveredCountry: null,
+        clickedCountry: null
+    };
+}
+
+var ChordSankeyState = window.ChordSankeyState;
+
+// Color scale for environmental impact (gradient from low to high impact)
+const impactColorScale = d3.scaleSequential()
+    .domain([0, 1])
+    .interpolator(d3.interpolateRgbBasis([
+        '#2ecc71', // Low impact (green)
+        '#f39c12', // Medium impact (orange)
+        '#e74c3c'  // High impact (red)
+    ]));
+
+// Initialize Chord-Sankey visualization
+function initChordSankey() {
+    console.log('=== CHORD-SANKEY INIT START ===');
+    
+    // Check D3
+    if (typeof d3 === 'undefined') {
+        console.error('❌ D3 not loaded!');
+        return;
+    }
+    console.log('✓ D3.js loaded');
+    
+    // Check container
+    const container = document.getElementById('chart-chord-sankey');
+    if (!container) {
+        console.error('❌ Container not found!');
+        return;
+    }
+    console.log('✓ Container found');
+    
+    // Check if already initialized
+    if (ChordSankeyState.initialized) {
+        console.log('Already initialized, updating...');
+        updateChordSankey();
+        return;
+    }
+    
+    // Create SVG
+    const width = container.clientWidth || 1000;
+    const height = 700;
+    
+    console.log(`Creating SVG: ${width}x${height}`);
+    
+    // Remove old SVG if exists
+    d3.select('#chart-chord-sankey').selectAll('*').remove();
+    
+    ChordSankeyState.svg = d3.select('#chart-chord-sankey')
+        .append('svg')
+        .attr('width', width)
+        .attr('height', height);
+    
+    // Add definitions for gradients and glows
+    const defs = ChordSankeyState.svg.append('defs');
+    
+    // Create glow filter
+    const filter = defs.append('filter')
+        .attr('id', 'chord-glow')
+        .attr('x', '-50%')
+        .attr('y', '-50%')
+        .attr('width', '200%')
+        .attr('height', '200%');
+    
+    filter.append('feGaussianBlur')
+        .attr('stdDeviation', '4')
+        .attr('result', 'coloredBlur');
+    
+    const feMerge = filter.append('feMerge');
+    feMerge.append('feMergeNode').attr('in', 'coloredBlur');
+    feMerge.append('feMergeNode').attr('in', 'SourceGraphic');
+    
+    // Create stronger glow for hover
+    const filterHover = defs.append('filter')
+        .attr('id', 'chord-glow-hover')
+        .attr('x', '-100%')
+        .attr('y', '-100%')
+        .attr('width', '300%')
+        .attr('height', '300%');
+    
+    filterHover.append('feGaussianBlur')
+        .attr('stdDeviation', '8')
+        .attr('result', 'coloredBlur');
+    
+    const feMergeHover = filterHover.append('feMerge');
+    feMergeHover.append('feMergeNode').attr('in', 'coloredBlur');
+    feMergeHover.append('feMergeNode').attr('in', 'SourceGraphic');
+    
+    console.log('✓ SVG created with filters');
+    
+    ChordSankeyState.initialized = true;
+    console.log('=== CHORD-SANKEY INIT COMPLETE ===');
+    
+    // Render visualization
+    setTimeout(() => {
+        renderChordSankey();
+    }, 500);
+}
+
+function renderChordSankey() {
+    console.log('=== RENDERING CHORD-SANKEY ===');
+    
+    // Check if we have selected countries
+    if (typeof selectedCountries === 'undefined' || selectedCountries.size === 0) {
+        showChordMessage('Select at least 2 countries to view trade flows');
+        return;
+    }
+    
+    if (selectedCountries.size < 2) {
+        showChordMessage('Select at least 2 countries to view trade flows');
+        return;
+    }
+    
+    console.log(`Selected countries: ${Array.from(selectedCountries).join(', ')}`);
+    
+    // Clear SVG
+    ChordSankeyState.svg.selectAll('g').remove();
+    
+    const width = parseInt(ChordSankeyState.svg.attr('width'));
+    const height = parseInt(ChordSankeyState.svg.attr('height'));
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const radius = Math.min(width, height) / 2 - 120;
+    
+    // Prepare data
+    const countries = Array.from(selectedCountries);
+    const n = countries.length;
+    
+    // Calculate trade flows and environmental impacts
+    const flowData = calculateTradeFlows(countries);
+    
+    // Create chord layout
+    const chordGenerator = d3.chord()
+        .padAngle(0.05)
+        .sortSubgroups(d3.descending);
+    
+    const chords = chordGenerator(flowData.matrix);
+    
+    // Create arc generator for country segments
+    const arc = d3.arc()
+        .innerRadius(radius - 30)
+        .outerRadius(radius);
+    
+    // Create ribbon generator for flows
+    const ribbon = d3.ribbon()
+        .radius(radius - 35);
+    
+    // Main group
+    const g = ChordSankeyState.svg.append('g')
+        .attr('transform', `translate(${centerX},${centerY})`);
+    
+    // Add background circles for depth
+    g.append('circle')
+        .attr('r', radius + 10)
+        .attr('fill', 'none')
+        .attr('stroke', 'rgba(255,255,255,0.05)')
+        .attr('stroke-width', 1);
+    
+    g.append('circle')
+        .attr('r', radius - 40)
+        .attr('fill', 'none')
+        .attr('stroke', 'rgba(255,255,255,0.03)')
+        .attr('stroke-width', 1);
+    
+    // Draw country arcs (outer ring)
+    const arcs = g.append('g')
+        .selectAll('g')
+        .data(chords.groups)
+        .enter()
+        .append('g')
+        .attr('class', 'country-arc-group');
+    
+    arcs.append('path')
+        .attr('class', 'country-arc')
+        .attr('d', arc)
+        .attr('fill', (d, i) => COUNTRIES[countries[i]].color)
+        .attr('stroke', 'rgba(255,255,255,0.3)')
+        .attr('stroke-width', 2)
+        .attr('opacity', 0)
+        .style('filter', 'url(#chord-glow)')
+        .style('cursor', 'pointer')
+        .on('mouseenter', function(event, d) {
+            handleCountryHover(d.index, true, this);
+        })
+        .on('mouseleave', function(event, d) {
+            handleCountryHover(d.index, false, this);
+        })
+        .on('click', function(event, d) {
+            handleCountryClick(d.index, this);
+        })
+        .transition()
+        .duration(1000)
+        .delay((d, i) => i * 100)
+        .attr('opacity', 0.8);
+    
+    // Add country labels
+    arcs.append('text')
+        .each(function(d) { d.angle = (d.startAngle + d.endAngle) / 2; })
+        .attr('dy', '.35em')
+        .attr('transform', d => {
+            const angle = d.angle * 180 / Math.PI - 90;
+            const rotate = angle > 90 ? angle + 180 : angle;
+            return `rotate(${angle}) translate(${radius + 15}) rotate(${angle > 90 ? 180 : 0})`;
+        })
+        .attr('text-anchor', d => d.angle > Math.PI ? 'end' : 'start')
+        .attr('fill', 'white')
+        .attr('font-size', '13px')
+        .attr('font-weight', '600')
+        .attr('opacity', 0)
+        .text((d, i) => countries[i])
+        .transition()
+        .duration(800)
+        .delay((d, i) => i * 100 + 500)
+        .attr('opacity', 1);
+    
+    // Add country flags
+    arcs.append('text')
+        .each(function(d) { d.angle = (d.startAngle + d.endAngle) / 2; })
+        .attr('transform', d => {
+            const angle = d.angle * 180 / Math.PI - 90;
+            return `rotate(${angle}) translate(${radius + 40})`;
+        })
+        .attr('text-anchor', 'middle')
+        .attr('font-size', '20px')
+        .attr('opacity', 0)
+        .text((d, i) => COUNTRIES[countries[i]].flag)
+        .transition()
+        .duration(800)
+        .delay((d, i) => i * 100 + 700)
+        .attr('opacity', 1);
+    
+    // Draw trade flow ribbons (connections)
+    const ribbons = g.append('g')
+        .attr('class', 'ribbons')
+        .selectAll('path')
+        .data(chords)
+        .enter()
+        .append('path')
+        .attr('class', 'trade-ribbon')
+        .attr('d', ribbon)
+        .attr('fill', d => {
+            const impact = flowData.impacts[d.source.index][d.target.index];
+            return impactColorScale(impact);
+        })
+        .attr('opacity', 0)
+        .attr('stroke', 'none')
+        .style('filter', 'url(#chord-glow)')
+        .style('cursor', 'pointer')
+        .on('mouseenter', function(event, d) {
+            handleRibbonHover(d, true, this);
+        })
+        .on('mouseleave', function(event, d) {
+            handleRibbonHover(d, false, this);
+        })
+        .on('click', function(event, d) {
+            handleRibbonClick(d, this);
+        });
+    
+    // Animate ribbons with staggered delay
+    ribbons.transition()
+        .duration(1200)
+        .delay((d, i) => 1000 + i * 50)
+        .attr('opacity', d => {
+            const value = d.source.value;
+            const maxValue = d3.max(chords, c => c.source.value);
+            return 0.3 + (value / maxValue) * 0.5;
+        });
+    
+    // Add animated particles along ribbons
+    setTimeout(() => {
+        addFlowParticles(g, chords, ribbon, countries, flowData);
+    }, 2000);
+    
+    // Add center title
+    g.append('text')
+        .attr('x', 0)
+        .attr('y', -20)
+        .attr('text-anchor', 'middle')
+        .attr('fill', 'white')
+        .attr('font-size', '24px')
+        .attr('font-weight', 'bold')
+        .attr('opacity', 0)
+        .text('Global Trade Flows')
+        .transition()
+        .duration(1000)
+        .delay(2500)
+        .attr('opacity', 1);
+    
+    g.append('text')
+        .attr('x', 0)
+        .attr('y', 10)
+        .attr('text-anchor', 'middle')
+        .attr('fill', 'rgba(255,255,255,0.7)')
+        .attr('font-size', '14px')
+        .attr('opacity', 0)
+        .text(`${countries.length} Countries • ${currentFactorGroup.toUpperCase()} Impact`)
+        .transition()
+        .duration(1000)
+        .delay(2700)
+        .attr('opacity', 1);
+    
+    // Add legend
+    addImpactLegend(g, radius);
+    
+    console.log('✓ Chord-Sankey rendered successfully!');
+}
+
+function calculateTradeFlows(countries) {
+    const n = countries.length;
+    const matrix = Array(n).fill(0).map(() => Array(n).fill(0));
+    const impacts = Array(n).fill(0).map(() => Array(n).fill(0));
+    
+    let maxFlow = 0;
+    
+    // Calculate flows between countries
+    countries.forEach((sourceCode, i) => {
+        countries.forEach((targetCode, j) => {
+            if (i !== j) {
+                // Export from source to target
+                const exportValue = calculateTotalByFlow(sourceCode, currentFactorGroup, 'exports');
+                const importValue = calculateTotalByFlow(targetCode, currentFactorGroup, 'imports');
+                
+                // Flow is average of export and import (simplified)
+                const flow = (exportValue + importValue) / (2 * n);
+                matrix[i][j] = flow;
+                
+                if (flow > maxFlow) maxFlow = flow;
+                
+                // Calculate environmental impact (normalized)
+                const domesticSource = calculateTotalByFlow(sourceCode, currentFactorGroup, 'domestic');
+                const domesticTarget = calculateTotalByFlow(targetCode, currentFactorGroup, 'domestic');
+                const totalImpact = domesticSource + domesticTarget + exportValue + importValue;
+                
+                impacts[i][j] = totalImpact;
+            }
+        });
+    });
+    
+    // Normalize impacts to 0-1 range
+    const maxImpact = d3.max(impacts.flat());
+    if (maxImpact > 0) {
+        impacts.forEach((row, i) => {
+            row.forEach((val, j) => {
+                impacts[i][j] = val / maxImpact;
+            });
+        });
+    }
+    
+    return { matrix, impacts };
+}
+
+function handleCountryHover(index, isEnter, element) {
+    const countries = Array.from(selectedCountries);
+    const countryCode = countries[index];
+    
+    if (isEnter) {
+        ChordSankeyState.hoveredCountry = index;
+        
+        // Highlight arc
+        d3.select(element)
+            .transition()
+            .duration(200)
+            .attr('opacity', 1)
+            .style('filter', 'url(#chord-glow-hover)');
+        
+        // Dim other arcs
+        d3.selectAll('.country-arc')
+            .filter((d, i) => i !== index)
+            .transition()
+            .duration(200)
+            .attr('opacity', 0.3);
+        
+        // Highlight related ribbons
+        d3.selectAll('.trade-ribbon')
+            .filter(d => d.source.index === index || d.target.index === index)
+            .transition()
+            .duration(200)
+            .attr('opacity', 0.9)
+            .style('filter', 'url(#chord-glow-hover)');
+        
+        // Dim other ribbons
+        d3.selectAll('.trade-ribbon')
+            .filter(d => d.source.index !== index && d.target.index !== index)
+            .transition()
+            .duration(200)
+            .attr('opacity', 0.1);
+        
+        // Show tooltip
+        showChordTooltip(countryCode, 'country', event);
+        
+    } else {
+        ChordSankeyState.hoveredCountry = null;
+        
+        // Reset if not clicked
+        if (ChordSankeyState.clickedCountry === null) {
+            d3.select(element)
+                .transition()
+                .duration(200)
+                .attr('opacity', 0.8)
+                .style('filter', 'url(#chord-glow)');
+            
+            d3.selectAll('.country-arc')
+                .transition()
+                .duration(200)
+                .attr('opacity', 0.8)
+                .style('filter', 'url(#chord-glow)');
+            
+            d3.selectAll('.trade-ribbon')
+                .transition()
+                .duration(200)
+                .attr('opacity', d => {
+                    const maxValue = d3.max(d3.selectAll('.trade-ribbon').data(), c => c.source.value);
+                    return 0.3 + (d.source.value / maxValue) * 0.5;
+                })
+                .style('filter', 'url(#chord-glow)');
+        }
+        
+        hideChordTooltip();
+    }
+}
+
+function handleCountryClick(index, element) {
+    const countries = Array.from(selectedCountries);
+    
+    if (ChordSankeyState.clickedCountry === index) {
+        // Unclick
+        ChordSankeyState.clickedCountry = null;
+        
+        // Reset all
+        d3.selectAll('.country-arc')
+            .transition()
+            .duration(300)
+            .attr('opacity', 0.8)
+            .style('filter', 'url(#chord-glow)');
+        
+        d3.selectAll('.trade-ribbon')
+            .transition()
+            .duration(300)
+            .attr('opacity', d => {
+                const maxValue = d3.max(d3.selectAll('.trade-ribbon').data(), c => c.source.value);
+                return 0.3 + (d.source.value / maxValue) * 0.5;
+            })
+            .style('filter', 'url(#chord-glow)');
+        
+    } else {
+        // Click new country
+        ChordSankeyState.clickedCountry = index;
+        
+        // Keep this country and its connections highlighted
+        d3.select(element)
+            .transition()
+            .duration(300)
+            .attr('opacity', 1)
+            .style('filter', 'url(#chord-glow-hover)');
+        
+        d3.selectAll('.country-arc')
+            .filter((d, i) => i !== index)
+            .transition()
+            .duration(300)
+            .attr('opacity', 0.2);
+        
+        d3.selectAll('.trade-ribbon')
+            .filter(d => d.source.index === index || d.target.index === index)
+            .transition()
+            .duration(300)
+            .attr('opacity', 0.9)
+            .style('filter', 'url(#chord-glow-hover)');
+        
+        d3.selectAll('.trade-ribbon')
+            .filter(d => d.source.index !== index && d.target.index !== index)
+            .transition()
+            .duration(300)
+            .attr('opacity', 0.05);
+        
+        console.log(`Locked focus on ${countries[index]}`);
+    }
+}
+
+function handleRibbonHover(d, isEnter, element) {
+    const countries = Array.from(selectedCountries);
+    const sourceCountry = countries[d.source.index];
+    const targetCountry = countries[d.target.index];
+    
+    if (isEnter) {
+        // Highlight this ribbon
+        d3.select(element)
+            .transition()
+            .duration(200)
+            .attr('opacity', 1)
+            .attr('stroke', 'white')
+            .attr('stroke-width', 2)
+            .style('filter', 'url(#chord-glow-hover)');
+        
+        // Dim others
+        d3.selectAll('.trade-ribbon')
+            .filter(ribbon => ribbon !== d)
+            .transition()
+            .duration(200)
+            .attr('opacity', 0.1);
+        
+        // Show flow tooltip
+        showFlowTooltip(sourceCountry, targetCountry, d.source.value, event);
+        
+    } else {
+        if (ChordSankeyState.clickedCountry === null) {
+            d3.select(element)
+                .transition()
+                .duration(200)
+                .attr('opacity', 0.6)
+                .attr('stroke', 'none')
+                .style('filter', 'url(#chord-glow)');
+            
+            d3.selectAll('.trade-ribbon')
+                .transition()
+                .duration(200)
+                .attr('opacity', ribbon => {
+                    const maxValue = d3.max(d3.selectAll('.trade-ribbon').data(), c => c.source.value);
+                    return 0.3 + (ribbon.source.value / maxValue) * 0.5;
+                })
+                .attr('stroke', 'none');
+        }
+        
+        hideChordTooltip();
+    }
+}
+
+function handleRibbonClick(d, element) {
+    console.log(`Flow from ${d.source.index} to ${d.target.index}, value: ${formatNumber(d.source.value)}`);
+    
+    // Pulse animation
+    d3.select(element)
+        .transition()
+        .duration(200)
+        .attr('opacity', 1)
+        .transition()
+        .duration(200)
+        .attr('opacity', 0.6)
+        .transition()
+        .duration(200)
+        .attr('opacity', 1);
+}
+
+function addFlowParticles(g, chords, ribbon, countries, flowData) {
+    const particles = g.append('g')
+        .attr('class', 'flow-particles');
+    
+    // Create particles for top flows
+    const topFlows = chords
+        .filter(d => d.source.value > 0)
+        .sort((a, b) => b.source.value - a.source.value)
+        .slice(0, Math.min(10, chords.length));
+    
+    topFlows.forEach((chord, i) => {
+        const path = ribbon(chord);
+        const pathLength = path ? 500 : 0; // Approximate
+        
+        if (pathLength === 0) return;
+        
+        // Create multiple particles per flow
+        for (let p = 0; p < 3; p++) {
+            const particle = particles.append('circle')
+                .attr('r', 4)
+                .attr('fill', impactColorScale(flowData.impacts[chord.source.index][chord.target.index]))
+                .attr('opacity', 0)
+                .style('filter', 'url(#chord-glow)');
+            
+            animateParticle(particle, chord, ribbon, p * 0.33);
+        }
+    });
+}
+
+function animateParticle(particle, chord, ribbon, offset) {
+    const duration = 3000;
+    
+    function animate() {
+        particle
+            .transition()
+            .duration(duration)
+            .ease(d3.easeLinear)
+            .attrTween('transform', () => {
+                return t => {
+                    const adjustedT = ((t + offset) % 1);
+                    const point = ribbon.centroid ? ribbon.centroid(chord) : [0, 0];
+                    
+                    // Simplified path animation
+                    const angle = chord.source.startAngle + (chord.target.startAngle - chord.source.startAngle) * adjustedT;
+                    const radius = (chord.source.value / 2) * (1 - Math.abs(adjustedT - 0.5) * 2);
+                    
+                    const x = Math.cos(angle - Math.PI / 2) * radius;
+                    const y = Math.sin(angle - Math.PI / 2) * radius;
+                    
+                    return `translate(${x}, ${y})`;
+                };
+            })
+            .attr('opacity', t => {
+                const adjustedT = ((t + offset) % 1);
+                return Math.sin(adjustedT * Math.PI) * 0.8;
+            })
+            .on('end', animate);
+    }
+    
+    animate();
+}
+
+function addImpactLegend(g, radius) {
+    const legendGroup = g.append('g')
+        .attr('class', 'impact-legend')
+        .attr('transform', `translate(${-radius - 80}, ${-radius + 50})`);
+    
+    legendGroup.append('text')
+        .attr('x', 0)
+        .attr('y', -15)
+        .attr('fill', 'white')
+        .attr('font-size', '12px')
+        .attr('font-weight', '600')
+        .text('Environmental Impact');
+    
+    const legendScale = d3.scaleLinear()
+        .domain([0, 100])
+        .range([0, 150]);
+    
+    // Gradient bar
+    const gradient = legendGroup.append('defs')
+        .append('linearGradient')
+        .attr('id', 'impact-gradient')
+        .attr('x1', '0%')
+        .attr('y1', '0%')
+        .attr('x2', '0%')
+        .attr('y2', '100%');
+    
+    gradient.append('stop')
+        .attr('offset', '0%')
+        .attr('stop-color', '#e74c3c');
+    
+    gradient.append('stop')
+        .attr('offset', '50%')
+        .attr('stop-color', '#f39c12');
+    
+    gradient.append('stop')
+        .attr('offset', '100%')
+        .attr('stop-color', '#2ecc71');
+    
+    legendGroup.append('rect')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('width', 20)
+        .attr('height', 150)
+        .attr('fill', 'url(#impact-gradient)')
+        .attr('rx', 4);
+    
+    legendGroup.append('text')
+        .attr('x', 30)
+        .attr('y', 5)
+        .attr('fill', 'rgba(255,255,255,0.8)')
+        .attr('font-size', '10px')
+        .text('High');
+    
+    legendGroup.append('text')
+        .attr('x', 30)
+        .attr('y', 150)
+        .attr('fill', 'rgba(255,255,255,0.8)')
+        .attr('font-size', '10px')
+        .text('Low');
+}
+
+function showChordMessage(text) {
+    if (!ChordSankeyState.svg) return;
+    
+    ChordSankeyState.svg.selectAll('*').remove();
+    
+    const width = parseInt(ChordSankeyState.svg.attr('width'));
+    const height = parseInt(ChordSankeyState.svg.attr('height'));
+    
+    ChordSankeyState.svg.append('text')
+        .attr('x', width / 2)
+        .attr('y', height / 2)
+        .attr('text-anchor', 'middle')
+        .attr('fill', 'white')
+        .attr('font-size', '18px')
+        .attr('opacity', 0.7)
+        .text(text);
+}
+
+function showChordTooltip(countryCode, type, event) {
+    const tooltip = document.getElementById('chord-tooltip');
+    if (!tooltip) return;
+    
+    const country = COUNTRIES[countryCode];
+    const totalExports = calculateTotalByFlow(countryCode, currentFactorGroup, 'exports');
+    const totalImports = calculateTotalByFlow(countryCode, currentFactorGroup, 'imports');
+    const domestic = calculateTotalByFlow(countryCode, currentFactorGroup, 'domestic');
+    
+    tooltip.innerHTML = `
+        <div style="display: flex; align-items: center; margin-bottom: 8px;">
+            <span style="font-size: 28px; margin-right: 10px;">${country.flag}</span>
+            <div>
+                <div style="font-weight: bold; font-size: 16px; color: ${country.color};">${country.name}</div>
+                <div style="font-size: 11px; opacity: 0.8;">Trade Flow Analysis</div>
+            </div>
+        </div>
+        <div style="margin-top: 10px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                <span style="opacity: 0.9;">📤 Total Exports:</span>
+                <strong style="color: #3498db;">${formatNumber(totalExports)}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                <span style="opacity: 0.9;">📥 Total Imports:</span>
+                <strong style="color: #e74c3c;">${formatNumber(totalImports)}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <span style="opacity: 0.9;">🏭 Domestic:</span>
+                <strong style="color: #2ecc71;">${formatNumber(domestic)}</strong>
+            </div>
+        </div>
+        <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.2); font-size: 10px; opacity: 0.7;">
+            Click to lock focus • Hover ribbons for flow details
+        </div>
+    `;
+    
+    tooltip.classList.add('visible');
+    tooltip.style.display = 'block';
+    tooltip.style.opacity = '1';
+    tooltip.style.visibility = 'visible';
+    
+    updateChordTooltipPosition(event);
+}
+
+function showFlowTooltip(sourceCode, targetCode, value, event) {
+    const tooltip = document.getElementById('chord-tooltip');
+    if (!tooltip) return;
+    
+    const source = COUNTRIES[sourceCode];
+    const target = COUNTRIES[targetCode];
+    
+    const impact = calculateTotalByFlow(sourceCode, currentFactorGroup, 'exports') + 
+                   calculateTotalByFlow(targetCode, currentFactorGroup, 'imports');
+    
+    tooltip.innerHTML = `
+        <div style="margin-bottom: 10px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                <div style="display: flex; align-items: center;">
+                    <span style="font-size: 24px; margin-right: 6px;">${source.flag}</span>
+                    <span style="font-weight: 600; color: ${source.color};">${source.name}</span>
+                </div>
+                <span style="font-size: 20px; margin: 0 10px; opacity: 0.5;">→</span>
+                <div style="display: flex; align-items: center;">
+                    <span style="font-weight: 600; color: ${target.color};">${target.name}</span>
+                    <span style="font-size: 24px; margin-left: 6px;">${target.flag}</span>
+                </div>
+            </div>
+        </div>
+        <div style="background: rgba(255,255,255,0.1); padding: 10px; border-radius: 6px; margin-bottom: 8px;">
+            <div style="text-align: center;">
+                <div style="font-size: 11px; opacity: 0.7; margin-bottom: 4px;">Trade Flow Volume</div>
+                <div style="font-size: 20px; font-weight: bold; color: #4fc3f7;">${formatNumber(value)}</div>
+            </div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 11px;">
+            <span style="opacity: 0.8;">Environmental Impact:</span>
+            <strong style="color: ${impactColorScale(impact / d3.max([impact, 1000000000]))};">${formatNumber(impact)}</strong>
+        </div>
+        <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.2); font-size: 10px; opacity: 0.6; text-align: center;">
+            Click for detailed breakdown
+        </div>
+    `;
+    
+    tooltip.classList.add('visible');
+    tooltip.style.display = 'block';
+    tooltip.style.opacity = '1';
+    tooltip.style.visibility = 'visible';
+    
+    updateChordTooltipPosition(event);
+}
+
+function updateChordTooltipPosition(event) {
+    const tooltip = document.getElementById('chord-tooltip');
+    if (!tooltip) return;
+    
+    const offsetX = 15;
+    const offsetY = 15;
+    
+    let x = event.clientX + offsetX;
+    let y = event.clientY + offsetY;
+    
+    const tooltipRect = tooltip.getBoundingClientRect();
+    if (x + tooltipRect.width > window.innerWidth) {
+        x = event.clientX - tooltipRect.width - offsetX;
+    }
+    if (y + tooltipRect.height > window.innerHeight) {
+        y = event.clientY - tooltipRect.height - offsetY;
+    }
+    
+    tooltip.style.left = x + 'px';
+    tooltip.style.top = y + 'px';
+}
+
+function hideChordTooltip() {
+    const tooltip = document.getElementById('chord-tooltip');
+    if (tooltip) {
+        tooltip.classList.remove('visible');
+        tooltip.style.opacity = '0';
+        tooltip.style.visibility = 'hidden';
+    }
+}
+
+function updateChordSankey() {
+    console.log('Updating Chord-Sankey...');
+    renderChordSankey();
+}
+
+// Export functions globally
+window.initChordSankey = initChordSankey;
+window.updateChordSankey = updateChordSankey;
+window.renderChordSankey = renderChordSankey;
+
+console.log('Chord-Sankey Hybrid Script Loaded!');
+
+// ==========================================
+// CHORD-SANKEY HELPER FUNCTIONS
+// Control functions for mode switching and interactions
+// ==========================================
+
+let chordMode = 'all';
+let animationsEnabled = true;
+
+function setChordMode(mode) {
+    chordMode = mode;
+    
+    // Update button states
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+        if (btn.dataset.mode === mode) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+    
+    console.log(`Chord mode set to: ${mode}`);
+    
+    // Re-render with new mode
+    if (typeof renderChordSankey === 'function') {
+        renderChordSankey();
+    }
+}
+
+function resetChordFocus() {
+    if (typeof ChordSankeyState !== 'undefined') {
+        ChordSankeyState.clickedCountry = null;
+        ChordSankeyState.hoveredCountry = null;
+    }
+    
+    // Reset all visual elements
+    if (typeof d3 !== 'undefined') {
+        d3.selectAll('.country-arc')
+            .transition()
+            .duration(300)
+            .attr('opacity', 0.8)
+            .style('filter', 'url(#glow)');
+        
+        d3.selectAll('.trade-ribbon')
+            .transition()
+            .duration(300)
+            .attr('opacity', d => {
+                const maxValue = d3.max(d3.selectAll('.trade-ribbon').data(), c => c.source.value);
+                return 0.3 + (d.source.value / maxValue) * 0.5;
+            })
+            .attr('stroke', 'none')
+            .style('filter', 'url(#glow)');
+    }
+    
+    console.log('Chord focus reset');
+}
+
+function toggleAnimations() {
+    animationsEnabled = !animationsEnabled;
+    
+    const btn = event.currentTarget;
+    const icon = btn.querySelector('.btn-icon');
+    
+    if (animationsEnabled) {
+        icon.textContent = '✨';
+        btn.style.opacity = '1';
+        
+        // Re-enable animations
+        d3.selectAll('.flow-particles circle')
+            .style('display', 'block');
+        
+        console.log('Animations enabled');
+    } else {
+        icon.textContent = '⏸️';
+        btn.style.opacity = '0.6';
+        
+        // Hide animated particles
+        d3.selectAll('.flow-particles circle')
+            .style('display', 'none');
+        
+        console.log('Animations disabled');
+    }
+}
+
+// Auto-initialize when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('DOM loaded, waiting for Chord-Sankey initialization...');
+        setTimeout(() => {
+            if (typeof initChordSankey === 'function') {
+                initChordSankey();
+            }
+        }, 2500);
+    });
+} else {
+    console.log('DOM already loaded, initializing Chord-Sankey...');
+    setTimeout(() => {
+        if (typeof initChordSankey === 'function') {
+            initChordSankey();
+        }
+    }, 2500);
+}
+
+// Export helper functions
+window.setChordMode = setChordMode;
+window.resetChordFocus = resetChordFocus;
+window.toggleAnimations = toggleAnimations;
+window.exportChordSankeyAsSVG = exportChordSankeyAsSVG;
+window.exportChordSankeyAsPNG = exportChordSankeyAsPNG;
+
+// Export Chord-Sankey as SVG
+function exportChordSankeyAsSVG() {
+    console.log('Exporting Chord-Sankey as SVG...');
+    
+    const svg = document.querySelector('#chart-chord-sankey svg');
+    if (!svg) {
+        alert('No visualization to export. Please render the Chord-Sankey first.');
+        return;
+    }
+    
+    // Clone the SVG
+    const svgClone = svg.cloneNode(true);
+    
+    // Get dimensions
+    const width = svg.getAttribute('width') || svg.getBoundingClientRect().width;
+    const height = svg.getAttribute('height') || svg.getBoundingClientRect().height;
+    
+    // Set dimensions on clone
+    svgClone.setAttribute('width', width);
+    svgClone.setAttribute('height', height);
+    svgClone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    
+    // Add white background
+    const background = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    background.setAttribute('width', '100%');
+    background.setAttribute('height', '100%');
+    background.setAttribute('fill', '#0f0c29');
+    svgClone.insertBefore(background, svgClone.firstChild);
+    
+    // Serialize SVG
+    const serializer = new XMLSerializer();
+    const svgString = serializer.serializeToString(svgClone);
+    
+    // Create blob and download
+    const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `chord-sankey-${currentFactorGroup}-${new Date().getTime()}.svg`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    console.log('✅ SVG exported successfully!');
+}
+
+// Export Chord-Sankey as PNG
+function exportChordSankeyAsPNG() {
+    console.log('Exporting Chord-Sankey as PNG...');
+    
+    const svg = document.querySelector('#chart-chord-sankey svg');
+    if (!svg) {
+        alert('No visualization to export. Please render the Chord-Sankey first.');
+        return;
+    }
+    
+    // Get dimensions
+    const width = svg.getAttribute('width') || svg.getBoundingClientRect().width;
+    const height = svg.getAttribute('height') || svg.getBoundingClientRect().height;
+    
+    // Clone and prepare SVG
+    const svgClone = svg.cloneNode(true);
+    svgClone.setAttribute('width', width);
+    svgClone.setAttribute('height', height);
+    svgClone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    
+    // Add background
+    const background = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    background.setAttribute('width', '100%');
+    background.setAttribute('height', '100%');
+    background.setAttribute('fill', '#0f0c29');
+    svgClone.insertBefore(background, svgClone.firstChild);
+    
+    // Serialize SVG
+    const serializer = new XMLSerializer();
+    const svgString = serializer.serializeToString(svgClone);
+    
+    // Create image from SVG
+    const img = new Image();
+    const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(svgBlob);
+    
+    img.onload = function() {
+        // Create canvas
+        const canvas = document.createElement('canvas');
+        canvas.width = width * 2; // 2x for higher resolution
+        canvas.height = height * 2;
+        
+        const ctx = canvas.getContext('2d');
+        ctx.scale(2, 2); // Scale for higher resolution
+        ctx.drawImage(img, 0, 0);
+        
+        // Convert to PNG and download
+        canvas.toBlob(function(blob) {
+            const pngUrl = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = pngUrl;
+            link.download = `chord-sankey-${currentFactorGroup}-${new Date().getTime()}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(pngUrl);
+            URL.revokeObjectURL(url);
+            
+            console.log('✅ PNG exported successfully!');
+        }, 'image/png');
+    };
+    
+    img.onerror = function() {
+        console.error('Failed to load SVG for PNG conversion');
+        alert('Failed to export PNG. Please try again.');
+        URL.revokeObjectURL(url);
+    };
+    
+    img.src = url;
+}
+
+console.log('Chord-Sankey Helper Functions Loaded!');
