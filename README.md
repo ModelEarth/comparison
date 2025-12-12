@@ -6,8 +6,10 @@ Frontends for tradeflow data with a UN Goal focus.
 2. Prepare a vibe prompt in your readme and post a link to your page in our Discord.
 3. Gather feedback from others and refine your vibe prompt.
 
-View initial comparison vibe dev output:
+View comparison vibe coded output:
 
+[/comparison/dev/antariksh](dev/antariksh/) -  Using [trade-data](https://github.com/ModelEarth/trade-data/tree/main/year/2019)<!-- 11/24/2025 -->
+[/comparison/dev/harsh](dev/harsh/)
 [/comparison/dev/loren](dev/loren/)
 
 TO DO:
@@ -19,5 +21,4 @@ We're not using the scripts external that are external to tradeflow folder.
 
 [github.com/ModelEarth/exiobase/tree/main/tradeflow](https://github.com/ModelEarth/exiobase/tree/main/tradeflow)
 
-# Progress (11/24/2025)
-https://patilantariksh.github.io/comparison/dev/antariksh/
+
