@@ -2890,3 +2890,542 @@ body {
         min-width: 100%;
     }
 }
+
+/* ==========================================
+   3D TOPOGRAPHIC IMPACT CARTOGRAM STYLES
+   Ultra-modern, sleek design
+   ========================================== */
+
+.topo-section {
+    background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #0a0a0f 100%);
+    padding: 80px 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.topo-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 20% 50%, rgba(74, 144, 226, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 50%, rgba(231, 76, 60, 0.1) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+.topo-container {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 40px;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 0 40px;
+    position: relative;
+}
+
+/* Info Panel */
+.topo-info-panel {
+    background: rgba(15, 15, 25, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 30px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.topo-description h3 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0 0 16px 0;
+    letter-spacing: -0.5px;
+}
+
+.topo-description p {
+    font-size: 14px;
+    line-height: 1.7;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0 0 24px 0;
+}
+
+.topo-legend {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+}
+
+.topo-legend h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: #4a90e2;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0 0 16px 0;
+}
+
+.legend-items {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.legend-peak {
+    width: 40px;
+    height: 24px;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.topo-features {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+}
+
+.topo-features h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: #4a90e2;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0 0 12px 0;
+}
+
+.topo-features ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.topo-features li {
+    font-size: 13px;
+    line-height: 1.8;
+    color: rgba(255, 255, 255, 0.7);
+    padding-left: 20px;
+    position: relative;
+}
+
+.topo-features li::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    color: #4a90e2;
+}
+
+.topo-features strong {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Mode Controls */
+.topo-controls {
+    margin-bottom: 24px;
+}
+
+.topo-controls h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: #4a90e2;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0 0 16px 0;
+}
+
+.topo-mode-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.topo-mode-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.topo-mode-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s;
+}
+
+.topo-mode-btn:hover::before {
+    left: 100%;
+}
+
+.topo-mode-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(74, 144, 226, 0.5);
+    transform: translateX(4px);
+}
+
+.topo-mode-btn.active {
+    background: linear-gradient(135deg, rgba(74, 144, 226, 0.2) 0%, rgba(74, 144, 226, 0.1) 100%);
+    border-color: #4a90e2;
+    box-shadow: 0 0 20px rgba(74, 144, 226, 0.3);
+}
+
+.mode-icon {
+    font-size: 24px;
+}
+
+.mode-label {
+    font-size: 15px;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.mode-desc {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* Interaction Guide */
+.topo-interaction-guide {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+}
+
+.topo-interaction-guide h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: #4a90e2;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0 0 16px 0;
+}
+
+.interaction-hints {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.hint-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.hint-icon {
+    font-size: 18px;
+    width: 28px;
+    text-align: center;
+}
+
+/* Stats Summary */
+.topo-stats-summary {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.topo-stats-summary h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: #4a90e2;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0 0 16px 0;
+}
+
+.summary-stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.summary-stat:last-child {
+    border-bottom: none;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.stat-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: #4a90e2;
+}
+
+/* 3D Visualization */
+.topo-3d-wrapper {
+    position: relative;
+    background: linear-gradient(135deg, #0f0f19 0%, #1a1a2e 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.topo-3d-canvas {
+    width: 100%;
+    height: 700px;
+    position: relative;
+    cursor: grab;
+}
+
+.topo-3d-canvas:active {
+    cursor: grabbing;
+}
+
+/* Loading Overlay */
+.topo-loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(10, 10, 15, 0.95);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+
+.topo-loading.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 3px solid rgba(74, 144, 226, 0.2);
+    border-top-color: #4a90e2;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.topo-loading p {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 600;
+}
+
+/* Ensure canvas fills container */
+.topo-3d-canvas canvas {
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
+}
+
+/* Tooltip */
+.topo-tooltip {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    background: rgba(10, 10, 15, 0.95);
+    border: 1px solid rgba(74, 144, 226, 0.5);
+    border-radius: 12px;
+    padding: 16px 20px;
+    min-width: 220px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    display: none;
+    transition: opacity 0.3s;
+    z-index: 100;
+}
+
+.topo-tooltip-header {
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.topo-tooltip-header strong {
+    font-size: 16px;
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.topo-tooltip-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.topo-stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+}
+
+.topo-stat-label {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.topo-stat-value {
+    color: #4a90e2;
+    font-weight: 700;
+}
+
+/* View Controls */
+.topo-view-controls {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    gap: 10px;
+    z-index: 10;
+}
+
+.view-control-btn {
+    width: 44px;
+    height: 44px;
+    background: rgba(10, 10, 15, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+    font-size: 20px;
+}
+
+.view-control-btn:hover {
+    background: rgba(74, 144, 226, 0.3);
+    border-color: #4a90e2;
+    transform: scale(1.1);
+    box-shadow: 0 0 20px rgba(74, 144, 226, 0.4);
+}
+
+.view-control-btn:active {
+    transform: scale(0.95);
+}
+
+/* Responsive */
+@media (max-width: 1400px) {
+    .topo-container {
+        grid-template-columns: 320px 1fr;
+        gap: 30px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .topo-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .topo-info-panel {
+        max-width: 100%;
+    }
+    
+    .topo-3d-canvas {
+        height: 600px;
+    }
+}
+
+@media (max-width: 768px) {
+    .topo-section {
+        padding: 40px 0;
+    }
+    
+    .topo-container {
+        padding: 0 20px;
+        gap: 20px;
+    }
+    
+    .topo-info-panel {
+        padding: 20px;
+    }
+    
+    .topo-3d-canvas {
+        height: 500px;
+    }
+    
+    .topo-mode-buttons {
+        gap: 8px;
+    }
+    
+    .topo-mode-btn {
+        padding: 12px;
+    }
+    
+    .mode-label {
+        font-size: 14px;
+    }
+    
+    .mode-desc {
+        font-size: 11px;
+    }
+    
+    .topo-tooltip {
+        left: 10px;
+        bottom: 10px;
+        min-width: 180px;
+        padding: 12px 16px;
+    }
+}
+
+/* Canvas Styling */
+canvas {
+    display: block;
+    outline: none;
+}
+
+/* Selection Highlight */
+.topo-3d-canvas.selecting {
+    cursor: crosshair;
+}
+
+/* Performance Hints */
+.topo-3d-wrapper::after {
+    content: 'Hardware Acceleration Enabled';
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.3);
+    font-family: monospace;
+    pointer-events: none;
+}

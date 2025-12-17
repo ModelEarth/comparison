@@ -3934,3 +3934,709 @@ function exportChordSankeyAsPNG() {
 }
 
 console.log('Chord-Sankey Helper Functions Loaded!');
+
+// ==========================================
+// ISOMETRIC TOPOGRAPHIC CARTOGRAM
+// Pure Canvas API - No external dependencies!
+// ==========================================
+
+console.log('🗻 Isometric Topographic Module Loading...');
+
+// Global state
+const IsometricTopo = {
+    canvas: null,
+    ctx: null,
+    width: 0,
+    height: 0,
+    countries: [],
+    hoveredCountry: null,
+    mode: 'impact',
+    currentFactor: 'air',
+    animationFrame: null,
+    rotation: 0,
+    zoom: 1,
+    offsetX: 0,
+    offsetY: 0,
+    isDragging: false,
+    lastMouseX: 0,
+    lastMouseY: 0,
+    autoRotate: true
+};
+
+// Country data with positions
+const COUNTRY_DATA = {
+    US: { x: -6, y: 2, name: 'United States', color: '#4a90e2' },
+    CN: { x: 6, y: 0, name: 'China', color: '#e74c3c' },
+    DE: { x: 1, y: 1, name: 'Germany', color: '#f39c12' },
+    JP: { x: 8, y: -1, name: 'Japan', color: '#9b59b6' },
+    GB: { x: 0, y: 2, name: 'United Kingdom', color: '#1abc9c' },
+    FR: { x: 1, y: 0, name: 'France', color: '#3498db' },
+    CA: { x: -8, y: 4, name: 'Canada', color: '#e67e22' },
+    BR: { x: -4, y: -5, name: 'Brazil', color: '#2ecc71' },
+    IT: { x: 2, y: -1, name: 'Italy', color: '#16a085' },
+    RU: { x: 5, y: 5, name: 'Russia', color: '#c0392b' },
+    IN: { x: 5, y: -2, name: 'India', color: '#d35400' },
+    KR: { x: 7, y: 1, name: 'South Korea', color: '#8e44ad' },
+    AU: { x: 9, y: -4, name: 'Australia', color: '#27ae60' },
+    MX: { x: -5, y: -2, name: 'Mexico', color: '#f1c40f' }
+};
+
+// Mock impact data
+const IMPACT_DATA = {
+    US: { co2: 85, water: 72, energy: 88, land: 65, materials: 78, volume: 920 },
+    CN: { co2: 92, water: 88, energy: 95, land: 82, materials: 90, volume: 950 },
+    DE: { co2: 68, water: 55, energy: 72, land: 48, materials: 65, volume: 780 },
+    JP: { co2: 75, water: 82, energy: 78, land: 58, materials: 72, volume: 820 },
+    GB: { co2: 62, water: 48, energy: 65, land: 42, materials: 58, volume: 680 },
+    FR: { co2: 58, water: 52, energy: 62, land: 45, materials: 55, volume: 650 },
+    CA: { co2: 78, water: 68, energy: 82, land: 72, materials: 75, volume: 720 },
+    BR: { co2: 72, water: 85, energy: 65, land: 88, materials: 68, volume: 580 },
+    IT: { co2: 55, water: 48, energy: 58, land: 42, materials: 52, volume: 520 },
+    RU: { co2: 88, water: 78, energy: 92, land: 85, materials: 82, volume: 680 },
+    IN: { co2: 82, water: 92, energy: 85, land: 78, materials: 80, volume: 720 },
+    KR: { co2: 72, water: 78, energy: 75, land: 62, materials: 70, volume: 780 },
+    AU: { co2: 68, water: 58, energy: 72, land: 92, materials: 65, volume: 520 },
+    MX: { co2: 65, water: 72, energy: 68, land: 75, materials: 62, volume: 480 }
+};
+
+// Initialize
+function initIsometricTopo() {
+    console.log('🎨 Initializing Isometric Topography...');
+    
+    const container = document.getElementById('topo-3d-container');
+    if (!container) {
+        console.error('❌ Container not found');
+        return;
+    }
+    
+    // Create canvas
+    IsometricTopo.canvas = document.createElement('canvas');
+    IsometricTopo.canvas.style.width = '100%';
+    IsometricTopo.canvas.style.height = '100%';
+    IsometricTopo.canvas.style.display = 'block';
+    
+    container.innerHTML = '';
+    container.appendChild(IsometricTopo.canvas);
+    
+    IsometricTopo.ctx = IsometricTopo.canvas.getContext('2d');
+    
+    // Set canvas size
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    
+    // Setup mouse events
+    setupMouseEvents();
+    
+    // Initialize countries
+    updateCountries();
+    
+    // Start animation
+    animate();
+    
+    // Hide loading
+    const loading = document.getElementById('topo-loading');
+    if (loading) {
+        loading.style.display = 'none';
+    }
+    
+    console.log('✅ Isometric Topography Initialized!');
+}
+
+// Resize canvas
+function resizeCanvas() {
+    const container = IsometricTopo.canvas.parentElement;
+    const rect = container.getBoundingClientRect();
+    
+    IsometricTopo.width = rect.width;
+    IsometricTopo.height = rect.height;
+    
+    // Set actual canvas size for crisp rendering
+    IsometricTopo.canvas.width = IsometricTopo.width * window.devicePixelRatio;
+    IsometricTopo.canvas.height = IsometricTopo.height * window.devicePixelRatio;
+    
+    IsometricTopo.canvas.style.width = IsometricTopo.width + 'px';
+    IsometricTopo.canvas.style.height = IsometricTopo.height + 'px';
+    
+    IsometricTopo.ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+}
+
+// Setup mouse events
+function setupMouseEvents() {
+    const canvas = IsometricTopo.canvas;
+    
+    canvas.addEventListener('mousedown', (e) => {
+        IsometricTopo.isDragging = true;
+        IsometricTopo.lastMouseX = e.clientX;
+        IsometricTopo.lastMouseY = e.clientY;
+        IsometricTopo.autoRotate = false;
+        canvas.style.cursor = 'grabbing';
+    });
+    
+    canvas.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        
+        if (IsometricTopo.isDragging) {
+            const deltaX = e.clientX - IsometricTopo.lastMouseX;
+            const deltaY = e.clientY - IsometricTopo.lastMouseY;
+            
+            IsometricTopo.rotation += deltaX * 0.01;
+            IsometricTopo.offsetY -= deltaY * 0.5;
+            
+            IsometricTopo.lastMouseX = e.clientX;
+            IsometricTopo.lastMouseY = e.clientY;
+        } else {
+            // Check hover
+            checkHover(mouseX, mouseY);
+        }
+    });
+    
+    canvas.addEventListener('mouseup', () => {
+        IsometricTopo.isDragging = false;
+        canvas.style.cursor = 'grab';
+    });
+    
+    canvas.addEventListener('mouseleave', () => {
+        IsometricTopo.isDragging = false;
+        IsometricTopo.hoveredCountry = null;
+        canvas.style.cursor = 'grab';
+        hideTooltip();
+    });
+    
+    canvas.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? 0.95 : 1.05;
+        IsometricTopo.zoom = Math.max(0.5, Math.min(2, IsometricTopo.zoom * delta));
+    });
+    
+    canvas.style.cursor = 'grab';
+}
+
+// Check which country is hovered
+function checkHover(mouseX, mouseY) {
+    IsometricTopo.hoveredCountry = null;
+    
+    for (const country of IsometricTopo.countries) {
+        if (isPointInIsometricBox(mouseX, mouseY, country)) {
+            IsometricTopo.hoveredCountry = country;
+            showTooltip(country, mouseX, mouseY);
+            return;
+        }
+    }
+    
+    hideTooltip();
+}
+
+// Check if point is inside isometric box
+function isPointInIsometricBox(px, py, country) {
+    const { screenX, screenY, width, height } = country.renderData;
+    
+    // Simple bounding box check
+    return px >= screenX - width/2 && px <= screenX + width/2 &&
+           py >= screenY - height && py <= screenY + 20;
+}
+
+// Update countries based on selection
+function updateCountries() {
+    const selectedCountries = window.selectedCountries || Object.keys(COUNTRY_DATA);
+    
+    IsometricTopo.countries = selectedCountries.map(code => {
+        const data = COUNTRY_DATA[code];
+        const impact = calculateImpact(code);
+        
+        return {
+            code,
+            ...data,
+            impact,
+            height: (impact.elevation / 100) * 120,
+            baseSize: 40,
+            renderData: {}
+        };
+    });
+}
+
+// Calculate impact
+function calculateImpact(code) {
+    const data = IMPACT_DATA[code] || { co2: 50, water: 50, energy: 50, land: 50, materials: 50, volume: 500 };
+    
+    const factorMap = {
+        'air': data.co2,
+        'water': data.water,
+        'energy': data.energy,
+        'land': data.land,
+        'materials': data.materials,
+        'employment': (data.co2 + data.energy) / 2
+    };
+    
+    const impactValue = factorMap[IsometricTopo.currentFactor] || data.co2;
+    
+    let elevation;
+    if (IsometricTopo.mode === 'impact') {
+        elevation = impactValue;
+    } else if (IsometricTopo.mode === 'volume') {
+        elevation = (data.volume / 1000) * 100;
+    } else {
+        elevation = (impactValue * 0.6) + ((data.volume / 1000) * 100 * 0.4);
+    }
+    
+    return {
+        elevation: Math.min(100, elevation),
+        ...data
+    };
+}
+
+// Get color based on elevation
+function getColor(elevation) {
+    if (elevation < 25) return '#2ecc71';
+    if (elevation < 50) return '#3498db';
+    if (elevation < 75) return '#f39c12';
+    return '#e74c3c';
+}
+
+// Convert 3D to isometric 2D
+function toIsometric(x, y, z) {
+    const angle = IsometricTopo.rotation;
+    
+    // Rotate around Y axis
+    const rotX = x * Math.cos(angle) - y * Math.sin(angle);
+    const rotY = x * Math.sin(angle) + y * Math.cos(angle);
+    
+    // Isometric projection
+    const isoX = (rotX - rotY) * Math.cos(Math.PI / 6);
+    const isoY = (rotX + rotY) * Math.sin(Math.PI / 6) - z;
+    
+    // Screen coordinates
+    const centerX = IsometricTopo.width / 2;
+    const centerY = IsometricTopo.height / 2 + IsometricTopo.offsetY;
+    
+    const screenX = centerX + isoX * IsometricTopo.zoom * 15;
+    const screenY = centerY + isoY * IsometricTopo.zoom * 15;
+    
+    return { x: screenX, y: screenY };
+}
+
+// Draw isometric box (country terrain)
+function drawIsometricBox(ctx, country) {
+    const { x, y, height, baseSize } = country;
+    const color = getColor(country.impact.elevation);
+    
+    const base = toIsometric(x * 10, y * 10, 0);
+    const top = toIsometric(x * 10, y * 10, height);
+    
+    // Store render data for hit detection
+    country.renderData = {
+        screenX: base.x,
+        screenY: base.y,
+        width: baseSize,
+        height: height * IsometricTopo.zoom * 15
+    };
+    
+    // Draw shadow
+    ctx.save();
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+    ctx.beginPath();
+    ctx.ellipse(base.x, base.y + 5, baseSize * 0.6, baseSize * 0.3, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    
+    // Calculate isometric vertices
+    const hw = baseSize / 2;
+    const hh = baseSize / 4;
+    
+    // Base vertices
+    const v1 = { x: base.x, y: base.y - hh };
+    const v2 = { x: base.x + hw, y: base.y };
+    const v3 = { x: base.x, y: base.y + hh };
+    const v4 = { x: base.x - hw, y: base.y };
+    
+    // Top vertices
+    const offset = height * IsometricTopo.zoom * 15;
+    const t1 = { x: v1.x, y: v1.y - offset };
+    const t2 = { x: v2.x, y: v2.y - offset };
+    const t3 = { x: v3.x, y: v3.y - offset };
+    const t4 = { x: v4.x, y: v4.y - offset };
+    
+    // Draw faces
+    const baseColor = color;
+    const darkColor = shadeColor(color, -20);
+    const lightColor = shadeColor(color, 10);
+    
+    const isHovered = IsometricTopo.hoveredCountry === country;
+    const glowAlpha = isHovered ? 0.6 : 0.3;
+    
+    // Left face
+    ctx.fillStyle = darkColor;
+    ctx.beginPath();
+    ctx.moveTo(v4.x, v4.y);
+    ctx.lineTo(t4.x, t4.y);
+    ctx.lineTo(t1.x, t1.y);
+    ctx.lineTo(v1.x, v1.y);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Right face
+    ctx.fillStyle = baseColor;
+    ctx.beginPath();
+    ctx.moveTo(v2.x, v2.y);
+    ctx.lineTo(t2.x, t2.y);
+    ctx.lineTo(t1.x, t1.y);
+    ctx.lineTo(v1.x, v1.y);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Top face
+    ctx.fillStyle = lightColor;
+    ctx.beginPath();
+    ctx.moveTo(t1.x, t1.y);
+    ctx.lineTo(t2.x, t2.y);
+    ctx.lineTo(t3.x, t3.y);
+    ctx.lineTo(t4.x, t4.y);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Draw contour lines
+    const levels = 5;
+    ctx.strokeStyle = shadeColor(color, 30);
+    ctx.lineWidth = 1;
+    ctx.globalAlpha = 0.4;
+    
+    for (let i = 1; i < levels; i++) {
+        const ratio = i / levels;
+        const levelOffset = offset * ratio;
+        
+        ctx.beginPath();
+        ctx.moveTo(v1.x, v1.y - levelOffset);
+        ctx.lineTo(v2.x, v2.y - levelOffset);
+        ctx.lineTo(v3.x, v3.y - levelOffset);
+        ctx.lineTo(v4.x, v4.y - levelOffset);
+        ctx.closePath();
+        ctx.stroke();
+    }
+    
+    ctx.globalAlpha = 1;
+    
+    // Glow effect
+    if (isHovered) {
+        ctx.save();
+        ctx.shadowColor = color;
+        ctx.shadowBlur = 20;
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.globalAlpha = glowAlpha;
+        
+        ctx.beginPath();
+        ctx.moveTo(t1.x, t1.y);
+        ctx.lineTo(t2.x, t2.y);
+        ctx.lineTo(t3.x, t3.y);
+        ctx.lineTo(t4.x, t4.y);
+        ctx.closePath();
+        ctx.stroke();
+        
+        ctx.restore();
+    }
+}
+
+// Shade color
+function shadeColor(color, percent) {
+    const num = parseInt(color.replace("#",""), 16);
+    const amt = Math.round(2.55 * percent);
+    const R = (num >> 16) + amt;
+    const G = (num >> 8 & 0x00FF) + amt;
+    const B = (num & 0x0000FF) + amt;
+    return "#" + (0x1000000 + (R<255?R<1?0:R:255)*0x10000 +
+        (G<255?G<1?0:G:255)*0x100 + (B<255?B<1?0:B:255))
+        .toString(16).slice(1);
+}
+
+// Animation loop
+function animate() {
+    const ctx = IsometricTopo.ctx;
+    
+    // Clear canvas
+    ctx.fillStyle = '#0a0a0f';
+    ctx.fillRect(0, 0, IsometricTopo.width, IsometricTopo.height);
+    
+    // Auto-rotate
+    if (IsometricTopo.autoRotate) {
+        IsometricTopo.rotation += 0.005;
+    }
+    
+    // Draw grid
+    drawGrid(ctx);
+    
+    // Sort countries by depth for proper rendering
+    const sorted = [...IsometricTopo.countries].sort((a, b) => {
+        const depthA = a.x + a.y;
+        const depthB = b.x + b.y;
+        return depthA - depthB;
+    });
+    
+    // Draw countries
+    sorted.forEach(country => {
+        drawIsometricBox(ctx, country);
+    });
+    
+    IsometricTopo.animationFrame = requestAnimationFrame(animate);
+}
+
+// Draw grid
+function drawGrid(ctx) {
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+    ctx.lineWidth = 1;
+    
+    const gridSize = 10;
+    const gridCount = 20;
+    
+    for (let i = -gridCount; i <= gridCount; i++) {
+        const start = toIsometric(i * gridSize, -gridCount * gridSize, 0);
+        const end = toIsometric(i * gridSize, gridCount * gridSize, 0);
+        
+        ctx.beginPath();
+        ctx.moveTo(start.x, start.y);
+        ctx.lineTo(end.x, end.y);
+        ctx.stroke();
+        
+        const start2 = toIsometric(-gridCount * gridSize, i * gridSize, 0);
+        const end2 = toIsometric(gridCount * gridSize, i * gridSize, 0);
+        
+        ctx.beginPath();
+        ctx.moveTo(start2.x, start2.y);
+        ctx.lineTo(end2.x, end2.y);
+        ctx.stroke();
+    }
+}
+
+// Show tooltip
+function showTooltip(country, x, y) {
+    const tooltip = document.getElementById('topo-tooltip');
+    if (!tooltip) return;
+    
+    tooltip.innerHTML = `
+        <div class="topo-tooltip-header">
+            <strong>${country.name}</strong>
+        </div>
+        <div class="topo-tooltip-body">
+            <div class="topo-stat">
+                <span class="topo-stat-label">Impact Elevation:</span>
+                <span class="topo-stat-value">${Math.round(country.impact.elevation)}</span>
+            </div>
+            <div class="topo-stat">
+                <span class="topo-stat-label">CO₂:</span>
+                <span class="topo-stat-value">${country.impact.co2}</span>
+            </div>
+            <div class="topo-stat">
+                <span class="topo-stat-label">Water Use:</span>
+                <span class="topo-stat-value">${country.impact.water}</span>
+            </div>
+            <div class="topo-stat">
+                <span class="topo-stat-label">Trade Volume:</span>
+                <span class="topo-stat-value">${country.impact.volume}</span>
+            </div>
+        </div>
+    `;
+    
+    tooltip.style.display = 'block';
+    tooltip.style.opacity = '1';
+}
+
+// Hide tooltip
+function hideTooltip() {
+    const tooltip = document.getElementById('topo-tooltip');
+    if (tooltip) {
+        tooltip.style.opacity = '0';
+        setTimeout(() => {
+            tooltip.style.display = 'none';
+        }, 200);
+    }
+}
+
+// Update mode
+function updateTopoMode(mode) {
+    IsometricTopo.mode = mode;
+    updateCountries();
+    
+    document.querySelectorAll('.topo-mode-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    const activeBtn = document.querySelector(`[data-mode="${mode}"]`);
+    if (activeBtn) {
+        activeBtn.classList.add('active');
+    }
+}
+
+// Update factor
+function updateTopoFactor(factor) {
+    IsometricTopo.currentFactor = factor;
+    updateCountries();
+}
+
+// Reset camera
+function resetTopoCamera() {
+    IsometricTopo.rotation = 0;
+    IsometricTopo.zoom = 1;
+    IsometricTopo.offsetY = 0;
+}
+
+// Toggle auto-rotate
+function toggleAutoRotate() {
+    IsometricTopo.autoRotate = !IsometricTopo.autoRotate;
+}
+
+// Export functions
+window.initIsometricTopo = initIsometricTopo;
+window.updateTopoMode = updateTopoMode;
+window.updateTopoFactor = updateTopoFactor;
+window.resetTopoCamera = resetTopoCamera;
+window.toggleAutoRotate = toggleAutoRotate;
+
+// Auto-initialize
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(initIsometricTopo, 500);
+    });
+} else {
+    setTimeout(initIsometricTopo, 500);
+}
+
+console.log('✅ Isometric Topographic Module Loaded');
+
+// ==========================================
+// TOPOGRAPHIC HELPER FUNCTIONS
+// Integration with main dashboard
+// ==========================================
+
+// Reset camera to default position
+function resetTopoCamera() {
+    if (!TopoState.camera || !TopoState.controls) return;
+    
+    // Animate camera back to default
+    const startPos = TopoState.camera.position.clone();
+    const targetPos = new THREE.Vector3(15, 20, 15);
+    const duration = 1500;
+    const startTime = Date.now();
+    
+    function animate() {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3); // ease out cubic
+        
+        TopoState.camera.position.lerpVectors(startPos, targetPos, eased);
+        TopoState.camera.lookAt(0, 0, 0);
+        
+        if (progress < 1) {
+            requestAnimationFrame(animate);
+        } else if (TopoState.controls) {
+            TopoState.controls.target.set(0, 0, 0);
+            TopoState.controls.update();
+        }
+    }
+    
+    animate();
+}
+
+// Toggle auto-rotate
+let autoRotateEnabled = true;
+function toggleAutoRotate() {
+    if (!TopoState.controls) return;
+    
+    autoRotateEnabled = !autoRotateEnabled;
+    TopoState.controls.autoRotate = autoRotateEnabled;
+    
+    const btn = document.querySelector('.topo-view-controls button:last-child');
+    if (btn) {
+        btn.style.background = autoRotateEnabled 
+            ? 'rgba(74, 144, 226, 0.3)' 
+            : 'rgba(10, 10, 15, 0.8)';
+    }
+}
+
+// Sync with dashboard factor selection
+function syncTopoWithFactor(factor) {
+    console.log(`Syncing topography with factor: ${factor}`);
+    
+    const factorMap = {
+        'air': 'air',
+        'water': 'water',
+        'energy': 'energy',
+        'land': 'land',
+        'materials': 'materials',
+        'employment': 'employment'
+    };
+    
+    const mappedFactor = factorMap[factor] || 'air';
+    updateTopoFactor(mappedFactor);
+    
+    // Update display
+    const factorDisplay = document.getElementById('topo-current-factor');
+    if (factorDisplay) {
+        const factorNames = {
+            'air': 'Air Quality',
+            'water': 'Water Use',
+            'energy': 'Energy Consumption',
+            'land': 'Land Use',
+            'materials': 'Materials',
+            'employment': 'Employment Impact'
+        };
+        factorDisplay.textContent = factorNames[mappedFactor] || 'Air Quality';
+    }
+}
+
+// Sync with selected countries
+function syncTopoWithCountries(countries) {
+    console.log(`Syncing topography with countries:`, countries);
+    
+    window.selectedCountries = countries;
+    
+    // Update count display
+    const countDisplay = document.getElementById('topo-country-count');
+    if (countDisplay) {
+        countDisplay.textContent = countries.length;
+    }
+    
+    // Rebuild if already initialized
+    if (TopoState.scene) {
+        rebuildTerrains();
+    }
+}
+
+// Update mode display
+function updateModeDisplay(mode) {
+    const modeDisplay = document.getElementById('topo-current-mode');
+    if (modeDisplay) {
+        const modeNames = {
+            'impact': 'Impact',
+            'volume': 'Volume',
+            'composite': 'Composite'
+        };
+        modeDisplay.textContent = modeNames[mode] || 'Impact';
+    }
+}
+
+// Hook into existing factor button system
+if (typeof initializeFactorButtons === 'function') {
+    const originalInitialize = initializeFactorButtons;
+    initializeFactorButtons = function() {
+        originalInitialize();
+        
+        // Add topography sync to factor buttons
+        const factorButtons = document.querySelectorAll('.factor-button');
+        factorButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const factor = button.dataset.factor;
+                setTimeout(() => {
+                    syncTopoWithFactor(factor);
+                }, 100);
+            });
+        });
+    };
+}
+
+// Export functions
+window.resetTopoCamera = resetTopoCamera;
+window.toggleAutoRotate = toggleAutoRotate;
+window.syncTopoWithFactor = syncTopoWithFactor;
+window.syncTopoWithCountries = syncTopoWithCountries;
+window.updateModeDisplay = updateModeDisplay;
+
+console.log('✅ Topographic helper functions loaded');
