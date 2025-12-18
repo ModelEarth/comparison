@@ -541,6 +541,165 @@
             </div>
         </section>
 
+        <!-- ==========================================
+             3D TOPOGRAPHIC IMPACT CARTOGRAM
+             ========================================== -->
+        <section class="topo-section charts-section category-section">
+            <div class="section-header">
+                <div class="section-icon">🗻</div>
+                <div class="section-title-group">
+                    <h2>Topographic Impact Cartogram</h2>
+                    <p class="section-subtitle">3D terrain visualization where height represents environmental impact intensity</p>
+                </div>
+            </div>
+            
+            <div class="topo-container">
+                <!-- Info Panel -->
+                <div class="topo-info-panel">
+                    <div class="topo-description">
+                        <h3>How to Read This Map</h3>
+                        <p>
+                            Each country is represented as a 3D terrain tile. The height and topographic contours 
+                            show the magnitude of environmental impact, trade volume, or a composite score.
+                        </p>
+                        
+                        <div class="topo-legend">
+                            <h4>Terrain Height Indicates:</h4>
+                            <div class="legend-items">
+                                <div class="legend-item">
+                                    <div class="legend-peak" style="background: linear-gradient(to top, #2ecc71, #3498db)"></div>
+                                    <span>Low Impact (0-50)</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-peak" style="background: linear-gradient(to top, #3498db, #f39c12)"></div>
+                                    <span>Medium Impact (50-75)</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-peak" style="background: linear-gradient(to top, #f39c12, #e74c3c)"></div>
+                                    <span>High Impact (75-100)</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="topo-features">
+                            <h4>Visual Features:</h4>
+                            <ul>
+                                <li><strong>Contour Lines</strong> - Like topographic maps, showing elevation levels</li>
+                                <li><strong>Color Gradient</strong> - Cool (green/blue) to warm (orange/red)</li>
+                                <li><strong>3D Terrain</strong> - Realistic mountain-like formations</li>
+                                <li><strong>Glow Effects</strong> - Subtle illumination around high-impact regions</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- Mode Controls -->
+                    <div class="topo-controls">
+                        <h4>Visualization Mode</h4>
+                        <div class="topo-mode-buttons">
+                            <button class="topo-mode-btn active" data-mode="impact" onclick="updateTopoMode('impact')">
+                                <span class="mode-icon">🌡️</span>
+                                <span class="mode-label">Impact Mode</span>
+                                <span class="mode-desc">Height = Environmental Impact</span>
+                            </button>
+                            <button class="topo-mode-btn" data-mode="volume" onclick="updateTopoMode('volume')">
+                                <span class="mode-icon">📦</span>
+                                <span class="mode-label">Volume Mode</span>
+                                <span class="mode-desc">Height = Trade Volume</span>
+                            </button>
+                            <button class="topo-mode-btn" data-mode="composite" onclick="updateTopoMode('composite')">
+                                <span class="mode-icon">⚖️</span>
+                                <span class="mode-label">Composite Mode</span>
+                                <span class="mode-desc">Height = Impact × Volume</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Camera Controls Info -->
+                    <div class="topo-interaction-guide">
+                        <h4>3D Navigation:</h4>
+                        <div class="interaction-hints">
+                            <div class="hint-item">
+                                <span class="hint-icon">🖱️</span>
+                                <span><strong>Left Drag</strong> - Rotate view</span>
+                            </div>
+                            <div class="hint-item">
+                                <span class="hint-icon">🖱️</span>
+                                <span><strong>Right Drag</strong> - Pan camera</span>
+                            </div>
+                            <div class="hint-item">
+                                <span class="hint-icon">🔍</span>
+                                <span><strong>Scroll</strong> - Zoom in/out</span>
+                            </div>
+                            <div class="hint-item">
+                                <span class="hint-icon">👆</span>
+                                <span><strong>Hover</strong> - View country details</span>
+                            </div>
+                            <div class="hint-item">
+                                <span class="hint-icon">🖱️</span>
+                                <span><strong>Click</strong> - Highlight country</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Stats Summary -->
+                    <div class="topo-stats-summary">
+                        <h4>Current Selection:</h4>
+                        <div class="summary-stat">
+                            <span class="stat-label">Countries Displayed:</span>
+                            <span class="stat-value" id="topo-country-count">14</span>
+                        </div>
+                        <div class="summary-stat">
+                            <span class="stat-label">Environmental Factor:</span>
+                            <span class="stat-value" id="topo-current-factor">Air Quality</span>
+                        </div>
+                        <div class="summary-stat">
+                            <span class="stat-label">Visualization Mode:</span>
+                            <span class="stat-value" id="topo-current-mode">Impact</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 3D Visualization Container -->
+                <div class="topo-3d-wrapper">
+                    <div id="topo-3d-container" class="topo-3d-canvas"></div>
+                    
+                    <!-- Loading Overlay -->
+                    <div class="topo-loading active" id="topo-loading">
+                        <div class="loading-spinner"></div>
+                        <p>Rendering 3D Terrain...</p>
+                        <button onclick="initIsometricTopo()" style="margin-top: 20px; padding: 10px 20px; background: #4a90e2; border: none; border-radius: 8px; color: white; cursor: pointer; font-size: 14px;">
+                            Click to Initialize 3D View
+                        </button>
+                    </div>
+                    
+                    <!-- Tooltip -->
+                    <div id="topo-tooltip" class="topo-tooltip">
+                        <div class="topo-tooltip-header">
+                            <strong>Country Name</strong>
+                        </div>
+                        <div class="topo-tooltip-body">
+                            <div class="topo-stat">
+                                <span class="topo-stat-label">Impact Elevation:</span>
+                                <span class="topo-stat-value">85</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- View Controls Overlay -->
+                    <div class="topo-view-controls">
+                        <button class="view-control-btn" title="Reset Camera" onclick="resetTopoCamera()">
+                            <span>🎯</span>
+                        </button>
+                        <button class="view-control-btn" title="Toggle Auto-Rotate" onclick="toggleAutoRotate()">
+                            <span>🔄</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+
         <section class="insights-section">
             <h2>Key Insights</h2>
             <div id="insights"></div>
@@ -552,5 +711,8 @@
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="script.js"></script>
+
+
+
 </body>
 </html>
