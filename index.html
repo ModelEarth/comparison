@@ -8,11 +8,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <link type="text/css" rel="stylesheet" href="../localsite/css/base.css" id="/localsite/css/base.css" />
-<script type="text/javascript" src="../localsite/js/localsite.js?showheader=true&showsearch=true&showfooter=false"></script>
+<link type="text/css" rel="stylesheet" href="../localsite/css/base.css" id="/localsite/css/styles/notion.css" />
+
+<script type="text/javascript" src="../localsite/js/localsite.js?showheader=true&showsearch=true&showfooter=true"></script>
       
 <script>
 loadMarkdown("README.md", "readmeDiv", "_parent");
 loadMarkdown("../profile/trade/rightside.md", "rightsideDiv", "_parent");
+
+loadMarkdown("CLAUDE.md", "claudeDiv", "_parent");
 </script>
 
 </head>
@@ -23,6 +27,9 @@ loadMarkdown("../profile/trade/rightside.md", "rightsideDiv", "_parent");
       <div id="rightsideDiv"></div>
   </div>
   <div id="readmeDiv"></div>
+
+  <div id="claudeDiv"></div>
+
 </div>
 </body>
 </html>
