@@ -545,13 +545,13 @@ function updateChartsForCategory(category) {
                 createWaterCharts();
                 break;
             case 'land':
-                createLandCharts();
+                createLandUseCharts();
                 break;
             case 'energy':
                 createEnergyCharts();
                 break;
             case 'material':
-                createMaterialCharts();
+                createMaterialsCharts();
                 break;
             case 'employment':
                 createEmploymentCharts();
@@ -726,7 +726,14 @@ function createAirEmissionsCharts() {
 function createWaterCharts() {
     // Water Usage Comparison
     const ctx1 = document.getElementById('water-usage-comparison');
-    if (charts.waterComparison) charts.waterComparison.destroy();
+    if (!ctx1) {
+        console.warn('water-usage-comparison canvas not found');
+        return;
+    }
+    
+    if (charts.waterComparison) {
+        charts.waterComparison.destroy();
+    }
     
     const selectedData = Array.from(selectedCountries).map(code => ({
         country: COUNTRIES[code].name,
@@ -782,10 +789,17 @@ function createWaterCharts() {
 
     // Water Intensity by Sectors
     const ctx2 = document.getElementById('water-intensity-sectors');
-    if (charts.waterSectors) charts.waterSectors.destroy();
+    if (!ctx2) {
+        console.warn('water-intensity-sectors canvas not found');
+        return;
+    }
+    
+    if (charts.waterSectors) {
+        charts.waterSectors.destroy();
+    }
     
     charts.waterSectors = new Chart(ctx2, {
-        type: 'horizontalBar',
+        type: 'bar',
         data: {
             labels: ['Textiles', 'Agriculture', 'Food Processing', 'Chemicals', 'Electronics'],
             datasets: [{
@@ -795,6 +809,7 @@ function createWaterCharts() {
             }]
         },
         options: {
+            indexAxis: 'y',
             responsive: true,
             plugins: {
                 title: {
@@ -817,7 +832,14 @@ function createWaterCharts() {
 
     // Water Stress Indicator
     const ctx3 = document.getElementById('water-stress-indicator');
-    if (charts.waterStress) charts.waterStress.destroy();
+    if (!ctx3) {
+        console.warn('water-stress-indicator canvas not found');
+        return;
+    }
+    
+    if (charts.waterStress) {
+        charts.waterStress.destroy();
+    }
     
     const stressData = Array.from(selectedCountries).map(code => {
         const stress = code === 'IN' ? 75 : code === 'US' ? 45 : Math.random() * 80 + 20;
@@ -872,7 +894,14 @@ function createWaterCharts() {
 
     // Water Efficiency Trends
     const ctx4 = document.getElementById('water-efficiency-trends');
-    if (charts.waterEfficiency) charts.waterEfficiency.destroy();
+    if (!ctx4) {
+        console.warn('water-efficiency-trends canvas not found');
+        return;
+    }
+    
+    if (charts.waterEfficiency) {
+        charts.waterEfficiency.destroy();
+    }
     
     const efficiencyData = Array.from(selectedCountries).map(code => ({
         label: `${COUNTRIES[code].flag} ${COUNTRIES[code].name}`,
@@ -922,51 +951,43 @@ function createWaterCharts() {
 // ... (implementation would be similar to above patterns)
 
 // Create placeholder charts for other categories
-function createLandCharts() {
-    console.log('Creating land use charts...');
-    // Implementation similar to air and water charts
-}
-
 function createEnergyCharts() {
-    console.log('Creating energy charts...');
-    // Implementation similar to air and water charts
-}
-
-function createMaterialCharts() {
-    console.log('Creating material charts...');
-    // Implementation similar to air and water charts
-}
-
-function createEmploymentCharts() {
-    // Employment Comparison
-    const ctx1 = document.getElementById('employment-comparison');
-    if (charts.employmentComparison) charts.employmentComparison.destroy();
+    // Energy Consumption Comparison
+    const ctx1 = document.getElementById('energy-consumption-comparison');
+    if (!ctx1) {
+        console.warn('energy-consumption-comparison canvas not found');
+        return;
+    }
+    
+    if (charts.energyComparison) {
+        charts.energyComparison.destroy();
+    }
     
     const selectedData = Array.from(selectedCountries).map(code => ({
         country: COUNTRIES[code].name,
-        people: countryData[code].employment * 0.7,
-        hours: countryData[code].employment * 0.3,
+        renewable: countryData[code].energy * 0.35,
+        fossil: countryData[code].energy * 0.65,
         color: COUNTRIES[code].color,
         flag: COUNTRIES[code].flag
     }));
 
-    charts.employmentComparison = new Chart(ctx1, {
+    charts.energyComparison = new Chart(ctx1, {
         type: 'bar',
         data: {
             labels: selectedData.map(d => `${d.flag} ${d.country}`),
             datasets: [
                 {
-                    label: 'Employment People',
-                    data: selectedData.map(d => d.people),
+                    label: 'Renewable Energy',
+                    data: selectedData.map(d => d.renewable),
                     backgroundColor: '#27ae6080',
                     borderColor: '#27ae60',
                     borderWidth: 2
                 },
                 {
-                    label: 'Employment Hours',
-                    data: selectedData.map(d => d.hours),
-                    backgroundColor: '#2ecc7180',
-                    borderColor: '#2ecc71',
+                    label: 'Fossil Fuel Energy',
+                    data: selectedData.map(d => d.fossil),
+                    backgroundColor: '#e74c3c80',
+                    borderColor: '#e74c3c',
                     borderWidth: 2
                 }
             ]
@@ -976,16 +997,621 @@ function createEmploymentCharts() {
             plugins: {
                 title: {
                     display: true,
-                    text: 'Employment Impact by Country',
+                    text: 'Energy Consumption Patterns by Country',
                     font: { size: 16, weight: 'bold' }
                 }
             },
             scales: {
                 y: {
                     beginAtZero: true,
+                    stacked: true,
                     title: {
                         display: true,
-                        text: 'Employment Factor Relationships'
+                        text: 'Energy (TWh)'
+                    }
+                },
+                x: { stacked: true }
+            }
+        }
+    });
+
+    // Energy Intensity by Sectors
+    const ctx2 = document.getElementById('energy-intensity-sectors');
+    if (!ctx2) {
+        console.warn('energy-intensity-sectors canvas not found');
+        return;
+    }
+    
+    if (charts.energySectors) {
+        charts.energySectors.destroy();
+    }
+    
+    charts.energySectors = new Chart(ctx2, {
+        type: 'bar',
+        data: {
+            labels: ['Steel Production', 'Cement', 'Chemicals', 'Electronics', 'Textiles'],
+            datasets: [{
+                label: 'Energy Intensity',
+                data: [88, 82, 65, 48, 35],
+                backgroundColor: ['#e74c3c', '#f39c12', '#27ae60', '#3498db', '#9b59b6']
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Energy Intensity by Export Sectors',
+                    font: { size: 16, weight: 'bold' }
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Energy Intensity Index'
+                    }
+                }
+            }
+        }
+    });
+
+    // Carbon Emissions
+    const ctx3 = document.getElementById('carbon-emissions');
+    if (!ctx3) {
+        console.warn('carbon-emissions canvas not found');
+        return;
+    }
+    
+    if (charts.carbonEmissions) {
+        charts.carbonEmissions.destroy();
+    }
+    
+    const emissionsData = Array.from(selectedCountries).map(code => {
+        const emissions = code === 'CN' ? 85 : code === 'US' ? 70 : Math.random() * 60 + 20;
+        return {
+            country: COUNTRIES[code].name,
+            emissions: emissions,
+            color: emissions > 70 ? '#e74c3c' : emissions > 50 ? '#f39c12' : '#27ae60'
+        };
+    });
+
+    charts.carbonEmissions = new Chart(ctx3, {
+        type: 'scatter',
+        data: {
+            datasets: [{
+                label: 'Carbon Emissions Level',
+                data: emissionsData.map((d, i) => ({ x: i, y: d.emissions })),
+                backgroundColor: emissionsData.map(d => d.color),
+                borderColor: emissionsData.map(d => d.color),
+                pointRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Carbon Emissions Assessment',
+                    font: { size: 16, weight: 'bold' }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    title: {
+                        display: true,
+                        text: 'Emissions Index (CO2e)'
+                    }
+                },
+                x: {
+                    type: 'linear',
+                    position: 'bottom',
+                    ticks: {
+                        callback: function(value, index) {
+                            return emissionsData[index]?.country || '';
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Renewable Energy Trends
+    const ctx4 = document.getElementById('renewable-energy-trends');
+    if (!ctx4) {
+        console.warn('renewable-energy-trends canvas not found');
+        return;
+    }
+    
+    if (charts.renewableEnergy) {
+        charts.renewableEnergy.destroy();
+    }
+    
+    const renewableData = Array.from(selectedCountries).map(code => ({
+        label: `${COUNTRIES[code].flag} ${COUNTRIES[code].name}`,
+        data: [
+            Math.random() * 15 + 15,
+            Math.random() * 15 + 20,
+            Math.random() * 15 + 25,
+            Math.random() * 15 + 30,
+            Math.random() * 15 + 35
+        ],
+        borderColor: COUNTRIES[code].color,
+        backgroundColor: COUNTRIES[code].color + '20',
+        tension: 0.4
+    }));
+
+    charts.renewableEnergy = new Chart(ctx4, {
+        type: 'line',
+        data: {
+            labels: ['2015', '2016', '2017', '2018', '2019'],
+            datasets: renewableData
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Renewable Energy Adoption Trends',
+                    font: { size: 16, weight: 'bold' }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 60,
+                    title: {
+                        display: true,
+                        text: 'Renewable Share (%)'
+                    }
+                }
+            }
+        }
+    });
+}function createLandUseCharts() {
+    // Land Use Comparison
+    const ctx1 = document.getElementById('land-use-comparison');
+    if (!ctx1) {
+        console.warn('land-use-comparison canvas not found');
+        return;
+    }
+    
+    if (charts.landComparison) {
+        charts.landComparison.destroy();
+    }
+    
+    const selectedData = Array.from(selectedCountries).map(code => ({
+        country: COUNTRIES[code].name,
+        agricultural: countryData[code].land * 0.7,
+        industrial: countryData[code].land * 0.3,
+        color: COUNTRIES[code].color,
+        flag: COUNTRIES[code].flag
+    }));
+
+    charts.landComparison = new Chart(ctx1, {
+        type: 'bar',
+        data: {
+            labels: selectedData.map(d => `${d.flag} ${d.country}`),
+            datasets: [
+                {
+                    label: 'Agricultural Land',
+                    data: selectedData.map(d => d.agricultural),
+                    backgroundColor: '#27ae6080',
+                    borderColor: '#27ae60',
+                    borderWidth: 2
+                },
+                {
+                    label: 'Industrial Land',
+                    data: selectedData.map(d => d.industrial),
+                    backgroundColor: '#95a5a680',
+                    borderColor: '#95a5a6',
+                    borderWidth: 2
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Land Use Patterns by Country',
+                    font: { size: 16, weight: 'bold' }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    stacked: true,
+                    title: {
+                        display: true,
+                        text: 'Land Use Factor (hectares)'
+                    }
+                },
+                x: { stacked: true }
+            }
+        }
+    });
+
+    // Land Intensity by Sectors
+    const ctx2 = document.getElementById('land-intensity-sectors');
+    if (!ctx2) {
+        console.warn('land-intensity-sectors canvas not found');
+        return;
+    }
+    
+    if (charts.landSectors) {
+        charts.landSectors.destroy();
+    }
+    
+    charts.landSectors = new Chart(ctx2, {
+        type: 'bar',
+        data: {
+            labels: ['Beef Production', 'Dairy', 'Textiles', 'Forestry', 'Manufacturing'],
+            datasets: [{
+                label: 'Land Intensity',
+                data: [95, 68, 52, 78, 12],
+                backgroundColor: ['#e74c3c', '#f39c12', '#27ae60', '#3498db', '#9b59b6']
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Land Intensity by Export Sectors',
+                    font: { size: 16, weight: 'bold' }
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Land Intensity Index'
+                    }
+                }
+            }
+        }
+    });
+
+    // Land Degradation Risk
+    const ctx3 = document.getElementById('land-degradation-risk');
+    if (!ctx3) {
+        console.warn('land-degradation-risk canvas not found');
+        return;
+    }
+    
+    if (charts.landDegradation) {
+        charts.landDegradation.destroy();
+    }
+    
+    const degradationData = Array.from(selectedCountries).map(code => {
+        const risk = code === 'IN' ? 65 : code === 'CN' ? 55 : Math.random() * 70 + 15;
+        return {
+            country: COUNTRIES[code].name,
+            risk: risk,
+            color: risk > 60 ? '#e74c3c' : risk > 40 ? '#f39c12' : '#27ae60'
+        };
+    });
+
+    charts.landDegradation = new Chart(ctx3, {
+        type: 'scatter',
+        data: {
+            datasets: [{
+                label: 'Degradation Risk Level',
+                data: degradationData.map((d, i) => ({ x: i, y: d.risk })),
+                backgroundColor: degradationData.map(d => d.color),
+                borderColor: degradationData.map(d => d.color),
+                pointRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Land Degradation Risk Assessment',
+                    font: { size: 16, weight: 'bold' }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    title: {
+                        display: true,
+                        text: 'Degradation Risk Index (%)'
+                    }
+                },
+                x: {
+                    type: 'linear',
+                    position: 'bottom',
+                    ticks: {
+                        callback: function(value, index) {
+                            return degradationData[index]?.country || '';
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Land Productivity Trends
+    const ctx4 = document.getElementById('land-productivity-trends');
+    if (!ctx4) {
+        console.warn('land-productivity-trends canvas not found');
+        return;
+    }
+    
+    if (charts.landProductivity) {
+        charts.landProductivity.destroy();
+    }
+    
+    const productivityData = Array.from(selectedCountries).map(code => ({
+        label: `${COUNTRIES[code].flag} ${COUNTRIES[code].name}`,
+        data: [
+            Math.random() * 15 + 70,
+            Math.random() * 15 + 72,
+            Math.random() * 15 + 74,
+            Math.random() * 15 + 76,
+            Math.random() * 15 + 78
+        ],
+        borderColor: COUNTRIES[code].color,
+        backgroundColor: COUNTRIES[code].color + '20',
+        tension: 0.4
+    }));
+
+    charts.landProductivity = new Chart(ctx4, {
+        type: 'line',
+        data: {
+            labels: ['2015', '2016', '2017', '2018', '2019'],
+            datasets: productivityData
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Land Productivity Trends',
+                    font: { size: 16, weight: 'bold' }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    min: 60,
+                    max: 100,
+                    title: {
+                        display: true,
+                        text: 'Productivity Index'
+                    }
+                }
+            }
+        }
+    });
+}
+
+function createMaterialsCharts() {
+    // Material Flow Comparison
+    const ctx1 = document.getElementById('material-flow-comparison');
+    if (!ctx1) {
+        console.warn('material-flow-comparison canvas not found');
+        return;
+    }
+    
+    if (charts.materialFlow) {
+        charts.materialFlow.destroy();
+    }
+    
+    const selectedData = Array.from(selectedCountries).map(code => ({
+        country: COUNTRIES[code].name,
+        raw: countryData[code].materials * 0.55,
+        processed: countryData[code].materials * 0.45,
+        color: COUNTRIES[code].color,
+        flag: COUNTRIES[code].flag
+    }));
+
+    charts.materialFlow = new Chart(ctx1, {
+        type: 'bar',
+        data: {
+            labels: selectedData.map(d => `${d.flag} ${d.country}`),
+            datasets: [
+                {
+                    label: 'Raw Materials',
+                    data: selectedData.map(d => d.raw),
+                    backgroundColor: '#95a5a680',
+                    borderColor: '#95a5a6',
+                    borderWidth: 2
+                },
+                {
+                    label: 'Processed Materials',
+                    data: selectedData.map(d => d.processed),
+                    backgroundColor: '#34495e80',
+                    borderColor: '#34495e',
+                    borderWidth: 2
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Material Flow Patterns by Country',
+                    font: { size: 16, weight: 'bold' }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    stacked: true,
+                    title: {
+                        display: true,
+                        text: 'Material Volume (million tonnes)'
+                    }
+                },
+                x: { stacked: true }
+            }
+        }
+    });
+
+    // Material Intensity by Sectors
+    const ctx2 = document.getElementById('material-intensity-sectors');
+    if (!ctx2) {
+        console.warn('material-intensity-sectors canvas not found');
+        return;
+    }
+    
+    if (charts.materialSectors) {
+        charts.materialSectors.destroy();
+    }
+    
+    charts.materialSectors = new Chart(ctx2, {
+        type: 'bar',
+        data: {
+            labels: ['Construction', 'Automotive', 'Electronics', 'Packaging', 'Textiles'],
+            datasets: [{
+                label: 'Material Intensity',
+                data: [92, 78, 55, 42, 38],
+                backgroundColor: ['#e74c3c', '#f39c12', '#27ae60', '#3498db', '#9b59b6']
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Material Intensity by Export Sectors',
+                    font: { size: 16, weight: 'bold' }
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Material Intensity Index'
+                    }
+                }
+            }
+        }
+    });
+
+    // Recycling Rates
+    const ctx3 = document.getElementById('recycling-rates');
+    if (!ctx3) {
+        console.warn('recycling-rates canvas not found');
+        return;
+    }
+    
+    if (charts.recyclingRates) {
+        charts.recyclingRates.destroy();
+    }
+    
+    const recyclingData = Array.from(selectedCountries).map(code => {
+        const rate = code === 'DE' ? 68 : code === 'JP' ? 62 : Math.random() * 50 + 20;
+        return {
+            country: COUNTRIES[code].name,
+            rate: rate,
+            color: rate > 60 ? '#27ae60' : rate > 40 ? '#f39c12' : '#e74c3c'
+        };
+    });
+
+    charts.recyclingRates = new Chart(ctx3, {
+        type: 'scatter',
+        data: {
+            datasets: [{
+                label: 'Recycling Rate',
+                data: recyclingData.map((d, i) => ({ x: i, y: d.rate })),
+                backgroundColor: recyclingData.map(d => d.color),
+                borderColor: recyclingData.map(d => d.color),
+                pointRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Material Recycling Rates',
+                    font: { size: 16, weight: 'bold' }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    title: {
+                        display: true,
+                        text: 'Recycling Rate (%)'
+                    }
+                },
+                x: {
+                    type: 'linear',
+                    position: 'bottom',
+                    ticks: {
+                        callback: function(value, index) {
+                            return recyclingData[index]?.country || '';
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Circular Economy Trends
+    const ctx4 = document.getElementById('circular-economy-trends');
+    if (!ctx4) {
+        console.warn('circular-economy-trends canvas not found');
+        return;
+    }
+    
+    if (charts.circularEconomy) {
+        charts.circularEconomy.destroy();
+    }
+    
+    const circularData = Array.from(selectedCountries).map(code => ({
+        label: `${COUNTRIES[code].flag} ${COUNTRIES[code].name}`,
+        data: [
+            Math.random() * 10 + 25,
+            Math.random() * 10 + 30,
+            Math.random() * 10 + 35,
+            Math.random() * 10 + 40,
+            Math.random() * 10 + 45
+        ],
+        borderColor: COUNTRIES[code].color,
+        backgroundColor: COUNTRIES[code].color + '20',
+        tension: 0.4
+    }));
+
+    charts.circularEconomy = new Chart(ctx4, {
+        type: 'line',
+        data: {
+            labels: ['2015', '2016', '2017', '2018', '2019'],
+            datasets: circularData
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Circular Economy Progress',
+                    font: { size: 16, weight: 'bold' }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 70,
+                    title: {
+                        display: true,
+                        text: 'Circularity Index (%)'
                     }
                 }
             }
