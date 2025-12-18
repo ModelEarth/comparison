@@ -1058,35 +1058,36 @@ function createEnergyCharts() {
         }
     });
 
-    // Carbon Emissions
-    const ctx3 = document.getElementById('carbon-emissions');
+// Renewable Share
+    const ctx3 = document.getElementById('renewable-share');
     if (!ctx3) {
-        console.warn('carbon-emissions canvas not found');
+        console.warn('renewable-share canvas not found');
         return;
     }
     
-    if (charts.carbonEmissions) {
-        charts.carbonEmissions.destroy();
+    if (charts.renewableShare) {
+        charts.renewableShare.destroy();
     }
     
-    const emissionsData = Array.from(selectedCountries).map(code => {
-        const emissions = code === 'CN' ? 85 : code === 'US' ? 70 : Math.random() * 60 + 20;
+    const renewableShareData = Array.from(selectedCountries).map(code => {
+        const share = code === 'DE' ? 45 : code === 'US' ? 18 : Math.random() * 40 + 10;
         return {
             country: COUNTRIES[code].name,
-            emissions: emissions,
-            color: emissions > 70 ? '#e74c3c' : emissions > 50 ? '#f39c12' : '#27ae60'
+            share: share,
+            color: COUNTRIES[code].color  // Use each country's unique color
         };
     });
 
-    charts.carbonEmissions = new Chart(ctx3, {
-        type: 'scatter',
+    charts.renewableShare = new Chart(ctx3, {
+        type: 'doughnut',
         data: {
+            labels: renewableShareData.map(d => d.country),
             datasets: [{
-                label: 'Carbon Emissions Level',
-                data: emissionsData.map((d, i) => ({ x: i, y: d.emissions })),
-                backgroundColor: emissionsData.map(d => d.color),
-                borderColor: emissionsData.map(d => d.color),
-                pointRadius: 8
+                label: 'Renewable Energy Share',
+                data: renewableShareData.map(d => d.share),
+                backgroundColor: renewableShareData.map(d => d.color),  // Each country gets its own color
+                borderColor: '#fff',
+                borderWidth: 2
             }]
         },
         options: {
@@ -1094,25 +1095,16 @@ function createEnergyCharts() {
             plugins: {
                 title: {
                     display: true,
-                    text: 'Carbon Emissions Assessment',
+                    text: 'Renewable Energy Share (%)',
                     font: { size: 16, weight: 'bold' }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    max: 100,
-                    title: {
-                        display: true,
-                        text: 'Emissions Index (CO2e)'
-                    }
                 },
-                x: {
-                    type: 'linear',
-                    position: 'bottom',
-                    ticks: {
-                        callback: function(value, index) {
-                            return emissionsData[index]?.country || '';
+                legend: {
+                    position: 'bottom'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.label + ': ' + context.parsed.toFixed(1) + '%';
                         }
                     }
                 }
@@ -1120,53 +1112,54 @@ function createEnergyCharts() {
         }
     });
 
-    // Renewable Energy Trends
-    const ctx4 = document.getElementById('renewable-energy-trends');
+    // Energy Efficiency
+    const ctx4 = document.getElementById('energy-efficiency');
     if (!ctx4) {
-        console.warn('renewable-energy-trends canvas not found');
+        console.warn('energy-efficiency canvas not found');
         return;
     }
     
-    if (charts.renewableEnergy) {
-        charts.renewableEnergy.destroy();
+    if (charts.energyEfficiency) {
+        charts.energyEfficiency.destroy();
     }
     
-    const renewableData = Array.from(selectedCountries).map(code => ({
+    const efficiencyTrendData = Array.from(selectedCountries).map(code => ({
         label: `${COUNTRIES[code].flag} ${COUNTRIES[code].name}`,
         data: [
-            Math.random() * 15 + 15,
-            Math.random() * 15 + 20,
-            Math.random() * 15 + 25,
-            Math.random() * 15 + 30,
-            Math.random() * 15 + 35
+            Math.random() * 10 + 70,
+            Math.random() * 10 + 72,
+            Math.random() * 10 + 74,
+            Math.random() * 10 + 76,
+            Math.random() * 10 + 78
         ],
         borderColor: COUNTRIES[code].color,
         backgroundColor: COUNTRIES[code].color + '20',
         tension: 0.4
     }));
 
-    charts.renewableEnergy = new Chart(ctx4, {
+    charts.energyEfficiency = new Chart(ctx4, {
         type: 'line',
         data: {
             labels: ['2015', '2016', '2017', '2018', '2019'],
-            datasets: renewableData
+            datasets: efficiencyTrendData
         },
         options: {
             responsive: true,
             plugins: {
                 title: {
                     display: true,
-                    text: 'Renewable Energy Adoption Trends',
+                    text: 'Energy Efficiency Trends',
                     font: { size: 16, weight: 'bold' }
                 }
             },
             scales: {
                 y: {
-                    beginAtZero: true,
-                    max: 60,
+                    beginAtZero: false,
+                    min: 60,
+                    max: 100,
                     title: {
                         display: true,
-                        text: 'Renewable Share (%)'
+                        text: 'Efficiency Index (%)'
                     }
                 }
             }
@@ -1613,6 +1606,140 @@ function createMaterialsCharts() {
                         display: true,
                         text: 'Circularity Index (%)'
                     }
+                }
+            }
+        }
+    });
+}
+
+function createEmploymentCharts() {
+    // Jobs Created Comparison
+    const ctx1 = document.getElementById('jobs-created-comparison');
+    if (!ctx1) return;
+    
+    if (charts.jobsComparison) charts.jobsComparison.destroy();
+    
+    const selectedData = Array.from(selectedCountries).map(code => ({
+        country: COUNTRIES[code].name,
+        jobs: countryData[code].employment,
+        color: COUNTRIES[code].color,
+        flag: COUNTRIES[code].flag
+    }));
+
+    charts.jobsComparison = new Chart(ctx1, {
+        type: 'bar',
+        data: {
+            labels: selectedData.map(d => `${d.flag} ${d.country}`),
+            datasets: [{
+                label: 'Jobs Created',
+                data: selectedData.map(d => d.jobs),
+                backgroundColor: selectedData.map(d => d.color + '80'),
+                borderColor: selectedData.map(d => d.color),
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Employment Impact by Country',
+                    font: { size: 16, weight: 'bold' }
+                }
+            }
+        }
+    });
+
+    // Employment by Sectors
+    const ctx2 = document.getElementById('employment-by-sectors');
+    if (!ctx2) return;
+    
+    if (charts.employmentSectors) charts.employmentSectors.destroy();
+    
+    charts.employmentSectors = new Chart(ctx2, {
+        type: 'bar',
+        data: {
+            labels: ['Manufacturing', 'Services', 'Agriculture', 'Construction', 'Transport'],
+            datasets: [{
+                label: 'Employment',
+                data: [45, 35, 28, 18, 15],
+                backgroundColor: ['#e74c3c', '#f39c12', '#27ae60', '#3498db', '#9b59b6']
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Employment by Sector',
+                    font: { size: 16, weight: 'bold' }
+                }
+            }
+        }
+    });
+
+    // Wage Levels
+    const ctx3 = document.getElementById('wage-levels');
+    if (!ctx3) return;
+    
+    if (charts.wageLevels) charts.wageLevels.destroy();
+    
+    const wageData = Array.from(selectedCountries).map(code => ({
+        country: COUNTRIES[code].name,
+        wage: code === 'US' ? 65 : code === 'IN' ? 25 : Math.random() * 50 + 30,
+        color: COUNTRIES[code].color
+    }));
+
+    charts.wageLevels = new Chart(ctx3, {
+        type: 'scatter',
+        data: {
+            datasets: [{
+                label: 'Average Wage Index',
+                data: wageData.map((d, i) => ({ x: i, y: d.wage })),
+                backgroundColor: wageData.map(d => d.color),
+                pointRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Wage Levels by Country',
+                    font: { size: 16, weight: 'bold' }
+                }
+            }
+        }
+    });
+
+    // Employment Growth Trends
+    const ctx4 = document.getElementById('employment-growth-trends');
+    if (!ctx4) return;
+    
+    if (charts.employmentGrowth) charts.employmentGrowth.destroy();
+    
+    const growthData = Array.from(selectedCountries).map(code => ({
+        label: `${COUNTRIES[code].flag} ${COUNTRIES[code].name}`,
+        data: [100, 105, 112, 118, 125],
+        borderColor: COUNTRIES[code].color,
+        backgroundColor: COUNTRIES[code].color + '20',
+        tension: 0.4
+    }));
+
+    charts.employmentGrowth = new Chart(ctx4, {
+        type: 'line',
+        data: {
+            labels: ['2015', '2016', '2017', '2018', '2019'],
+            datasets: growthData
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Employment Growth Trends',
+                    font: { size: 16, weight: 'bold' }
                 }
             }
         }
