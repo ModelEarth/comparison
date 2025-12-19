@@ -117,6 +117,97 @@ this works perfectly fine. now i want you to represent the 'Environmental Impact
 -refer this image, this is how the data is going out of the box(Added Image to explain)
 -this section is not representing the data as intented. bring the pie chart in center and make it look aesthetic(added image to explain)
 
+## Prompt 8:
+-Currently in the 'Environmental Factor Group' section has a dropdown menu to choose from different catoegories, I want you to replace that with individual buttons horizontally to select those categories. 
+
+Also, in the Environmental Impact Journey section, we have a nice timeline flow but if we see closely we have empty sections on the opposite side of each card. I want you to fill that section with one or two major points explaining a little about the adjecent country card. 
+
+In the pie chart section I want you to keep the country selection option out of the card to improve visibility of the pie chart better. 
+
+also, currently we are using apache charts, why dnt you go and use echarts to make the charts look even better and interactive. also, I want you to use the space and sections we have used to present the comparisons in a very creative way so that it should not look like wasted white space. 
+
+also I want you to use the following colour code for the entire UI 
+
+https://model.earth/localsite/css/styles/#style=notion
+
+# Follow up:
+-refer the screenshots 
+
+in the timeline section in the empty space some 1-2 pointers descriptive content should be there. 
+
+the industry chart is empty
+
+the pie chart legend is covering the chart. take that legen out of that box so pie  chart and legend both are visible and user can select accordingly
+
+# Follow Up:
+-i liked this way. but now, the right side looks too empty, so instead of clubbing everything in same pie chart make sure to make two different pie charts one for just domestic, exports and one for domestic, imports. use the same way to keep the legend and make both of them fit in the same section sideways
+
+-add a scroll bar in the country selection section next to the map
+
+-in the storyline section, make the country and information follow a zig zag pattern
+
+-Impact Intensity Meters this section has impact gauge meters. when the page loads, the impact gauge meters for all countries go out of the placeholder, but if I resize the page zoom level say from 100% to 90 and then again back to 100% then these impact gauge meters magically appear inside the placeholder properly.
+
+-🌍 Environmental Factor Group
+Select a category to analyze environmental impacts
+
+this section should freeze once we scroll down so that to select a different factor user should not be required to scroll all the way to the top. also resize the buttons inside to make it look professional
+
+
+## Prompt 9: 
+- Now, Generate a "Flow-Rings" section
+
+Requirements:
+1. Libraries: D3 v7 only (CDN). No API keys.
+2. The code must handle exactly 14 countries but support dynamic selection of any subset (1..14).
+3. Visual spec:
+   - Concentric rings = one ring per trade category (derive category list from data).
+   - On each ring, render country arcs. Arc length = country's share of that category's global volume.
+   - Draw smooth Bézier connectors from origin arc → destination arc when pairwise destination info is present in the data; if not present, show connectors to a ring-level hotspot (top 3 destinations).
+   - Color arcs by country×category average impact using a perceptual sequential scale (use d3.interpolateViridis or similar).
+4. Interactivity & dynamic behavior:
+   - Provide a multi-select country selector UI (searchable dropdown) and a map-lasso alternative (if lon/lat available). When the user changes selection, call filterByCountries() and then updateVisualization() so the rings re-render showing only selected countries (if none selected, show all).
+   - Hover: highlight connectors and arcs; tooltip shows country, category, volume, impact, percent share.
+   - Click: pin selection and open right-side panel with numeric breakdown and a mini-sparkline (if time series in data).
+   - Provide ring toggles to hide/show specific categories and a reset button to restore defaults.
+5. Implementation details:
+   - Export support: 'Export SVG' and 'Export PNG' buttons that produce high-resolution assets.
+   - Code must include modular functions: computeArcAngles(categories, data), buildConnectors(routes), renderRings(svg,...), and public functions loadData(), filterByCountries(), updateVisualization().
+   - Annotate code with comments and a README snippet explaining how to map your repo's tradeflow files to the aggregate.json feed.
+6. Performance:
+   - Use precomputed aggregates if data is heavy. Provide a note and code path fallback for client-side pre-aggregation limited to 14 countries.
+7. Deliverables: full contents of index.html, styles.css, script.js. Keep everything inlineable and ready to paste
+
+## Follow-up: 
+why does the user have to select the countries again in the flowrings section if the user is alreayd selecting countries in the begining.
+increase the placeholder so that full rings are visible, also on hover a small square containing information should be there
+except tooltip rest all is working. the tooltip still doesnot show up. and if we click on any country section in the flowring chart, it is generating a pop up dialogue, it should not generate that as well.
+
+## Prompt 10: 
+
+perfect! 
+
+Now I want you to work on generating this type of charts (refer screenshots). We will call them Chord-Sankey Hybrid for Trade Flows. I want these to be a new section. where 
+What it shows
+* Between which countries goods are flowing
+* Volume of imports and exports
+* Environmental impact (color-coded by CO₂ or emissions)
+* Thickness = magnitude, color = impact intensity
+Why it’s unique
+It combines:
+* Chord diagram → relational direction (A → B)
+* Sankey diagram → volume clarity
+* Add impact scores as glow/gradient around each chord.
+
+be creative with the animations and on-click/on-hover animations as well. 
+
+screenshots are below :
+
+## Follow-up: 
+- this is really impressive but when i meant a seperate section means a seperate section inside the existing page. it should follow the current Ui and be consistent with current page. the charts should also change with the environmental factor chose by user from the frozen section of the page. also the text "Flow Visualization
+Dynamic pathways of environmental impact" is going out of the container
+- works perfect, can you add one more button for the user to download the sankey flow network as png and svg?
+
 
 
 ## What this experiment achieved
@@ -132,6 +223,9 @@ this works perfectly fine. now i want you to represent the 'Environmental Impact
 - Made the country selection section collapsible
 - Improved Storyline section with better flow.
 - Improved Pie chart representation. 
+- Improved the story line section and loaded more data
+- Improved the charts
+- Improved the current factor selection method
 
 ## Next Goal 
 - Enhance the data representaion

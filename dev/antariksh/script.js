@@ -382,88 +382,83 @@ function renderJourneyView() {
         const exportsHeight = total > 0 ? (exports / maxFlow) * 100 : 0;
         const importsHeight = total > 0 ? (imports / maxFlow) * 100 : 0;
         
+        // Generate insights for this country
+        const insights = generateCountryInsights(code, { total, domestic, exports, imports });
+        
+        // Country card content
+        const countryCard = `
+            <div class="journey-content" style="border-top: 4px solid ${country.color}">
+                <div class="journey-header">
+                    ${index % 2 === 0 ? `
+                        <span class="journey-flag"><span class="fi fi-${code.toLowerCase()}"></span></span>
+                        <h3 class="journey-title">${country.name}</h3>
+                    ` : `
+                        <h3 class="journey-title">${country.name}</h3>
+                        <span class="journey-flag"><span class="fi fi-${code.toLowerCase()}"></span></span>
+                    `}
+                </div>
+                <div class="journey-stats">
+                    <div class="journey-stat" style="background: linear-gradient(135deg, ${country.color}20, ${country.color}10)">
+                        <div class="stat-icon-large">🏭</div>
+                        <span class="stat-label-large">Domestic</span>
+                        <span class="stat-value-large">${formatNumber(domestic)}</span>
+                    </div>
+                    <div class="journey-stat" style="background: linear-gradient(135deg, ${country.color}15, ${country.color}08)">
+                        <div class="stat-icon-large">📤</div>
+                        <span class="stat-label-large">Exports</span>
+                        <span class="stat-value-large">${formatNumber(exports)}</span>
+                    </div>
+                    <div class="journey-stat" style="background: linear-gradient(135deg, ${country.color}10, ${country.color}05)">
+                        <div class="stat-icon-large">📥</div>
+                        <span class="stat-label-large">Imports</span>
+                        <span class="stat-value-large">${formatNumber(imports)}</span>
+                    </div>
+                </div>
+                <div class="journey-flow-viz">
+                    <div class="flow-bars">
+                        <div class="flow-bar" style="height: ${domesticHeight}%; background: ${country.color}">
+                            <span class="flow-label">Domestic</span>
+                        </div>
+                        <div class="flow-bar" style="height: ${exportsHeight}%; background: ${country.color}; opacity: 0.7">
+                            <span class="flow-label">Exports</span>
+                        </div>
+                        <div class="flow-bar" style="height: ${importsHeight}%; background: ${country.color}; opacity: 0.4">
+                            <span class="flow-label">Imports</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Insight card content
+        const insightCard = `
+            <div class="journey-insight">
+                <span class="insight-badge">💡 Key Insights</span>
+                <h4 class="insight-title">${country.name} Analysis</h4>
+                <ul class="insight-points">
+                    ${insights.map(i => `<li>${i}</li>`).join('')}
+                </ul>
+            </div>
+        `;
+        
+        // Marker
+        const marker = `
+            <div class="journey-marker" style="background: ${country.color}; color: white;">
+                ${index + 1}
+            </div>
+        `;
+        
+        // Zigzag pattern: even indices go left, odd indices go right
         html += `
             <div class="journey-node">
                 ${index % 2 === 0 ? `
-                    <div class="journey-content" style="border-top: 4px solid ${country.color}">
-                        <div class="journey-header">
-                            <span class="journey-flag"><span class="fi fi-${code.toLowerCase()}"></span></span>
-                            <h3 class="journey-title">${country.name}</h3>
-                        </div>
-                        <div class="journey-stats">
-                            <div class="journey-stat" style="background: linear-gradient(135deg, ${country.color}20, ${country.color}10)">
-                                <div class="stat-icon-large">🏭</div>
-                                <span class="stat-label-large">Domestic</span>
-                                <span class="stat-value-large">${formatNumber(domestic)}</span>
-                            </div>
-                            <div class="journey-stat" style="background: linear-gradient(135deg, ${country.color}15, ${country.color}08)">
-                                <div class="stat-icon-large">📤</div>
-                                <span class="stat-label-large">Exports</span>
-                                <span class="stat-value-large">${formatNumber(exports)}</span>
-                            </div>
-                            <div class="journey-stat" style="background: linear-gradient(135deg, ${country.color}10, ${country.color}05)">
-                                <div class="stat-icon-large">📥</div>
-                                <span class="stat-label-large">Imports</span>
-                                <span class="stat-value-large">${formatNumber(imports)}</span>
-                            </div>
-                        </div>
-                        <div class="journey-flow-viz">
-                            <div class="flow-bars">
-                                <div class="flow-bar" style="height: ${domesticHeight}%; background: ${country.color}">
-                                    <span class="flow-label">Domestic</span>
-                                </div>
-                                <div class="flow-bar" style="height: ${exportsHeight}%; background: ${country.color}; opacity: 0.7">
-                                    <span class="flow-label">Exports</span>
-                                </div>
-                                <div class="flow-bar" style="height: ${importsHeight}%; background: ${country.color}; opacity: 0.4">
-                                    <span class="flow-label">Imports</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="journey-marker" style="background: ${country.color}; color: white;">
-                        ${index + 1}
-                    </div>
+                    ${countryCard}
+                    ${marker}
+                    ${insightCard}
                 ` : `
-                    <div class="journey-marker" style="background: ${country.color}; color: white;">
-                        ${index + 1}
-                    </div>
-                    <div class="journey-content" style="border-top: 4px solid ${country.color}">
-                        <div class="journey-header">
-                            <h3 class="journey-title">${country.name}</h3>
-                            <span class="journey-flag"><span class="fi fi-${code.toLowerCase()}"></span></span>
-                        </div>
-                        <div class="journey-stats">
-                            <div class="journey-stat" style="background: linear-gradient(135deg, ${country.color}20, ${country.color}10)">
-                                <div class="stat-icon-large">🏭</div>
-                                <span class="stat-label-large">Domestic</span>
-                                <span class="stat-value-large">${formatNumber(domestic)}</span>
-                            </div>
-                            <div class="journey-stat" style="background: linear-gradient(135deg, ${country.color}15, ${country.color}08)">
-                                <div class="stat-icon-large">📤</div>
-                                <span class="stat-label-large">Exports</span>
-                                <span class="stat-value-large">${formatNumber(exports)}</span>
-                            </div>
-                            <div class="journey-stat" style="background: linear-gradient(135deg, ${country.color}10, ${country.color}05)">
-                                <div class="stat-icon-large">📥</div>
-                                <span class="stat-label-large">Imports</span>
-                                <span class="stat-value-large">${formatNumber(imports)}</span>
-                            </div>
-                        </div>
-                        <div class="journey-flow-viz">
-                            <div class="flow-bars">
-                                <div class="flow-bar" style="height: ${domesticHeight}%; background: ${country.color}">
-                                    <span class="flow-label">Domestic</span>
-                                </div>
-                                <div class="flow-bar" style="height: ${exportsHeight}%; background: ${country.color}; opacity: 0.7">
-                                    <span class="flow-label">Exports</span>
-                                </div>
-                                <div class="flow-bar" style="height: ${importsHeight}%; background: ${country.color}; opacity: 0.4">
-                                    <span class="flow-label">Imports</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    ${insightCard}
+                    ${marker}
+                    ${countryCard}
                 `}
             </div>
         `;
@@ -613,12 +608,19 @@ function updateAdvancedCharts() {
     updatePieChart();
     updateRadarChart();
     updateHeatmapChart();
+    updateChordChart();
     updateSankeyChart();
     updateGaugeChart();
     updateAreaChart();
     updateTreemapChart();
+    
+    // Update Flow-Rings visualization when countries change
+    if (typeof updateFlowVisualization === 'function') {
+        updateFlowVisualization();
+    }
 }
 
+// ==========================================
 function updateComparisonChart() {
     const chartDiv = document.getElementById('chart-comparison');
     if (!charts.comparison) {
@@ -1010,28 +1012,47 @@ function updateBubbleChart() {
 }
 
 function updatePieChart() {
-    const chartDiv = document.getElementById('chart-pie');
-    if (!charts.pie) {
-        charts.pie = echarts.init(chartDiv);
+    updatePieChartExports();
+    updatePieChartImports();
+}
+
+function updatePieChartExports() {
+    const chartDiv = document.getElementById('chart-pie-exports');
+    if (!chartDiv) return;
+    
+    if (!charts.pieExports) {
+        charts.pieExports = echarts.init(chartDiv);
     }
 
     const data = [];
     selectedCountries.forEach(code => {
         if (!COUNTRIES[code]) return;
         
-        TRADE_FLOWS.forEach(flow => {
-            const value = calculateTotalByFlow(code, currentFactorGroup, flow);
-            if (value > 0) {
-                data.push({
-                    name: `[${code}] ${COUNTRIES[code].name} - ${flow}`,
-                    value: value,
-                    itemStyle: {
-                        color: COUNTRIES[code].color,
-                        opacity: flow === 'domestic' ? 1 : (flow === 'exports' ? 0.7 : 0.5)
-                    }
-                });
-            }
-        });
+        // Add domestic and exports only
+        const domestic = calculateTotalByFlow(code, currentFactorGroup, 'domestic');
+        const exports = calculateTotalByFlow(code, currentFactorGroup, 'exports');
+        
+        if (domestic > 0) {
+            data.push({
+                name: `[${code}] ${COUNTRIES[code].name} - domestic`,
+                value: domestic,
+                itemStyle: {
+                    color: COUNTRIES[code].color,
+                    opacity: 1
+                }
+            });
+        }
+        
+        if (exports > 0) {
+            data.push({
+                name: `[${code}] ${COUNTRIES[code].name} - exports`,
+                value: exports,
+                itemStyle: {
+                    color: COUNTRIES[code].color,
+                    opacity: 0.6
+                }
+            });
+        }
     });
 
     const option = {
@@ -1052,25 +1073,21 @@ function updatePieChart() {
         },
         legend: {
             type: 'scroll',
-            orient: 'vertical',
-            right: 20,
-            top: 'center',
+            orient: 'horizontal',
+            bottom: 5,
+            left: 'center',
             textStyle: { 
-                fontSize: 11,
-                lineHeight: 18,
+                fontSize: 10,
                 color: '#555'
             },
-            pageIconSize: 14,
-            pageTextStyle: {
-                fontSize: 11
-            },
-            itemGap: 12,
+            pageIconSize: 10,
+            itemGap: 15,
             icon: 'circle'
         },
         series: [{
             type: 'pie',
-            radius: ['45%', '75%'],
-            center: ['50%', '50%'],
+            radius: ['40%', '70%'],
+            center: ['50%', '42%'],
             roseType: 'radius',
             avoidLabelOverlap: true,
             itemStyle: {
@@ -1083,17 +1100,17 @@ function updatePieChart() {
             label: {
                 show: true,
                 position: 'outside',
-                fontSize: 12,
+                fontSize: 11,
                 fontWeight: 'bold',
-                lineHeight: 16,
+                lineHeight: 14,
                 formatter: '{d}%',
                 color: '#333'
             },
             labelLine: {
                 show: true,
-                length: 15,
-                length2: 15,
-                smooth: 0.5,
+                length: 10,
+                length2: 10,
+                smooth: 0.3,
                 lineStyle: {
                     width: 2
                 }
@@ -1101,7 +1118,7 @@ function updatePieChart() {
             emphasis: {
                 label: {
                     show: true,
-                    fontSize: 14,
+                    fontSize: 13,
                     fontWeight: 'bold'
                 },
                 itemStyle: {
@@ -1117,7 +1134,128 @@ function updatePieChart() {
         }]
     };
 
-    charts.pie.setOption(option, true);
+    charts.pieExports.setOption(option, true);
+}
+
+function updatePieChartImports() {
+    const chartDiv = document.getElementById('chart-pie-imports');
+    if (!chartDiv) return;
+    
+    if (!charts.pieImports) {
+        charts.pieImports = echarts.init(chartDiv);
+    }
+
+    const data = [];
+    selectedCountries.forEach(code => {
+        if (!COUNTRIES[code]) return;
+        
+        // Add domestic and imports only
+        const domestic = calculateTotalByFlow(code, currentFactorGroup, 'domestic');
+        const imports = calculateTotalByFlow(code, currentFactorGroup, 'imports');
+        
+        if (domestic > 0) {
+            data.push({
+                name: `[${code}] ${COUNTRIES[code].name} - domestic`,
+                value: domestic,
+                itemStyle: {
+                    color: COUNTRIES[code].color,
+                    opacity: 1
+                }
+            });
+        }
+        
+        if (imports > 0) {
+            data.push({
+                name: `[${code}] ${COUNTRIES[code].name} - imports`,
+                value: imports,
+                itemStyle: {
+                    color: COUNTRIES[code].color,
+                    opacity: 0.4
+                }
+            });
+        }
+    });
+
+    const option = {
+        animationDuration: 1500,
+        animationEasing: 'elasticOut',
+        tooltip: {
+            trigger: 'item',
+            formatter: params => `<strong>${params.name}</strong><br/>${formatNumber(params.value)} <span style="color: #888">(${params.percent}%)</span>`,
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            borderColor: '#ddd',
+            borderWidth: 1,
+            textStyle: {
+                color: '#333',
+                fontSize: 12
+            },
+            padding: 12,
+            extraCssText: 'box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 8px;'
+        },
+        legend: {
+            type: 'scroll',
+            orient: 'horizontal',
+            bottom: 5,
+            left: 'center',
+            textStyle: { 
+                fontSize: 10,
+                color: '#555'
+            },
+            pageIconSize: 10,
+            itemGap: 15,
+            icon: 'circle'
+        },
+        series: [{
+            type: 'pie',
+            radius: ['40%', '70%'],
+            center: ['50%', '42%'],
+            roseType: 'radius',
+            avoidLabelOverlap: true,
+            itemStyle: {
+                borderRadius: 10,
+                borderColor: '#fff',
+                borderWidth: 3,
+                shadowBlur: 8,
+                shadowColor: 'rgba(0, 0, 0, 0.15)'
+            },
+            label: {
+                show: true,
+                position: 'outside',
+                fontSize: 11,
+                fontWeight: 'bold',
+                lineHeight: 14,
+                formatter: '{d}%',
+                color: '#333'
+            },
+            labelLine: {
+                show: true,
+                length: 10,
+                length2: 10,
+                smooth: 0.3,
+                lineStyle: {
+                    width: 2
+                }
+            },
+            emphasis: {
+                label: {
+                    show: true,
+                    fontSize: 13,
+                    fontWeight: 'bold'
+                },
+                itemStyle: {
+                    shadowBlur: 20,
+                    shadowOffsetX: 0,
+                    shadowOffsetY: 5,
+                    shadowColor: 'rgba(0, 0, 0, 0.3)'
+                },
+                scale: true,
+                scaleSize: 10
+            },
+            data: data
+        }]
+    };
+
+    charts.pieImports.setOption(option, true);
 }
 
 function updateRadarChart() {
@@ -1231,6 +1369,179 @@ function updateHeatmapChart() {
     charts.heatmap.setOption(option, true);
 }
 
+function updateChordChart() {
+    const chartDiv = document.getElementById('chart-chord');
+    if (!charts.chord) {
+        charts.chord = echarts.init(chartDiv);
+    }
+
+    if (selectedCountries.size === 0) {
+        charts.chord.setOption({
+            title: {
+                text: 'Select countries to view relationships',
+                left: 'center',
+                top: 'middle',
+                textStyle: { color: '#999', fontSize: 14 }
+            }
+        });
+        return;
+    }
+
+    // Create data structure for circular graph
+    const countries = Array.from(selectedCountries);
+    const nodes = [];
+    const links = [];
+    
+    // Create nodes
+    countries.forEach((code, idx) => {
+        const total = calculateTotalForCountry(code, currentFactorGroup);
+        nodes.push({
+            id: code,
+            name: COUNTRIES[code]?.name || code,
+            value: total,
+            symbolSize: Math.max(30, Math.min(80, Math.sqrt(total) / 100)),
+            itemStyle: {
+                color: COUNTRIES[code]?.color || '#999',
+                borderColor: '#fff',
+                borderWidth: 3,
+                shadowBlur: 10,
+                shadowColor: 'rgba(0,0,0,0.3)'
+            },
+            label: {
+                show: true,
+                position: 'bottom',
+                distance: 15,
+                fontSize: 13,
+                fontWeight: 600,
+                color: '#2c3e50'
+            }
+        });
+    });
+    
+    // Create links between countries
+    countries.forEach((fromCode, fromIdx) => {
+        countries.forEach((toCode, toIdx) => {
+            if (fromCode === toCode) {
+                // Self-loop for domestic
+                const domestic = calculateTotalByFlow(fromCode, currentFactorGroup, 'domestic');
+                if (domestic > 0) {
+                    links.push({
+                        source: fromCode,
+                        target: fromCode,
+                        value: domestic,
+                        lineStyle: {
+                            width: Math.max(2, Math.min(15, Math.sqrt(domestic) / 500)),
+                            color: COUNTRIES[fromCode]?.color || '#999',
+                            opacity: 0.6,
+                            curveness: 0.8
+                        }
+                    });
+                }
+            } else {
+                // Connection between different countries
+                const exports = calculateTotalByFlow(fromCode, currentFactorGroup, 'exports');
+                const imports = calculateTotalByFlow(toCode, currentFactorGroup, 'imports');
+                const flow = (exports + imports) / 2;
+                
+                if (flow > 0) {
+                    links.push({
+                        source: fromCode,
+                        target: toCode,
+                        value: flow,
+                        lineStyle: {
+                            width: Math.max(1, Math.min(10, Math.sqrt(flow) / 1000)),
+                            color: COUNTRIES[fromCode]?.color || '#999',
+                            opacity: 0.4,
+                            curveness: 0.3
+                        }
+                    });
+                }
+            }
+        });
+    });
+
+    const option = {
+        title: {
+            text: 'Trade Flow Connections',
+            left: 'center',
+            top: 20,
+            textStyle: {
+                fontSize: 20,
+                fontWeight: 600,
+                color: '#2c3e50'
+            }
+        },
+        tooltip: {
+            trigger: 'item',
+            formatter: params => {
+                if (params.dataType === 'edge') {
+                    const source = params.data.source;
+                    const target = params.data.target;
+                    const value = params.data.value;
+                    if (source === target) {
+                        return `<b>${COUNTRIES[source]?.name}</b><br/>
+                                Domestic: ${formatNumber(value)}`;
+                    }
+                    return `<b>${COUNTRIES[source]?.name} → ${COUNTRIES[target]?.name}</b><br/>
+                            Flow: ${formatNumber(value)}`;
+                } else if (params.dataType === 'node') {
+                    const code = params.data.id;
+                    const domestic = calculateTotalByFlow(code, currentFactorGroup, 'domestic');
+                    const exports = calculateTotalByFlow(code, currentFactorGroup, 'exports');
+                    const imports = calculateTotalByFlow(code, currentFactorGroup, 'imports');
+                    return `<b>${params.data.name}</b><br/>
+                            Domestic: ${formatNumber(domestic)}<br/>
+                            Exports: ${formatNumber(exports)}<br/>
+                            Imports: ${formatNumber(imports)}<br/>
+                            Total: ${formatNumber(params.data.value)}`;
+                }
+            }
+        },
+        series: [{
+            type: 'graph',
+            layout: 'circular',
+            circular: {
+                rotateLabel: false
+            },
+            data: nodes,
+            links: links,
+            roam: true,
+            label: {
+                show: true,
+                position: 'bottom',
+                fontSize: 13,
+                fontWeight: 600
+            },
+            lineStyle: {
+                curveness: 0.3,
+                opacity: 0.5
+            },
+            emphasis: {
+                focus: 'adjacency',
+                label: {
+                    fontSize: 15,
+                    fontWeight: 700
+                },
+                lineStyle: {
+                    width: 'bolder',
+                    opacity: 0.8
+                }
+            },
+            animationDuration: 2000,
+            animationEasing: 'cubicOut'
+        }]
+    };
+    
+    charts.chord.setOption(option, true);
+    
+    // Resize after animation
+    setTimeout(() => {
+        if (charts.chord && !charts.chord.isDisposed()) {
+            charts.chord.resize();
+        }
+    }, 2100);
+}
+
 function updateSankeyChart() {
     const chartDiv = document.getElementById('chart-sankey');
     if (!charts.sankey) {
@@ -1327,9 +1638,25 @@ function updateGaugeChart() {
         const percentage = maxTotal > 0 ? (total / maxTotal * 100) : 0;
         
         const gaugeChartDiv = document.getElementById(`gauge-${code}`);
+        
+        // Ensure the div has dimensions before initializing chart
+        if (gaugeChartDiv.offsetWidth === 0 || gaugeChartDiv.offsetHeight === 0) {
+            console.warn(`Gauge div for ${code} has zero dimensions`);
+        }
+        
         const gaugeChart = echarts.init(gaugeChartDiv);
         
         charts[`gauge-${code}`] = gaugeChart;
+        
+        // Use ResizeObserver to handle container size changes
+        if (typeof ResizeObserver !== 'undefined') {
+            const resizeObserver = new ResizeObserver(() => {
+                if (gaugeChart && !gaugeChart.isDisposed()) {
+                    gaugeChart.resize();
+                }
+            });
+            resizeObserver.observe(gaugeChartDiv);
+        }
         
         const option = {
             series: [{
@@ -1401,6 +1728,11 @@ function updateGaugeChart() {
         
         gaugeChart.setOption(option);
         
+        // Resize immediately after creation to fix initial layout
+        setTimeout(() => {
+            gaugeChart.resize();
+        }, 50);
+        
         setTimeout(() => {
             gaugeChart.setOption({
                 series: [{
@@ -1409,8 +1741,21 @@ function updateGaugeChart() {
                     }]
                 }]
             });
+            // Resize again after animation
+            setTimeout(() => {
+                gaugeChart.resize();
+            }, 100);
         }, 100);
     });
+    
+    // Final resize of all gauges after all are created
+    setTimeout(() => {
+        selectedCountries.forEach(code => {
+            if (charts[`gauge-${code}`]) {
+                charts[`gauge-${code}`].resize();
+            }
+        });
+    }, 300);
 }
 
 function updateAreaChart() {
@@ -1853,6 +2198,102 @@ function stopCarouselAnimation() {
     // Nothing to stop - no auto animation
 }
 
+// ==========================================
+// FACTOR BUTTON SELECTION
+// ==========================================
+
+function initializeFactorButtons() {
+    const factorButtons = document.querySelectorAll('.factor-btn');
+    
+    factorButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            factorButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            currentFactorGroup = button.dataset.factor;
+            debugLog(`Factor group changed to: ${currentFactorGroup}`);
+            updateUI();
+            
+            // Sync Flow-Rings visualization with selected factor
+            if (typeof syncFlowRingsWithFactor === 'function') {
+                syncFlowRingsWithFactor();
+            }
+            
+            // Sync Chord-Sankey visualization with selected factor
+            if (typeof updateChordSankey === 'function') {
+                updateChordSankey();
+            }
+        });
+    });
+}
+
+// ==========================================
+// TIMELINE INSIGHTS GENERATION
+// ==========================================
+
+function generateCountryInsights(code, data) {
+    const country = COUNTRIES[code];
+    if (!country) return [];
+    
+    const { total, domestic, exports, imports } = data;
+    
+    const domesticPct = total > 0 ? ((domestic / total) * 100).toFixed(1) : 0;
+    const exportsPct = total > 0 ? ((exports / total) * 100).toFixed(1) : 0;
+    const importsPct = total > 0 ? ((imports / total) * 100).toFixed(1) : 0;
+    
+    const flows = [
+        { type: 'domestic', value: domestic, pct: domesticPct },
+        { type: 'exports', value: exports, pct: exportsPct },
+        { type: 'imports', value: imports, pct: importsPct }
+    ];
+    flows.sort((a, b) => b.value - a.value);
+    
+    const dominant = flows[0];
+    const secondary = flows[1];
+    
+    const insights = [];
+    
+    if (dominant && dominant.pct > 50) {
+        insights.push(`${country.name}'s ${currentFactorGroup} impact is dominated by ${dominant.type} activities (${dominant.pct}%)`);
+    } else if (dominant) {
+        insights.push(`${country.name} has a balanced ${currentFactorGroup} footprint across different trade flows`);
+    }
+    
+    if (secondary && secondary.pct > 25) {
+        insights.push(`${secondary.type.charAt(0).toUpperCase() + secondary.type.slice(1)} contributes significantly at ${secondary.pct}% of total impact`);
+    } else if (imports < 1) {
+        insights.push(`Minimal import-related ${currentFactorGroup} impact suggests strong domestic production`);
+    } else if (exports > domestic) {
+        insights.push(`Export-oriented economy with ${exportsPct}% of ${currentFactorGroup} from exported goods`);
+    }
+    
+    return insights;
+}
+
+// ==========================================
+// EXTERNAL PIE LEGEND
+// ==========================================
+
+function createExternalLegend(data) {
+    const legendContainer = document.getElementById('pie-legend');
+    if (!legendContainer) return;
+    
+    let html = '';
+    const totalValue = data.reduce((sum, d) => sum + d.value, 0);
+    
+    data.forEach(item => {
+        const pct = totalValue > 0 ? ((item.value / totalValue) * 100).toFixed(1) : 0;
+        html += `
+            <div class="pie-legend-item">
+                <div class="pie-legend-color" style="background: ${item.itemStyle.color}; opacity: ${item.itemStyle.opacity}"></div>
+                <div class="pie-legend-text">${item.name}</div>
+                <div class="pie-legend-value">${pct}%</div>
+            </div>
+        `;
+    });
+    
+    legendContainer.innerHTML = html;
+}
+
 window.addEventListener('DOMContentLoaded', () => {
     debugLog('Page loaded, initializing...');
     
@@ -1875,21 +2316,20 @@ window.addEventListener('DOMContentLoaded', () => {
     
     initMap();
     
-    const factorSelect = document.getElementById('factor-group');
-    if (factorSelect) {
-        factorSelect.addEventListener('change', (e) => {
-            currentFactorGroup = e.target.value;
-            debugLog(`Factor group changed to: ${currentFactorGroup}`);
-            updateUI();
-        });
-    }
+    // Initialize factor buttons
+    initializeFactorButtons();
     
+    // Debounced resize handler for better performance
+    let resizeTimeout;
     window.addEventListener('resize', () => {
-        Object.values(charts).forEach(chart => {
-            if (chart && typeof chart.resize === 'function') {
-                chart.resize();
-            }
-        });
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            Object.values(charts).forEach(chart => {
+                if (chart && typeof chart.resize === 'function') {
+                    chart.resize();
+                }
+            });
+        }, 250);
     });
     
     // Update button states to show USA as selected
@@ -1903,3 +2343,2300 @@ window.selectAllCountries = selectAllCountries;
 window.clearAllCountries = clearAllCountries;
 window.toggleRegion = toggleRegion;
 window.switchTimelineView = switchTimelineView;
+// ==========================================
+// SIMPLE FLOW-RINGS VISUALIZATION
+// Simplified version for debugging
+// ==========================================
+
+console.log('Flow-Rings Script Loading...');
+
+// Global state - MUST be declared before any functions use it
+if (typeof window.FlowRingsState === 'undefined') {
+    window.FlowRingsState = {
+        initialized: false,
+        svg: null,
+        data: null
+    };
+}
+
+// Make it easily accessible
+var FlowRingsState = window.FlowRingsState;
+
+console.log('FlowRingsState initialized:', FlowRingsState);
+
+// Simple initialization that definitely works
+function initFlowRingsSimple() {
+    console.log('=== FLOW-RINGS INIT START ===');
+    
+    // 1. Check D3
+    if (typeof d3 === 'undefined') {
+        console.error('❌ D3 not loaded!');
+        alert('D3.js not loaded! Check internet connection.');
+        return;
+    }
+    console.log('✓ D3.js loaded');
+    
+    // 2. Check container
+    const container = document.getElementById('flow-rings-viz');
+    if (!container) {
+        console.error('❌ Container not found!');
+        alert('Flow-Rings container not found! Check HTML.');
+        return;
+    }
+    console.log('✓ Container found');
+    
+    // 3. Check if already initialized
+    if (FlowRingsState.initialized) {
+        console.log('Already initialized, just updating...');
+        updateFlowRingsSimple();
+        return;
+    }
+    
+    // 4. Create SVG
+    const width = container.clientWidth || 800;
+    const height = 800; // Increased from 600 to 800 for full rings visibility
+    
+    console.log(`Creating SVG: ${width}x${height}`);
+    
+    // Remove old SVG if exists
+    d3.select('#flow-rings-viz').selectAll('*').remove();
+    
+    FlowRingsState.svg = d3.select('#flow-rings-viz')
+        .append('svg')
+        .attr('width', width)
+        .attr('height', height)
+        .style('border', '2px solid #ccc')
+        .style('background', '#f9f9f9');
+    
+    console.log('✓ SVG created');
+    
+    // 5. Add test circle to verify SVG works
+    FlowRingsState.svg.append('circle')
+        .attr('cx', width / 2)
+        .attr('cy', height / 2)
+        .attr('r', 50)
+        .attr('fill', '#4fc3f7');
+    
+    FlowRingsState.svg.append('text')
+        .attr('x', width / 2)
+        .attr('y', height / 2)
+        .attr('text-anchor', 'middle')
+        .attr('dy', '0.35em')
+        .attr('fill', 'white')
+        .attr('font-size', '14px')
+        .attr('font-weight', 'bold')
+        .text('FLOW-RINGS');
+    
+    console.log('✓ Test circle added');
+    
+    // 6. Initialize category toggles
+    initCategoryToggles();
+    
+    FlowRingsState.initialized = true;
+    console.log('=== FLOW-RINGS INIT COMPLETE ===');
+    
+    // 7. Sync with dashboard factor on first load
+    if (typeof currentFactorGroup !== 'undefined') {
+        syncFlowRingsWithFactor();
+    }
+    
+    // 8. Try to render actual visualization
+    setTimeout(() => {
+        console.log('Attempting full render...');
+        renderActualVisualization();
+    }, 1000);
+}
+
+function initCategoryToggles() {
+    const container = document.getElementById('category-toggles');
+    if (!container) {
+        console.warn('Category toggles container not found');
+        return;
+    }
+    
+    const categories = ['AIR', 'WATER', 'ENERGY', 'LAND', 'MATERIALS', 'EMPLOYMENT'];
+    
+    container.innerHTML = ''; // Clear existing
+    
+    // Initialize active categories based on current factor selection
+    if (!FlowRingsState.activeCategories) {
+        // Get current factor from dashboard
+        const currentFactor = typeof currentFactorGroup !== 'undefined' ? currentFactorGroup : 'air';
+        FlowRingsState.activeCategories = new Set([currentFactor.toUpperCase()]);
+    }
+    
+    categories.forEach(cat => {
+        const btn = document.createElement('button');
+        // Check if this category matches the current factor
+        const isActive = FlowRingsState.activeCategories.has(cat);
+        btn.className = isActive ? 'category-toggle active' : 'category-toggle';
+        btn.textContent = cat;
+        btn.onclick = () => {
+            btn.classList.toggle('active');
+            const isNowActive = btn.classList.contains('active');
+            
+            if (isNowActive) {
+                FlowRingsState.activeCategories.add(cat);
+            } else {
+                FlowRingsState.activeCategories.delete(cat);
+            }
+            
+            console.log(`Toggled ${cat}: ${isNowActive}`);
+            console.log('Active categories:', Array.from(FlowRingsState.activeCategories));
+            
+            // Re-render visualization
+            renderActualVisualization();
+        };
+        container.appendChild(btn);
+    });
+    
+    console.log('✓ Category toggles created');
+    console.log('Initial active category:', Array.from(FlowRingsState.activeCategories));
+}
+
+// Function to sync with dashboard factor selection
+function syncFlowRingsWithFactor() {
+    if (typeof currentFactorGroup === 'undefined') return;
+    
+    const factor = currentFactorGroup.toUpperCase();
+    console.log(`Syncing Flow-Rings with factor: ${factor}`);
+    
+    // Update active categories to match current factor
+    FlowRingsState.activeCategories = new Set([factor]);
+    
+    // Update toggle button states
+    document.querySelectorAll('.category-toggle').forEach(btn => {
+        const category = btn.textContent;
+        if (category === factor) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+    
+    // Re-render if initialized
+    if (FlowRingsState.initialized) {
+        renderActualVisualization();
+    }
+}
+
+function renderActualVisualization() {
+    console.log('=== RENDERING ACTUAL VISUALIZATION ===');
+    
+    // Check if we have selected countries
+    if (typeof selectedCountries === 'undefined') {
+        console.warn('selectedCountries not defined yet');
+        showMessage('Dashboard not fully loaded. Click "Render Visualization" button.');
+        return;
+    }
+    
+    if (selectedCountries.size === 0) {
+        console.log('No countries selected');
+        showMessage('Select countries from the dashboard above');
+        return;
+    }
+    
+    console.log(`Selected countries: ${Array.from(selectedCountries).join(', ')}`);
+    
+    // Check if we have COUNTRIES data
+    if (typeof COUNTRIES === 'undefined') {
+        console.error('COUNTRIES object not defined');
+        showMessage('Dashboard data not loaded');
+        return;
+    }
+    
+    console.log('✓ Dashboard data available');
+    
+    // Get active categories
+    const activeCategories = FlowRingsState.activeCategories 
+        ? Array.from(FlowRingsState.activeCategories).map(c => c.toLowerCase())
+        : ['air', 'water', 'energy', 'land', 'materials', 'employment'];
+    
+    if (activeCategories.length === 0) {
+        showMessage('Select at least one category to display');
+        return;
+    }
+    
+    console.log(`Active categories: ${activeCategories.join(', ')}`);
+    
+    // Clear SVG
+    FlowRingsState.svg.selectAll('*').remove();
+    
+    const width = parseInt(FlowRingsState.svg.attr('width'));
+    const height = parseInt(FlowRingsState.svg.attr('height'));
+    const centerX = width / 2;
+    const centerY = height / 2;
+    
+    // Draw simple concentric rings
+    const countries = Array.from(selectedCountries);
+    const categories = activeCategories;
+    const allColors = {
+        'air': '#FF6B6B',
+        'water': '#4ECDC4',
+        'energy': '#FFD93D',
+        'land': '#6BCF7F',
+        'materials': '#A78BFA',
+        'employment': '#FB923C'
+    };
+    
+    // Calculate ring dimensions to fit within SVG with padding
+    const padding = 60; // Padding from edges
+    const maxRadius = Math.min(width, height) / 2 - padding;
+    const innerRadius = 50;
+    const availableSpace = maxRadius - innerRadius;
+    const numRings = categories.length;
+    const ringWidth = availableSpace / (numRings * 1.2); // 1.2 for gaps
+    const ringGap = ringWidth * 0.2;
+    
+    console.log(`Drawing ${categories.length} rings for ${countries.length} countries`);
+    console.log(`SVG size: ${width}x${height}, Max radius: ${maxRadius}, Ring width: ${ringWidth.toFixed(1)}`);
+    
+    categories.forEach((category, catIndex) => {
+        const radius = innerRadius + catIndex * (ringWidth + ringGap);
+        const color = allColors[category] || '#999';
+        
+        // Draw ring background
+        FlowRingsState.svg.append('circle')
+            .attr('cx', centerX)
+            .attr('cy', centerY)
+            .attr('r', radius + ringWidth / 2)
+            .attr('fill', 'none')
+            .attr('stroke', color)
+            .attr('stroke-width', ringWidth)
+            .attr('opacity', 0.3);
+        
+        // Draw ring label
+        FlowRingsState.svg.append('text')
+            .attr('x', centerX)
+            .attr('y', centerY - radius - ringWidth - 5)
+            .attr('text-anchor', 'middle')
+            .attr('fill', color)
+            .attr('font-size', '12px')
+            .attr('font-weight', 'bold')
+            .text(category.toUpperCase());
+        
+        // Draw country arcs
+        const anglePerCountry = (Math.PI * 2) / countries.length;
+        
+        countries.forEach((countryCode, countryIndex) => {
+            const startAngle = anglePerCountry * countryIndex - Math.PI / 2;
+            const endAngle = startAngle + anglePerCountry * 0.9; // 90% to leave gaps
+            
+            const arc = d3.arc()
+                .innerRadius(radius)
+                .outerRadius(radius + ringWidth)
+                .startAngle(startAngle)
+                .endAngle(endAngle);
+            
+            FlowRingsState.svg.append('path')
+                .attr('d', arc)
+                .attr('transform', `translate(${centerX}, ${centerY})`)
+                .attr('fill', color)
+                .attr('opacity', 0.7)
+                .attr('stroke', 'white')
+                .attr('stroke-width', 2)
+                .attr('class', 'flow-arc')
+                .style('cursor', 'pointer')
+                .on('mouseenter', function(event) {
+                    d3.select(this).attr('opacity', 1);
+                    showTooltip(countryCode, category, event);
+                })
+                .on('mousemove', function(event) {
+                    updateTooltipPosition(event);
+                })
+                .on('mouseleave', function() {
+                    d3.select(this).attr('opacity', 0.7);
+                    hideTooltip();
+                });
+            
+            // Add country label if arc is big enough
+            if (countries.length <= 8) {
+                const labelAngle = (startAngle + endAngle) / 2;
+                const labelRadius = radius + ringWidth / 2;
+                const labelX = centerX + Math.cos(labelAngle) * labelRadius;
+                const labelY = centerY + Math.sin(labelAngle) * labelRadius;
+                
+                FlowRingsState.svg.append('text')
+                    .attr('x', labelX)
+                    .attr('y', labelY)
+                    .attr('text-anchor', 'middle')
+                    .attr('dy', '0.35em')
+                    .attr('fill', 'white')
+                    .attr('font-size', '10px')
+                    .attr('font-weight', 'bold')
+                    .style('pointer-events', 'none')
+                    .text(countryCode);
+            }
+        });
+    });
+    
+    // Add center label
+    FlowRingsState.svg.append('text')
+        .attr('x', centerX)
+        .attr('y', centerY)
+        .attr('text-anchor', 'middle')
+        .attr('fill', '#333')
+        .attr('font-size', '16px')
+        .attr('font-weight', 'bold')
+        .text(`${countries.length} Countries`);
+    
+    FlowRingsState.svg.append('text')
+        .attr('x', centerX)
+        .attr('y', centerY + 20)
+        .attr('text-anchor', 'middle')
+        .attr('fill', '#666')
+        .attr('font-size', '12px')
+        .text(`${categories.length} Active ${categories.length === 1 ? 'Category' : 'Categories'}`);
+    
+    console.log('✓ Visualization rendered successfully!');
+}
+
+function showMessage(text) {
+    if (!FlowRingsState.svg) return;
+    
+    FlowRingsState.svg.selectAll('*').remove();
+    
+    const width = parseInt(FlowRingsState.svg.attr('width'));
+    const height = parseInt(FlowRingsState.svg.attr('height'));
+    
+    FlowRingsState.svg.append('text')
+        .attr('x', width / 2)
+        .attr('y', height / 2)
+        .attr('text-anchor', 'middle')
+        .attr('fill', '#999')
+        .attr('font-size', '18px')
+        .text(text);
+}
+
+function showTooltip(countryCode, category, event) {
+    console.log('=== TOOLTIP SHOW CALLED ===');
+    console.log('Country:', countryCode);
+    console.log('Category:', category);
+    console.log('Event:', event);
+    
+    const tooltip = document.getElementById('flow-tooltip');
+    console.log('Tooltip element:', tooltip);
+    
+    if (!tooltip) {
+        console.error('❌ CRITICAL: Tooltip element #flow-tooltip not found in DOM!');
+        console.log('Available elements with "tooltip":', document.querySelectorAll('[id*="tooltip"]'));
+        alert('ERROR: Tooltip element not found! Check console.');
+        return;
+    }
+    
+    console.log('✓ Tooltip element found');
+    console.log('Current classes:', tooltip.className);
+    console.log('Current style:', tooltip.style.cssText);
+    
+    const countryName = COUNTRIES[countryCode]?.name || countryCode;
+    const countryFlag = COUNTRIES[countryCode]?.flag || '🌍';
+    
+    // Get data for this country and category
+    let value = 0;
+    let details = '';
+    
+    if (typeof calculateTotalByFlow === 'function') {
+        const domestic = calculateTotalByFlow(countryCode, category, 'domestic');
+        const exports = calculateTotalByFlow(countryCode, category, 'exports');
+        const imports = calculateTotalByFlow(countryCode, category, 'imports');
+        const total = domestic + exports + imports;
+        
+        value = total;
+        details = `
+            <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.2);">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                    <span style="opacity: 0.9;">🏭 Domestic:</span>
+                    <strong>${formatNumber(domestic)}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                    <span style="opacity: 0.9;">📤 Exports:</span>
+                    <strong>${formatNumber(exports)}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="opacity: 0.9;">📥 Imports:</span>
+                    <strong>${formatNumber(imports)}</strong>
+                </div>
+            </div>
+        `;
+        console.log('Data calculated - Total:', formatNumber(total));
+    }
+    
+    tooltip.innerHTML = `
+        <div style="display: flex; align-items: center; margin-bottom: 8px;">
+            <span style="font-size: 24px; margin-right: 8px;">${countryFlag}</span>
+            <div>
+                <div style="font-weight: bold; font-size: 14px;">${countryName}</div>
+                <div style="font-size: 11px; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px;">${category}</div>
+            </div>
+        </div>
+        ${value > 0 ? `
+            <div style="margin-bottom: 6px;">
+                <div style="font-size: 11px; opacity: 0.8; margin-bottom: 2px;">Total Impact:</div>
+                <div style="font-size: 16px; font-weight: bold; color: #4fc3f7;">${formatNumber(value)}</div>
+            </div>
+        ` : ''}
+        ${details}
+    `;
+    
+    console.log('✓ Tooltip content set');
+    
+    // Make visible using class
+    tooltip.classList.add('visible');
+    console.log('✓ Added "visible" class');
+    console.log('Classes after add:', tooltip.className);
+    
+    // Also set inline styles as backup
+    tooltip.style.display = 'block';
+    tooltip.style.opacity = '1';
+    tooltip.style.visibility = 'visible';
+    console.log('✓ Inline styles set');
+    
+    // Position immediately
+    if (event) {
+        updateTooltipPosition(event);
+        console.log('✓ Tooltip positioned');
+    }
+    
+    console.log('=== TOOLTIP SHOULD BE VISIBLE NOW ===');
+    console.log('Final computed style:', window.getComputedStyle(tooltip).display);
+    console.log('Final opacity:', window.getComputedStyle(tooltip).opacity);
+    console.log('Final visibility:', window.getComputedStyle(tooltip).visibility);
+}
+
+function updateTooltipPosition(event) {
+    const tooltip = document.getElementById('flow-tooltip');
+    if (!tooltip) return;
+    
+    const offsetX = 15;
+    const offsetY = 15;
+    
+    // Use clientX/clientY for fixed position elements
+    let x = event.clientX + offsetX;
+    let y = event.clientY + offsetY;
+    
+    // Keep tooltip on screen
+    const tooltipRect = tooltip.getBoundingClientRect();
+    if (x + tooltipRect.width > window.innerWidth) {
+        x = event.clientX - tooltipRect.width - offsetX;
+    }
+    if (y + tooltipRect.height > window.innerHeight) {
+        y = event.clientY - tooltipRect.height - offsetY;
+    }
+    
+    tooltip.style.left = x + 'px';
+    tooltip.style.top = y + 'px';
+}
+
+function positionTooltip(event) {
+    // Alias for compatibility
+    updateTooltipPosition(event);
+}
+
+function hideTooltip() {
+    const tooltip = document.getElementById('flow-tooltip');
+    if (tooltip) {
+        tooltip.classList.remove('visible');
+        // Also reset inline styles to ensure it hides
+        tooltip.style.opacity = '0';
+        tooltip.style.visibility = 'hidden';
+    }
+    console.log('✓ Tooltip hidden');
+}
+
+function updateFlowRingsSimple() {
+    console.log('Updating Flow-Rings...');
+    renderActualVisualization();
+}
+
+// Export functions globally
+window.initFlowRingsSimple = initFlowRingsSimple;
+window.updateFlowRingsSimple = updateFlowRingsSimple;
+window.renderFlowRings = renderActualVisualization;
+window.syncFlowRingsWithFactor = syncFlowRingsWithFactor;
+
+// Auto-initialize
+console.log('Setting up auto-initialization...');
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('DOM loaded, waiting 2 seconds...');
+        setTimeout(initFlowRingsSimple, 2000);
+    });
+} else {
+    console.log('DOM already loaded, initializing in 2 seconds...');
+    setTimeout(initFlowRingsSimple, 2000);
+}
+
+console.log('Flow-Rings Script Loaded!');
+console.log('Manual commands: initFlowRingsSimple(), renderFlowRings(), syncFlowRingsWithFactor()');
+
+// ==========================================
+// CHORD-SANKEY HYBRID FOR TRADE FLOWS
+// Advanced interactive visualization combining chord and sankey diagrams
+// ==========================================
+
+console.log('Chord-Sankey Hybrid Script Loading...');
+
+// Global state for Chord-Sankey
+if (typeof window.ChordSankeyState === 'undefined') {
+    window.ChordSankeyState = {
+        initialized: false,
+        svg: null,
+        data: null,
+        selectedFlow: null,
+        animating: false,
+        hoveredCountry: null,
+        clickedCountry: null
+    };
+}
+
+var ChordSankeyState = window.ChordSankeyState;
+
+// Color scale for environmental impact (gradient from low to high impact)
+const impactColorScale = d3.scaleSequential()
+    .domain([0, 1])
+    .interpolator(d3.interpolateRgbBasis([
+        '#2ecc71', // Low impact (green)
+        '#f39c12', // Medium impact (orange)
+        '#e74c3c'  // High impact (red)
+    ]));
+
+// Initialize Chord-Sankey visualization
+function initChordSankey() {
+    console.log('=== CHORD-SANKEY INIT START ===');
+    
+    // Check D3
+    if (typeof d3 === 'undefined') {
+        console.error('❌ D3 not loaded!');
+        return;
+    }
+    console.log('✓ D3.js loaded');
+    
+    // Check container
+    const container = document.getElementById('chart-chord-sankey');
+    if (!container) {
+        console.error('❌ Container not found!');
+        return;
+    }
+    console.log('✓ Container found');
+    
+    // Check if already initialized
+    if (ChordSankeyState.initialized) {
+        console.log('Already initialized, updating...');
+        updateChordSankey();
+        return;
+    }
+    
+    // Create SVG
+    const width = container.clientWidth || 1000;
+    const height = 700;
+    
+    console.log(`Creating SVG: ${width}x${height}`);
+    
+    // Remove old SVG if exists
+    d3.select('#chart-chord-sankey').selectAll('*').remove();
+    
+    ChordSankeyState.svg = d3.select('#chart-chord-sankey')
+        .append('svg')
+        .attr('width', width)
+        .attr('height', height);
+    
+    // Add definitions for gradients and glows
+    const defs = ChordSankeyState.svg.append('defs');
+    
+    // Create glow filter
+    const filter = defs.append('filter')
+        .attr('id', 'chord-glow')
+        .attr('x', '-50%')
+        .attr('y', '-50%')
+        .attr('width', '200%')
+        .attr('height', '200%');
+    
+    filter.append('feGaussianBlur')
+        .attr('stdDeviation', '4')
+        .attr('result', 'coloredBlur');
+    
+    const feMerge = filter.append('feMerge');
+    feMerge.append('feMergeNode').attr('in', 'coloredBlur');
+    feMerge.append('feMergeNode').attr('in', 'SourceGraphic');
+    
+    // Create stronger glow for hover
+    const filterHover = defs.append('filter')
+        .attr('id', 'chord-glow-hover')
+        .attr('x', '-100%')
+        .attr('y', '-100%')
+        .attr('width', '300%')
+        .attr('height', '300%');
+    
+    filterHover.append('feGaussianBlur')
+        .attr('stdDeviation', '8')
+        .attr('result', 'coloredBlur');
+    
+    const feMergeHover = filterHover.append('feMerge');
+    feMergeHover.append('feMergeNode').attr('in', 'coloredBlur');
+    feMergeHover.append('feMergeNode').attr('in', 'SourceGraphic');
+    
+    console.log('✓ SVG created with filters');
+    
+    ChordSankeyState.initialized = true;
+    console.log('=== CHORD-SANKEY INIT COMPLETE ===');
+    
+    // Render visualization
+    setTimeout(() => {
+        renderChordSankey();
+    }, 500);
+}
+
+function renderChordSankey() {
+    console.log('=== RENDERING CHORD-SANKEY ===');
+    
+    // Check if we have selected countries
+    if (typeof selectedCountries === 'undefined' || selectedCountries.size === 0) {
+        showChordMessage('Select at least 2 countries to view trade flows');
+        return;
+    }
+    
+    if (selectedCountries.size < 2) {
+        showChordMessage('Select at least 2 countries to view trade flows');
+        return;
+    }
+    
+    console.log(`Selected countries: ${Array.from(selectedCountries).join(', ')}`);
+    
+    // Clear SVG
+    ChordSankeyState.svg.selectAll('g').remove();
+    
+    const width = parseInt(ChordSankeyState.svg.attr('width'));
+    const height = parseInt(ChordSankeyState.svg.attr('height'));
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const radius = Math.min(width, height) / 2 - 120;
+    
+    // Prepare data
+    const countries = Array.from(selectedCountries);
+    const n = countries.length;
+    
+    // Calculate trade flows and environmental impacts
+    const flowData = calculateTradeFlows(countries);
+    
+    // Create chord layout
+    const chordGenerator = d3.chord()
+        .padAngle(0.05)
+        .sortSubgroups(d3.descending);
+    
+    const chords = chordGenerator(flowData.matrix);
+    
+    // Create arc generator for country segments
+    const arc = d3.arc()
+        .innerRadius(radius - 30)
+        .outerRadius(radius);
+    
+    // Create ribbon generator for flows
+    const ribbon = d3.ribbon()
+        .radius(radius - 35);
+    
+    // Main group
+    const g = ChordSankeyState.svg.append('g')
+        .attr('transform', `translate(${centerX},${centerY})`);
+    
+    // Add background circles for depth
+    g.append('circle')
+        .attr('r', radius + 10)
+        .attr('fill', 'none')
+        .attr('stroke', 'rgba(255,255,255,0.05)')
+        .attr('stroke-width', 1);
+    
+    g.append('circle')
+        .attr('r', radius - 40)
+        .attr('fill', 'none')
+        .attr('stroke', 'rgba(255,255,255,0.03)')
+        .attr('stroke-width', 1);
+    
+    // Draw country arcs (outer ring)
+    const arcs = g.append('g')
+        .selectAll('g')
+        .data(chords.groups)
+        .enter()
+        .append('g')
+        .attr('class', 'country-arc-group');
+    
+    arcs.append('path')
+        .attr('class', 'country-arc')
+        .attr('d', arc)
+        .attr('fill', (d, i) => COUNTRIES[countries[i]].color)
+        .attr('stroke', 'rgba(255,255,255,0.3)')
+        .attr('stroke-width', 2)
+        .attr('opacity', 0)
+        .style('filter', 'url(#chord-glow)')
+        .style('cursor', 'pointer')
+        .on('mouseenter', function(event, d) {
+            handleCountryHover(d.index, true, this);
+        })
+        .on('mouseleave', function(event, d) {
+            handleCountryHover(d.index, false, this);
+        })
+        .on('click', function(event, d) {
+            handleCountryClick(d.index, this);
+        })
+        .transition()
+        .duration(1000)
+        .delay((d, i) => i * 100)
+        .attr('opacity', 0.8);
+    
+    // Add country labels
+    arcs.append('text')
+        .each(function(d) { d.angle = (d.startAngle + d.endAngle) / 2; })
+        .attr('dy', '.35em')
+        .attr('transform', d => {
+            const angle = d.angle * 180 / Math.PI - 90;
+            const rotate = angle > 90 ? angle + 180 : angle;
+            return `rotate(${angle}) translate(${radius + 15}) rotate(${angle > 90 ? 180 : 0})`;
+        })
+        .attr('text-anchor', d => d.angle > Math.PI ? 'end' : 'start')
+        .attr('fill', 'white')
+        .attr('font-size', '13px')
+        .attr('font-weight', '600')
+        .attr('opacity', 0)
+        .text((d, i) => countries[i])
+        .transition()
+        .duration(800)
+        .delay((d, i) => i * 100 + 500)
+        .attr('opacity', 1);
+    
+    // Add country flags
+    arcs.append('text')
+        .each(function(d) { d.angle = (d.startAngle + d.endAngle) / 2; })
+        .attr('transform', d => {
+            const angle = d.angle * 180 / Math.PI - 90;
+            return `rotate(${angle}) translate(${radius + 40})`;
+        })
+        .attr('text-anchor', 'middle')
+        .attr('font-size', '20px')
+        .attr('opacity', 0)
+        .text((d, i) => COUNTRIES[countries[i]].flag)
+        .transition()
+        .duration(800)
+        .delay((d, i) => i * 100 + 700)
+        .attr('opacity', 1);
+    
+    // Draw trade flow ribbons (connections)
+    const ribbons = g.append('g')
+        .attr('class', 'ribbons')
+        .selectAll('path')
+        .data(chords)
+        .enter()
+        .append('path')
+        .attr('class', 'trade-ribbon')
+        .attr('d', ribbon)
+        .attr('fill', d => {
+            const impact = flowData.impacts[d.source.index][d.target.index];
+            return impactColorScale(impact);
+        })
+        .attr('opacity', 0)
+        .attr('stroke', 'none')
+        .style('filter', 'url(#chord-glow)')
+        .style('cursor', 'pointer')
+        .on('mouseenter', function(event, d) {
+            handleRibbonHover(d, true, this);
+        })
+        .on('mouseleave', function(event, d) {
+            handleRibbonHover(d, false, this);
+        })
+        .on('click', function(event, d) {
+            handleRibbonClick(d, this);
+        });
+    
+    // Animate ribbons with staggered delay
+    ribbons.transition()
+        .duration(1200)
+        .delay((d, i) => 1000 + i * 50)
+        .attr('opacity', d => {
+            const value = d.source.value;
+            const maxValue = d3.max(chords, c => c.source.value);
+            return 0.3 + (value / maxValue) * 0.5;
+        });
+    
+    // Add animated particles along ribbons
+    setTimeout(() => {
+        addFlowParticles(g, chords, ribbon, countries, flowData);
+    }, 2000);
+    
+    // Add center title
+    g.append('text')
+        .attr('x', 0)
+        .attr('y', -20)
+        .attr('text-anchor', 'middle')
+        .attr('fill', 'white')
+        .attr('font-size', '24px')
+        .attr('font-weight', 'bold')
+        .attr('opacity', 0)
+        .text('Global Trade Flows')
+        .transition()
+        .duration(1000)
+        .delay(2500)
+        .attr('opacity', 1);
+    
+    g.append('text')
+        .attr('x', 0)
+        .attr('y', 10)
+        .attr('text-anchor', 'middle')
+        .attr('fill', 'rgba(255,255,255,0.7)')
+        .attr('font-size', '14px')
+        .attr('opacity', 0)
+        .text(`${countries.length} Countries • ${currentFactorGroup.toUpperCase()} Impact`)
+        .transition()
+        .duration(1000)
+        .delay(2700)
+        .attr('opacity', 1);
+    
+    // Add legend
+    addImpactLegend(g, radius);
+    
+    console.log('✓ Chord-Sankey rendered successfully!');
+}
+
+function calculateTradeFlows(countries) {
+    const n = countries.length;
+    const matrix = Array(n).fill(0).map(() => Array(n).fill(0));
+    const impacts = Array(n).fill(0).map(() => Array(n).fill(0));
+    
+    let maxFlow = 0;
+    
+    // Calculate flows between countries
+    countries.forEach((sourceCode, i) => {
+        countries.forEach((targetCode, j) => {
+            if (i !== j) {
+                // Export from source to target
+                const exportValue = calculateTotalByFlow(sourceCode, currentFactorGroup, 'exports');
+                const importValue = calculateTotalByFlow(targetCode, currentFactorGroup, 'imports');
+                
+                // Flow is average of export and import (simplified)
+                const flow = (exportValue + importValue) / (2 * n);
+                matrix[i][j] = flow;
+                
+                if (flow > maxFlow) maxFlow = flow;
+                
+                // Calculate environmental impact (normalized)
+                const domesticSource = calculateTotalByFlow(sourceCode, currentFactorGroup, 'domestic');
+                const domesticTarget = calculateTotalByFlow(targetCode, currentFactorGroup, 'domestic');
+                const totalImpact = domesticSource + domesticTarget + exportValue + importValue;
+                
+                impacts[i][j] = totalImpact;
+            }
+        });
+    });
+    
+    // Normalize impacts to 0-1 range
+    const maxImpact = d3.max(impacts.flat());
+    if (maxImpact > 0) {
+        impacts.forEach((row, i) => {
+            row.forEach((val, j) => {
+                impacts[i][j] = val / maxImpact;
+            });
+        });
+    }
+    
+    return { matrix, impacts };
+}
+
+function handleCountryHover(index, isEnter, element) {
+    const countries = Array.from(selectedCountries);
+    const countryCode = countries[index];
+    
+    if (isEnter) {
+        ChordSankeyState.hoveredCountry = index;
+        
+        // Highlight arc
+        d3.select(element)
+            .transition()
+            .duration(200)
+            .attr('opacity', 1)
+            .style('filter', 'url(#chord-glow-hover)');
+        
+        // Dim other arcs
+        d3.selectAll('.country-arc')
+            .filter((d, i) => i !== index)
+            .transition()
+            .duration(200)
+            .attr('opacity', 0.3);
+        
+        // Highlight related ribbons
+        d3.selectAll('.trade-ribbon')
+            .filter(d => d.source.index === index || d.target.index === index)
+            .transition()
+            .duration(200)
+            .attr('opacity', 0.9)
+            .style('filter', 'url(#chord-glow-hover)');
+        
+        // Dim other ribbons
+        d3.selectAll('.trade-ribbon')
+            .filter(d => d.source.index !== index && d.target.index !== index)
+            .transition()
+            .duration(200)
+            .attr('opacity', 0.1);
+        
+        // Show tooltip
+        showChordTooltip(countryCode, 'country', event);
+        
+    } else {
+        ChordSankeyState.hoveredCountry = null;
+        
+        // Reset if not clicked
+        if (ChordSankeyState.clickedCountry === null) {
+            d3.select(element)
+                .transition()
+                .duration(200)
+                .attr('opacity', 0.8)
+                .style('filter', 'url(#chord-glow)');
+            
+            d3.selectAll('.country-arc')
+                .transition()
+                .duration(200)
+                .attr('opacity', 0.8)
+                .style('filter', 'url(#chord-glow)');
+            
+            d3.selectAll('.trade-ribbon')
+                .transition()
+                .duration(200)
+                .attr('opacity', d => {
+                    const maxValue = d3.max(d3.selectAll('.trade-ribbon').data(), c => c.source.value);
+                    return 0.3 + (d.source.value / maxValue) * 0.5;
+                })
+                .style('filter', 'url(#chord-glow)');
+        }
+        
+        hideChordTooltip();
+    }
+}
+
+function handleCountryClick(index, element) {
+    const countries = Array.from(selectedCountries);
+    
+    if (ChordSankeyState.clickedCountry === index) {
+        // Unclick
+        ChordSankeyState.clickedCountry = null;
+        
+        // Reset all
+        d3.selectAll('.country-arc')
+            .transition()
+            .duration(300)
+            .attr('opacity', 0.8)
+            .style('filter', 'url(#chord-glow)');
+        
+        d3.selectAll('.trade-ribbon')
+            .transition()
+            .duration(300)
+            .attr('opacity', d => {
+                const maxValue = d3.max(d3.selectAll('.trade-ribbon').data(), c => c.source.value);
+                return 0.3 + (d.source.value / maxValue) * 0.5;
+            })
+            .style('filter', 'url(#chord-glow)');
+        
+    } else {
+        // Click new country
+        ChordSankeyState.clickedCountry = index;
+        
+        // Keep this country and its connections highlighted
+        d3.select(element)
+            .transition()
+            .duration(300)
+            .attr('opacity', 1)
+            .style('filter', 'url(#chord-glow-hover)');
+        
+        d3.selectAll('.country-arc')
+            .filter((d, i) => i !== index)
+            .transition()
+            .duration(300)
+            .attr('opacity', 0.2);
+        
+        d3.selectAll('.trade-ribbon')
+            .filter(d => d.source.index === index || d.target.index === index)
+            .transition()
+            .duration(300)
+            .attr('opacity', 0.9)
+            .style('filter', 'url(#chord-glow-hover)');
+        
+        d3.selectAll('.trade-ribbon')
+            .filter(d => d.source.index !== index && d.target.index !== index)
+            .transition()
+            .duration(300)
+            .attr('opacity', 0.05);
+        
+        console.log(`Locked focus on ${countries[index]}`);
+    }
+}
+
+function handleRibbonHover(d, isEnter, element) {
+    const countries = Array.from(selectedCountries);
+    const sourceCountry = countries[d.source.index];
+    const targetCountry = countries[d.target.index];
+    
+    if (isEnter) {
+        // Highlight this ribbon
+        d3.select(element)
+            .transition()
+            .duration(200)
+            .attr('opacity', 1)
+            .attr('stroke', 'white')
+            .attr('stroke-width', 2)
+            .style('filter', 'url(#chord-glow-hover)');
+        
+        // Dim others
+        d3.selectAll('.trade-ribbon')
+            .filter(ribbon => ribbon !== d)
+            .transition()
+            .duration(200)
+            .attr('opacity', 0.1);
+        
+        // Show flow tooltip
+        showFlowTooltip(sourceCountry, targetCountry, d.source.value, event);
+        
+    } else {
+        if (ChordSankeyState.clickedCountry === null) {
+            d3.select(element)
+                .transition()
+                .duration(200)
+                .attr('opacity', 0.6)
+                .attr('stroke', 'none')
+                .style('filter', 'url(#chord-glow)');
+            
+            d3.selectAll('.trade-ribbon')
+                .transition()
+                .duration(200)
+                .attr('opacity', ribbon => {
+                    const maxValue = d3.max(d3.selectAll('.trade-ribbon').data(), c => c.source.value);
+                    return 0.3 + (ribbon.source.value / maxValue) * 0.5;
+                })
+                .attr('stroke', 'none');
+        }
+        
+        hideChordTooltip();
+    }
+}
+
+function handleRibbonClick(d, element) {
+    console.log(`Flow from ${d.source.index} to ${d.target.index}, value: ${formatNumber(d.source.value)}`);
+    
+    // Pulse animation
+    d3.select(element)
+        .transition()
+        .duration(200)
+        .attr('opacity', 1)
+        .transition()
+        .duration(200)
+        .attr('opacity', 0.6)
+        .transition()
+        .duration(200)
+        .attr('opacity', 1);
+}
+
+function addFlowParticles(g, chords, ribbon, countries, flowData) {
+    const particles = g.append('g')
+        .attr('class', 'flow-particles');
+    
+    // Create particles for top flows
+    const topFlows = chords
+        .filter(d => d.source.value > 0)
+        .sort((a, b) => b.source.value - a.source.value)
+        .slice(0, Math.min(10, chords.length));
+    
+    topFlows.forEach((chord, i) => {
+        const path = ribbon(chord);
+        const pathLength = path ? 500 : 0; // Approximate
+        
+        if (pathLength === 0) return;
+        
+        // Create multiple particles per flow
+        for (let p = 0; p < 3; p++) {
+            const particle = particles.append('circle')
+                .attr('r', 4)
+                .attr('fill', impactColorScale(flowData.impacts[chord.source.index][chord.target.index]))
+                .attr('opacity', 0)
+                .style('filter', 'url(#chord-glow)');
+            
+            animateParticle(particle, chord, ribbon, p * 0.33);
+        }
+    });
+}
+
+function animateParticle(particle, chord, ribbon, offset) {
+    const duration = 3000;
+    
+    function animate() {
+        particle
+            .transition()
+            .duration(duration)
+            .ease(d3.easeLinear)
+            .attrTween('transform', () => {
+                return t => {
+                    const adjustedT = ((t + offset) % 1);
+                    const point = ribbon.centroid ? ribbon.centroid(chord) : [0, 0];
+                    
+                    // Simplified path animation
+                    const angle = chord.source.startAngle + (chord.target.startAngle - chord.source.startAngle) * adjustedT;
+                    const radius = (chord.source.value / 2) * (1 - Math.abs(adjustedT - 0.5) * 2);
+                    
+                    const x = Math.cos(angle - Math.PI / 2) * radius;
+                    const y = Math.sin(angle - Math.PI / 2) * radius;
+                    
+                    return `translate(${x}, ${y})`;
+                };
+            })
+            .attr('opacity', t => {
+                const adjustedT = ((t + offset) % 1);
+                return Math.sin(adjustedT * Math.PI) * 0.8;
+            })
+            .on('end', animate);
+    }
+    
+    animate();
+}
+
+function addImpactLegend(g, radius) {
+    const legendGroup = g.append('g')
+        .attr('class', 'impact-legend')
+        .attr('transform', `translate(${-radius - 80}, ${-radius + 50})`);
+    
+    legendGroup.append('text')
+        .attr('x', 0)
+        .attr('y', -15)
+        .attr('fill', 'white')
+        .attr('font-size', '12px')
+        .attr('font-weight', '600')
+        .text('Environmental Impact');
+    
+    const legendScale = d3.scaleLinear()
+        .domain([0, 100])
+        .range([0, 150]);
+    
+    // Gradient bar
+    const gradient = legendGroup.append('defs')
+        .append('linearGradient')
+        .attr('id', 'impact-gradient')
+        .attr('x1', '0%')
+        .attr('y1', '0%')
+        .attr('x2', '0%')
+        .attr('y2', '100%');
+    
+    gradient.append('stop')
+        .attr('offset', '0%')
+        .attr('stop-color', '#e74c3c');
+    
+    gradient.append('stop')
+        .attr('offset', '50%')
+        .attr('stop-color', '#f39c12');
+    
+    gradient.append('stop')
+        .attr('offset', '100%')
+        .attr('stop-color', '#2ecc71');
+    
+    legendGroup.append('rect')
+        .attr('x', 0)
+        .attr('y', 0)
+        .attr('width', 20)
+        .attr('height', 150)
+        .attr('fill', 'url(#impact-gradient)')
+        .attr('rx', 4);
+    
+    legendGroup.append('text')
+        .attr('x', 30)
+        .attr('y', 5)
+        .attr('fill', 'rgba(255,255,255,0.8)')
+        .attr('font-size', '10px')
+        .text('High');
+    
+    legendGroup.append('text')
+        .attr('x', 30)
+        .attr('y', 150)
+        .attr('fill', 'rgba(255,255,255,0.8)')
+        .attr('font-size', '10px')
+        .text('Low');
+}
+
+function showChordMessage(text) {
+    if (!ChordSankeyState.svg) return;
+    
+    ChordSankeyState.svg.selectAll('*').remove();
+    
+    const width = parseInt(ChordSankeyState.svg.attr('width'));
+    const height = parseInt(ChordSankeyState.svg.attr('height'));
+    
+    ChordSankeyState.svg.append('text')
+        .attr('x', width / 2)
+        .attr('y', height / 2)
+        .attr('text-anchor', 'middle')
+        .attr('fill', 'white')
+        .attr('font-size', '18px')
+        .attr('opacity', 0.7)
+        .text(text);
+}
+
+function showChordTooltip(countryCode, type, event) {
+    const tooltip = document.getElementById('chord-tooltip');
+    if (!tooltip) return;
+    
+    const country = COUNTRIES[countryCode];
+    const totalExports = calculateTotalByFlow(countryCode, currentFactorGroup, 'exports');
+    const totalImports = calculateTotalByFlow(countryCode, currentFactorGroup, 'imports');
+    const domestic = calculateTotalByFlow(countryCode, currentFactorGroup, 'domestic');
+    
+    tooltip.innerHTML = `
+        <div style="display: flex; align-items: center; margin-bottom: 8px;">
+            <span style="font-size: 28px; margin-right: 10px;">${country.flag}</span>
+            <div>
+                <div style="font-weight: bold; font-size: 16px; color: ${country.color};">${country.name}</div>
+                <div style="font-size: 11px; opacity: 0.8;">Trade Flow Analysis</div>
+            </div>
+        </div>
+        <div style="margin-top: 10px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                <span style="opacity: 0.9;">📤 Total Exports:</span>
+                <strong style="color: #3498db;">${formatNumber(totalExports)}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                <span style="opacity: 0.9;">📥 Total Imports:</span>
+                <strong style="color: #e74c3c;">${formatNumber(totalImports)}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <span style="opacity: 0.9;">🏭 Domestic:</span>
+                <strong style="color: #2ecc71;">${formatNumber(domestic)}</strong>
+            </div>
+        </div>
+        <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.2); font-size: 10px; opacity: 0.7;">
+            Click to lock focus • Hover ribbons for flow details
+        </div>
+    `;
+    
+    tooltip.classList.add('visible');
+    tooltip.style.display = 'block';
+    tooltip.style.opacity = '1';
+    tooltip.style.visibility = 'visible';
+    
+    updateChordTooltipPosition(event);
+}
+
+function showFlowTooltip(sourceCode, targetCode, value, event) {
+    const tooltip = document.getElementById('chord-tooltip');
+    if (!tooltip) return;
+    
+    const source = COUNTRIES[sourceCode];
+    const target = COUNTRIES[targetCode];
+    
+    const impact = calculateTotalByFlow(sourceCode, currentFactorGroup, 'exports') + 
+                   calculateTotalByFlow(targetCode, currentFactorGroup, 'imports');
+    
+    tooltip.innerHTML = `
+        <div style="margin-bottom: 10px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                <div style="display: flex; align-items: center;">
+                    <span style="font-size: 24px; margin-right: 6px;">${source.flag}</span>
+                    <span style="font-weight: 600; color: ${source.color};">${source.name}</span>
+                </div>
+                <span style="font-size: 20px; margin: 0 10px; opacity: 0.5;">→</span>
+                <div style="display: flex; align-items: center;">
+                    <span style="font-weight: 600; color: ${target.color};">${target.name}</span>
+                    <span style="font-size: 24px; margin-left: 6px;">${target.flag}</span>
+                </div>
+            </div>
+        </div>
+        <div style="background: rgba(255,255,255,0.1); padding: 10px; border-radius: 6px; margin-bottom: 8px;">
+            <div style="text-align: center;">
+                <div style="font-size: 11px; opacity: 0.7; margin-bottom: 4px;">Trade Flow Volume</div>
+                <div style="font-size: 20px; font-weight: bold; color: #4fc3f7;">${formatNumber(value)}</div>
+            </div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 11px;">
+            <span style="opacity: 0.8;">Environmental Impact:</span>
+            <strong style="color: ${impactColorScale(impact / d3.max([impact, 1000000000]))};">${formatNumber(impact)}</strong>
+        </div>
+        <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.2); font-size: 10px; opacity: 0.6; text-align: center;">
+            Click for detailed breakdown
+        </div>
+    `;
+    
+    tooltip.classList.add('visible');
+    tooltip.style.display = 'block';
+    tooltip.style.opacity = '1';
+    tooltip.style.visibility = 'visible';
+    
+    updateChordTooltipPosition(event);
+}
+
+function updateChordTooltipPosition(event) {
+    const tooltip = document.getElementById('chord-tooltip');
+    if (!tooltip) return;
+    
+    const offsetX = 15;
+    const offsetY = 15;
+    
+    let x = event.clientX + offsetX;
+    let y = event.clientY + offsetY;
+    
+    const tooltipRect = tooltip.getBoundingClientRect();
+    if (x + tooltipRect.width > window.innerWidth) {
+        x = event.clientX - tooltipRect.width - offsetX;
+    }
+    if (y + tooltipRect.height > window.innerHeight) {
+        y = event.clientY - tooltipRect.height - offsetY;
+    }
+    
+    tooltip.style.left = x + 'px';
+    tooltip.style.top = y + 'px';
+}
+
+function hideChordTooltip() {
+    const tooltip = document.getElementById('chord-tooltip');
+    if (tooltip) {
+        tooltip.classList.remove('visible');
+        tooltip.style.opacity = '0';
+        tooltip.style.visibility = 'hidden';
+    }
+}
+
+function updateChordSankey() {
+    console.log('Updating Chord-Sankey...');
+    renderChordSankey();
+}
+
+// Export functions globally
+window.initChordSankey = initChordSankey;
+window.updateChordSankey = updateChordSankey;
+window.renderChordSankey = renderChordSankey;
+
+console.log('Chord-Sankey Hybrid Script Loaded!');
+
+// ==========================================
+// CHORD-SANKEY HELPER FUNCTIONS
+// Control functions for mode switching and interactions
+// ==========================================
+
+let chordMode = 'all';
+let animationsEnabled = true;
+
+function setChordMode(mode) {
+    chordMode = mode;
+    
+    // Update button states
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+        if (btn.dataset.mode === mode) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+    
+    console.log(`Chord mode set to: ${mode}`);
+    
+    // Re-render with new mode
+    if (typeof renderChordSankey === 'function') {
+        renderChordSankey();
+    }
+}
+
+function resetChordFocus() {
+    if (typeof ChordSankeyState !== 'undefined') {
+        ChordSankeyState.clickedCountry = null;
+        ChordSankeyState.hoveredCountry = null;
+    }
+    
+    // Reset all visual elements
+    if (typeof d3 !== 'undefined') {
+        d3.selectAll('.country-arc')
+            .transition()
+            .duration(300)
+            .attr('opacity', 0.8)
+            .style('filter', 'url(#glow)');
+        
+        d3.selectAll('.trade-ribbon')
+            .transition()
+            .duration(300)
+            .attr('opacity', d => {
+                const maxValue = d3.max(d3.selectAll('.trade-ribbon').data(), c => c.source.value);
+                return 0.3 + (d.source.value / maxValue) * 0.5;
+            })
+            .attr('stroke', 'none')
+            .style('filter', 'url(#glow)');
+    }
+    
+    console.log('Chord focus reset');
+}
+
+function toggleAnimations() {
+    animationsEnabled = !animationsEnabled;
+    
+    const btn = event.currentTarget;
+    const icon = btn.querySelector('.btn-icon');
+    
+    if (animationsEnabled) {
+        icon.textContent = '✨';
+        btn.style.opacity = '1';
+        
+        // Re-enable animations
+        d3.selectAll('.flow-particles circle')
+            .style('display', 'block');
+        
+        console.log('Animations enabled');
+    } else {
+        icon.textContent = '⏸️';
+        btn.style.opacity = '0.6';
+        
+        // Hide animated particles
+        d3.selectAll('.flow-particles circle')
+            .style('display', 'none');
+        
+        console.log('Animations disabled');
+    }
+}
+
+// Auto-initialize when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('DOM loaded, waiting for Chord-Sankey initialization...');
+        setTimeout(() => {
+            if (typeof initChordSankey === 'function') {
+                initChordSankey();
+            }
+        }, 2500);
+    });
+} else {
+    console.log('DOM already loaded, initializing Chord-Sankey...');
+    setTimeout(() => {
+        if (typeof initChordSankey === 'function') {
+            initChordSankey();
+        }
+    }, 2500);
+}
+
+// Export helper functions
+window.setChordMode = setChordMode;
+window.resetChordFocus = resetChordFocus;
+window.toggleAnimations = toggleAnimations;
+window.exportChordSankeyAsSVG = exportChordSankeyAsSVG;
+window.exportChordSankeyAsPNG = exportChordSankeyAsPNG;
+
+// Export Chord-Sankey as SVG
+function exportChordSankeyAsSVG() {
+    console.log('Exporting Chord-Sankey as SVG...');
+    
+    const svg = document.querySelector('#chart-chord-sankey svg');
+    if (!svg) {
+        alert('No visualization to export. Please render the Chord-Sankey first.');
+        return;
+    }
+    
+    // Clone the SVG
+    const svgClone = svg.cloneNode(true);
+    
+    // Get dimensions
+    const width = svg.getAttribute('width') || svg.getBoundingClientRect().width;
+    const height = svg.getAttribute('height') || svg.getBoundingClientRect().height;
+    
+    // Set dimensions on clone
+    svgClone.setAttribute('width', width);
+    svgClone.setAttribute('height', height);
+    svgClone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    
+    // Add white background
+    const background = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    background.setAttribute('width', '100%');
+    background.setAttribute('height', '100%');
+    background.setAttribute('fill', '#0f0c29');
+    svgClone.insertBefore(background, svgClone.firstChild);
+    
+    // Serialize SVG
+    const serializer = new XMLSerializer();
+    const svgString = serializer.serializeToString(svgClone);
+    
+    // Create blob and download
+    const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `chord-sankey-${currentFactorGroup}-${new Date().getTime()}.svg`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    console.log('✅ SVG exported successfully!');
+}
+
+// Export Chord-Sankey as PNG
+function exportChordSankeyAsPNG() {
+    console.log('Exporting Chord-Sankey as PNG...');
+    
+    const svg = document.querySelector('#chart-chord-sankey svg');
+    if (!svg) {
+        alert('No visualization to export. Please render the Chord-Sankey first.');
+        return;
+    }
+    
+    // Get dimensions
+    const width = svg.getAttribute('width') || svg.getBoundingClientRect().width;
+    const height = svg.getAttribute('height') || svg.getBoundingClientRect().height;
+    
+    // Clone and prepare SVG
+    const svgClone = svg.cloneNode(true);
+    svgClone.setAttribute('width', width);
+    svgClone.setAttribute('height', height);
+    svgClone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    
+    // Add background
+    const background = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    background.setAttribute('width', '100%');
+    background.setAttribute('height', '100%');
+    background.setAttribute('fill', '#0f0c29');
+    svgClone.insertBefore(background, svgClone.firstChild);
+    
+    // Serialize SVG
+    const serializer = new XMLSerializer();
+    const svgString = serializer.serializeToString(svgClone);
+    
+    // Create image from SVG
+    const img = new Image();
+    const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(svgBlob);
+    
+    img.onload = function() {
+        // Create canvas
+        const canvas = document.createElement('canvas');
+        canvas.width = width * 2; // 2x for higher resolution
+        canvas.height = height * 2;
+        
+        const ctx = canvas.getContext('2d');
+        ctx.scale(2, 2); // Scale for higher resolution
+        ctx.drawImage(img, 0, 0);
+        
+        // Convert to PNG and download
+        canvas.toBlob(function(blob) {
+            const pngUrl = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = pngUrl;
+            link.download = `chord-sankey-${currentFactorGroup}-${new Date().getTime()}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(pngUrl);
+            URL.revokeObjectURL(url);
+            
+            console.log('✅ PNG exported successfully!');
+        }, 'image/png');
+    };
+    
+    img.onerror = function() {
+        console.error('Failed to load SVG for PNG conversion');
+        alert('Failed to export PNG. Please try again.');
+        URL.revokeObjectURL(url);
+    };
+    
+    img.src = url;
+}
+
+console.log('Chord-Sankey Helper Functions Loaded!');
+
+// ==========================================
+// ISOMETRIC TOPOGRAPHIC CARTOGRAM
+// Pure Canvas API - No external dependencies!
+// ==========================================
+
+console.log('🗻 Isometric Topographic Module Loading...');
+
+// Global state
+const IsometricTopo = {
+    canvas: null,
+    ctx: null,
+    width: 0,
+    height: 0,
+    countries: [],
+    hoveredCountry: null,
+    mode: 'impact',
+    currentFactor: 'air',
+    animationFrame: null,
+    rotation: 0,
+    zoom: 1,
+    offsetX: 0,
+    offsetY: 0,
+    isDragging: false,
+    lastMouseX: 0,
+    lastMouseY: 0,
+    autoRotate: true
+};
+
+// Country data with positions
+const COUNTRY_DATA = {
+    US: { x: -6, y: 2, name: 'United States', color: '#4a90e2' },
+    CN: { x: 6, y: 0, name: 'China', color: '#e74c3c' },
+    DE: { x: 1, y: 1, name: 'Germany', color: '#f39c12' },
+    JP: { x: 8, y: -1, name: 'Japan', color: '#9b59b6' },
+    GB: { x: 0, y: 2, name: 'United Kingdom', color: '#1abc9c' },
+    FR: { x: 1, y: 0, name: 'France', color: '#3498db' },
+    CA: { x: -8, y: 4, name: 'Canada', color: '#e67e22' },
+    BR: { x: -4, y: -5, name: 'Brazil', color: '#2ecc71' },
+    IT: { x: 2, y: -1, name: 'Italy', color: '#16a085' },
+    RU: { x: 5, y: 5, name: 'Russia', color: '#c0392b' },
+    IN: { x: 5, y: -2, name: 'India', color: '#d35400' },
+    KR: { x: 7, y: 1, name: 'South Korea', color: '#8e44ad' },
+    AU: { x: 9, y: -4, name: 'Australia', color: '#27ae60' },
+    MX: { x: -5, y: -2, name: 'Mexico', color: '#f1c40f' }
+};
+
+// Mock impact data
+const IMPACT_DATA = {
+    US: { co2: 85, water: 72, energy: 88, land: 65, materials: 78, volume: 920 },
+    CN: { co2: 92, water: 88, energy: 95, land: 82, materials: 90, volume: 950 },
+    DE: { co2: 68, water: 55, energy: 72, land: 48, materials: 65, volume: 780 },
+    JP: { co2: 75, water: 82, energy: 78, land: 58, materials: 72, volume: 820 },
+    GB: { co2: 62, water: 48, energy: 65, land: 42, materials: 58, volume: 680 },
+    FR: { co2: 58, water: 52, energy: 62, land: 45, materials: 55, volume: 650 },
+    CA: { co2: 78, water: 68, energy: 82, land: 72, materials: 75, volume: 720 },
+    BR: { co2: 72, water: 85, energy: 65, land: 88, materials: 68, volume: 580 },
+    IT: { co2: 55, water: 48, energy: 58, land: 42, materials: 52, volume: 520 },
+    RU: { co2: 88, water: 78, energy: 92, land: 85, materials: 82, volume: 680 },
+    IN: { co2: 82, water: 92, energy: 85, land: 78, materials: 80, volume: 720 },
+    KR: { co2: 72, water: 78, energy: 75, land: 62, materials: 70, volume: 780 },
+    AU: { co2: 68, water: 58, energy: 72, land: 92, materials: 65, volume: 520 },
+    MX: { co2: 65, water: 72, energy: 68, land: 75, materials: 62, volume: 480 }
+};
+
+// Initialize
+function initIsometricTopo() {
+    console.log('🎨 Initializing Isometric Topography...');
+    
+    const container = document.getElementById('topo-3d-container');
+    if (!container) {
+        console.error('❌ Container not found');
+        return;
+    }
+    
+    // Create canvas
+    IsometricTopo.canvas = document.createElement('canvas');
+    IsometricTopo.canvas.style.width = '100%';
+    IsometricTopo.canvas.style.height = '100%';
+    IsometricTopo.canvas.style.display = 'block';
+    
+    container.innerHTML = '';
+    container.appendChild(IsometricTopo.canvas);
+    
+    IsometricTopo.ctx = IsometricTopo.canvas.getContext('2d');
+    
+    // Set canvas size
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    
+    // Setup mouse events
+    setupMouseEvents();
+    
+    // Initialize countries
+    updateCountries();
+    
+    // Start animation
+    animate();
+    
+    // Hide loading
+    const loading = document.getElementById('topo-loading');
+    if (loading) {
+        loading.style.display = 'none';
+    }
+    
+    console.log('✅ Isometric Topography Initialized!');
+}
+
+// Resize canvas
+function resizeCanvas() {
+    const container = IsometricTopo.canvas.parentElement;
+    const rect = container.getBoundingClientRect();
+    
+    IsometricTopo.width = rect.width;
+    IsometricTopo.height = rect.height;
+    
+    // Set actual canvas size for crisp rendering
+    IsometricTopo.canvas.width = IsometricTopo.width * window.devicePixelRatio;
+    IsometricTopo.canvas.height = IsometricTopo.height * window.devicePixelRatio;
+    
+    IsometricTopo.canvas.style.width = IsometricTopo.width + 'px';
+    IsometricTopo.canvas.style.height = IsometricTopo.height + 'px';
+    
+    IsometricTopo.ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+}
+
+// Setup mouse events
+function setupMouseEvents() {
+    const canvas = IsometricTopo.canvas;
+    
+    canvas.addEventListener('mousedown', (e) => {
+        IsometricTopo.isDragging = true;
+        IsometricTopo.lastMouseX = e.clientX;
+        IsometricTopo.lastMouseY = e.clientY;
+        IsometricTopo.autoRotate = false;
+        canvas.style.cursor = 'grabbing';
+    });
+    
+    canvas.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        
+        if (IsometricTopo.isDragging) {
+            const deltaX = e.clientX - IsometricTopo.lastMouseX;
+            const deltaY = e.clientY - IsometricTopo.lastMouseY;
+            
+            IsometricTopo.rotation += deltaX * 0.01;
+            IsometricTopo.offsetY -= deltaY * 0.5;
+            
+            IsometricTopo.lastMouseX = e.clientX;
+            IsometricTopo.lastMouseY = e.clientY;
+        } else {
+            // Check hover
+            checkHover(mouseX, mouseY);
+        }
+    });
+    
+    canvas.addEventListener('mouseup', () => {
+        IsometricTopo.isDragging = false;
+        canvas.style.cursor = 'grab';
+    });
+    
+    canvas.addEventListener('mouseleave', () => {
+        IsometricTopo.isDragging = false;
+        IsometricTopo.hoveredCountry = null;
+        canvas.style.cursor = 'grab';
+        hideTooltip();
+    });
+    
+    canvas.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? 0.95 : 1.05;
+        IsometricTopo.zoom = Math.max(0.5, Math.min(2, IsometricTopo.zoom * delta));
+    });
+    
+    canvas.style.cursor = 'grab';
+}
+
+// Check which country is hovered
+function checkHover(mouseX, mouseY) {
+    IsometricTopo.hoveredCountry = null;
+    
+    for (const country of IsometricTopo.countries) {
+        if (isPointInIsometricBox(mouseX, mouseY, country)) {
+            IsometricTopo.hoveredCountry = country;
+            showTooltip(country, mouseX, mouseY);
+            return;
+        }
+    }
+    
+    hideTooltip();
+}
+
+// Check if point is inside isometric box
+function isPointInIsometricBox(px, py, country) {
+    const { screenX, screenY, width, height } = country.renderData;
+    
+    // Simple bounding box check
+    return px >= screenX - width/2 && px <= screenX + width/2 &&
+           py >= screenY - height && py <= screenY + 20;
+}
+
+// Update countries based on selection
+function updateCountries() {
+    const selectedCountries = window.selectedCountries || Object.keys(COUNTRY_DATA);
+    
+    IsometricTopo.countries = selectedCountries.map(code => {
+        const data = COUNTRY_DATA[code];
+        const impact = calculateImpact(code);
+        
+        return {
+            code,
+            ...data,
+            impact,
+            height: (impact.elevation / 100) * 120,
+            baseSize: 40,
+            renderData: {}
+        };
+    });
+}
+
+// Calculate impact
+function calculateImpact(code) {
+    const data = IMPACT_DATA[code] || { co2: 50, water: 50, energy: 50, land: 50, materials: 50, volume: 500 };
+    
+    const factorMap = {
+        'air': data.co2,
+        'water': data.water,
+        'energy': data.energy,
+        'land': data.land,
+        'materials': data.materials,
+        'employment': (data.co2 + data.energy) / 2
+    };
+    
+    const impactValue = factorMap[IsometricTopo.currentFactor] || data.co2;
+    
+    let elevation;
+    if (IsometricTopo.mode === 'impact') {
+        elevation = impactValue;
+    } else if (IsometricTopo.mode === 'volume') {
+        elevation = (data.volume / 1000) * 100;
+    } else {
+        elevation = (impactValue * 0.6) + ((data.volume / 1000) * 100 * 0.4);
+    }
+    
+    return {
+        elevation: Math.min(100, elevation),
+        ...data
+    };
+}
+
+// Get color based on elevation
+function getColor(elevation) {
+    if (elevation < 25) return '#2ecc71';
+    if (elevation < 50) return '#3498db';
+    if (elevation < 75) return '#f39c12';
+    return '#e74c3c';
+}
+
+// Convert 3D to isometric 2D
+function toIsometric(x, y, z) {
+    const angle = IsometricTopo.rotation;
+    
+    // Rotate around Y axis
+    const rotX = x * Math.cos(angle) - y * Math.sin(angle);
+    const rotY = x * Math.sin(angle) + y * Math.cos(angle);
+    
+    // Isometric projection
+    const isoX = (rotX - rotY) * Math.cos(Math.PI / 6);
+    const isoY = (rotX + rotY) * Math.sin(Math.PI / 6) - z;
+    
+    // Screen coordinates
+    const centerX = IsometricTopo.width / 2;
+    const centerY = IsometricTopo.height / 2 + IsometricTopo.offsetY;
+    
+    const screenX = centerX + isoX * IsometricTopo.zoom * 15;
+    const screenY = centerY + isoY * IsometricTopo.zoom * 15;
+    
+    return { x: screenX, y: screenY };
+}
+
+// Draw isometric box (country terrain)
+function drawIsometricBox(ctx, country) {
+    const { x, y, height, baseSize } = country;
+    const color = getColor(country.impact.elevation);
+    
+    const base = toIsometric(x * 10, y * 10, 0);
+    const top = toIsometric(x * 10, y * 10, height);
+    
+    // Store render data for hit detection
+    country.renderData = {
+        screenX: base.x,
+        screenY: base.y,
+        width: baseSize,
+        height: height * IsometricTopo.zoom * 15
+    };
+    
+    // Draw shadow
+    ctx.save();
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+    ctx.beginPath();
+    ctx.ellipse(base.x, base.y + 5, baseSize * 0.6, baseSize * 0.3, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    
+    // Calculate isometric vertices
+    const hw = baseSize / 2;
+    const hh = baseSize / 4;
+    
+    // Base vertices
+    const v1 = { x: base.x, y: base.y - hh };
+    const v2 = { x: base.x + hw, y: base.y };
+    const v3 = { x: base.x, y: base.y + hh };
+    const v4 = { x: base.x - hw, y: base.y };
+    
+    // Top vertices
+    const offset = height * IsometricTopo.zoom * 15;
+    const t1 = { x: v1.x, y: v1.y - offset };
+    const t2 = { x: v2.x, y: v2.y - offset };
+    const t3 = { x: v3.x, y: v3.y - offset };
+    const t4 = { x: v4.x, y: v4.y - offset };
+    
+    // Draw faces
+    const baseColor = color;
+    const darkColor = shadeColor(color, -20);
+    const lightColor = shadeColor(color, 10);
+    
+    const isHovered = IsometricTopo.hoveredCountry === country;
+    const glowAlpha = isHovered ? 0.6 : 0.3;
+    
+    // Left face
+    ctx.fillStyle = darkColor;
+    ctx.beginPath();
+    ctx.moveTo(v4.x, v4.y);
+    ctx.lineTo(t4.x, t4.y);
+    ctx.lineTo(t1.x, t1.y);
+    ctx.lineTo(v1.x, v1.y);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Right face
+    ctx.fillStyle = baseColor;
+    ctx.beginPath();
+    ctx.moveTo(v2.x, v2.y);
+    ctx.lineTo(t2.x, t2.y);
+    ctx.lineTo(t1.x, t1.y);
+    ctx.lineTo(v1.x, v1.y);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Top face
+    ctx.fillStyle = lightColor;
+    ctx.beginPath();
+    ctx.moveTo(t1.x, t1.y);
+    ctx.lineTo(t2.x, t2.y);
+    ctx.lineTo(t3.x, t3.y);
+    ctx.lineTo(t4.x, t4.y);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Draw contour lines
+    const levels = 5;
+    ctx.strokeStyle = shadeColor(color, 30);
+    ctx.lineWidth = 1;
+    ctx.globalAlpha = 0.4;
+    
+    for (let i = 1; i < levels; i++) {
+        const ratio = i / levels;
+        const levelOffset = offset * ratio;
+        
+        ctx.beginPath();
+        ctx.moveTo(v1.x, v1.y - levelOffset);
+        ctx.lineTo(v2.x, v2.y - levelOffset);
+        ctx.lineTo(v3.x, v3.y - levelOffset);
+        ctx.lineTo(v4.x, v4.y - levelOffset);
+        ctx.closePath();
+        ctx.stroke();
+    }
+    
+    ctx.globalAlpha = 1;
+    
+    // Glow effect
+    if (isHovered) {
+        ctx.save();
+        ctx.shadowColor = color;
+        ctx.shadowBlur = 20;
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.globalAlpha = glowAlpha;
+        
+        ctx.beginPath();
+        ctx.moveTo(t1.x, t1.y);
+        ctx.lineTo(t2.x, t2.y);
+        ctx.lineTo(t3.x, t3.y);
+        ctx.lineTo(t4.x, t4.y);
+        ctx.closePath();
+        ctx.stroke();
+        
+        ctx.restore();
+    }
+}
+
+// Shade color
+function shadeColor(color, percent) {
+    const num = parseInt(color.replace("#",""), 16);
+    const amt = Math.round(2.55 * percent);
+    const R = (num >> 16) + amt;
+    const G = (num >> 8 & 0x00FF) + amt;
+    const B = (num & 0x0000FF) + amt;
+    return "#" + (0x1000000 + (R<255?R<1?0:R:255)*0x10000 +
+        (G<255?G<1?0:G:255)*0x100 + (B<255?B<1?0:B:255))
+        .toString(16).slice(1);
+}
+
+// Animation loop
+function animate() {
+    const ctx = IsometricTopo.ctx;
+    
+    // Clear canvas
+    ctx.fillStyle = '#0a0a0f';
+    ctx.fillRect(0, 0, IsometricTopo.width, IsometricTopo.height);
+    
+    // Auto-rotate
+    if (IsometricTopo.autoRotate) {
+        IsometricTopo.rotation += 0.005;
+    }
+    
+    // Draw grid
+    drawGrid(ctx);
+    
+    // Sort countries by depth for proper rendering
+    const sorted = [...IsometricTopo.countries].sort((a, b) => {
+        const depthA = a.x + a.y;
+        const depthB = b.x + b.y;
+        return depthA - depthB;
+    });
+    
+    // Draw countries
+    sorted.forEach(country => {
+        drawIsometricBox(ctx, country);
+    });
+    
+    IsometricTopo.animationFrame = requestAnimationFrame(animate);
+}
+
+// Draw grid
+function drawGrid(ctx) {
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+    ctx.lineWidth = 1;
+    
+    const gridSize = 10;
+    const gridCount = 20;
+    
+    for (let i = -gridCount; i <= gridCount; i++) {
+        const start = toIsometric(i * gridSize, -gridCount * gridSize, 0);
+        const end = toIsometric(i * gridSize, gridCount * gridSize, 0);
+        
+        ctx.beginPath();
+        ctx.moveTo(start.x, start.y);
+        ctx.lineTo(end.x, end.y);
+        ctx.stroke();
+        
+        const start2 = toIsometric(-gridCount * gridSize, i * gridSize, 0);
+        const end2 = toIsometric(gridCount * gridSize, i * gridSize, 0);
+        
+        ctx.beginPath();
+        ctx.moveTo(start2.x, start2.y);
+        ctx.lineTo(end2.x, end2.y);
+        ctx.stroke();
+    }
+}
+
+// Show tooltip
+function showTooltip(country, x, y) {
+    const tooltip = document.getElementById('topo-tooltip');
+    if (!tooltip) return;
+    
+    tooltip.innerHTML = `
+        <div class="topo-tooltip-header">
+            <strong>${country.name}</strong>
+        </div>
+        <div class="topo-tooltip-body">
+            <div class="topo-stat">
+                <span class="topo-stat-label">Impact Elevation:</span>
+                <span class="topo-stat-value">${Math.round(country.impact.elevation)}</span>
+            </div>
+            <div class="topo-stat">
+                <span class="topo-stat-label">CO₂:</span>
+                <span class="topo-stat-value">${country.impact.co2}</span>
+            </div>
+            <div class="topo-stat">
+                <span class="topo-stat-label">Water Use:</span>
+                <span class="topo-stat-value">${country.impact.water}</span>
+            </div>
+            <div class="topo-stat">
+                <span class="topo-stat-label">Trade Volume:</span>
+                <span class="topo-stat-value">${country.impact.volume}</span>
+            </div>
+        </div>
+    `;
+    
+    tooltip.style.display = 'block';
+    tooltip.style.opacity = '1';
+}
+
+// Hide tooltip
+function hideTooltip() {
+    const tooltip = document.getElementById('topo-tooltip');
+    if (tooltip) {
+        tooltip.style.opacity = '0';
+        setTimeout(() => {
+            tooltip.style.display = 'none';
+        }, 200);
+    }
+}
+
+// Update mode
+function updateTopoMode(mode) {
+    IsometricTopo.mode = mode;
+    updateCountries();
+    
+    document.querySelectorAll('.topo-mode-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    const activeBtn = document.querySelector(`[data-mode="${mode}"]`);
+    if (activeBtn) {
+        activeBtn.classList.add('active');
+    }
+}
+
+// Update factor
+function updateTopoFactor(factor) {
+    IsometricTopo.currentFactor = factor;
+    updateCountries();
+}
+
+// Reset camera
+function resetTopoCamera() {
+    IsometricTopo.rotation = 0;
+    IsometricTopo.zoom = 1;
+    IsometricTopo.offsetY = 0;
+}
+
+// Toggle auto-rotate
+function toggleAutoRotate() {
+    IsometricTopo.autoRotate = !IsometricTopo.autoRotate;
+}
+
+// Export functions
+window.initIsometricTopo = initIsometricTopo;
+window.updateTopoMode = updateTopoMode;
+window.updateTopoFactor = updateTopoFactor;
+window.resetTopoCamera = resetTopoCamera;
+window.toggleAutoRotate = toggleAutoRotate;
+
+// Auto-initialize
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(initIsometricTopo, 500);
+    });
+} else {
+    setTimeout(initIsometricTopo, 500);
+}
+
+console.log('✅ Isometric Topographic Module Loaded');
+
+// ==========================================
+// TOPOGRAPHIC HELPER FUNCTIONS
+// Integration with main dashboard
+// ==========================================
+
+// Reset camera to default position
+function resetTopoCamera() {
+    if (!TopoState.camera || !TopoState.controls) return;
+    
+    // Animate camera back to default
+    const startPos = TopoState.camera.position.clone();
+    const targetPos = new THREE.Vector3(15, 20, 15);
+    const duration = 1500;
+    const startTime = Date.now();
+    
+    function animate() {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3); // ease out cubic
+        
+        TopoState.camera.position.lerpVectors(startPos, targetPos, eased);
+        TopoState.camera.lookAt(0, 0, 0);
+        
+        if (progress < 1) {
+            requestAnimationFrame(animate);
+        } else if (TopoState.controls) {
+            TopoState.controls.target.set(0, 0, 0);
+            TopoState.controls.update();
+        }
+    }
+    
+    animate();
+}
+
+// Toggle auto-rotate
+let autoRotateEnabled = true;
+function toggleAutoRotate() {
+    if (!TopoState.controls) return;
+    
+    autoRotateEnabled = !autoRotateEnabled;
+    TopoState.controls.autoRotate = autoRotateEnabled;
+    
+    const btn = document.querySelector('.topo-view-controls button:last-child');
+    if (btn) {
+        btn.style.background = autoRotateEnabled 
+            ? 'rgba(74, 144, 226, 0.3)' 
+            : 'rgba(10, 10, 15, 0.8)';
+    }
+}
+
+// Sync with dashboard factor selection
+function syncTopoWithFactor(factor) {
+    console.log(`Syncing topography with factor: ${factor}`);
+    
+    const factorMap = {
+        'air': 'air',
+        'water': 'water',
+        'energy': 'energy',
+        'land': 'land',
+        'materials': 'materials',
+        'employment': 'employment'
+    };
+    
+    const mappedFactor = factorMap[factor] || 'air';
+    updateTopoFactor(mappedFactor);
+    
+    // Update display
+    const factorDisplay = document.getElementById('topo-current-factor');
+    if (factorDisplay) {
+        const factorNames = {
+            'air': 'Air Quality',
+            'water': 'Water Use',
+            'energy': 'Energy Consumption',
+            'land': 'Land Use',
+            'materials': 'Materials',
+            'employment': 'Employment Impact'
+        };
+        factorDisplay.textContent = factorNames[mappedFactor] || 'Air Quality';
+    }
+}
+
+// Sync with selected countries
+function syncTopoWithCountries(countries) {
+    console.log(`Syncing topography with countries:`, countries);
+    
+    window.selectedCountries = countries;
+    
+    // Update count display
+    const countDisplay = document.getElementById('topo-country-count');
+    if (countDisplay) {
+        countDisplay.textContent = countries.length;
+    }
+    
+    // Rebuild if already initialized
+    if (TopoState.scene) {
+        rebuildTerrains();
+    }
+}
+
+// Update mode display
+function updateModeDisplay(mode) {
+    const modeDisplay = document.getElementById('topo-current-mode');
+    if (modeDisplay) {
+        const modeNames = {
+            'impact': 'Impact',
+            'volume': 'Volume',
+            'composite': 'Composite'
+        };
+        modeDisplay.textContent = modeNames[mode] || 'Impact';
+    }
+}
+
+// Hook into existing factor button system
+if (typeof initializeFactorButtons === 'function') {
+    const originalInitialize = initializeFactorButtons;
+    initializeFactorButtons = function() {
+        originalInitialize();
+        
+        // Add topography sync to factor buttons
+        const factorButtons = document.querySelectorAll('.factor-button');
+        factorButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const factor = button.dataset.factor;
+                setTimeout(() => {
+                    syncTopoWithFactor(factor);
+                }, 100);
+            });
+        });
+    };
+}
+
+// Export functions
+window.resetTopoCamera = resetTopoCamera;
+window.toggleAutoRotate = toggleAutoRotate;
+window.syncTopoWithFactor = syncTopoWithFactor;
+window.syncTopoWithCountries = syncTopoWithCountries;
+window.updateModeDisplay = updateModeDisplay;
+
+console.log('✅ Topographic helper functions loaded');
