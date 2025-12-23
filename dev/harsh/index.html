@@ -12,7 +12,7 @@
     <!-- External Libraries -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
     <script src="https://unpkg.com/motion@10.16.2/dist/motion.js"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
@@ -203,26 +203,26 @@
         </div>
 
         <!-- Land Use Tab -->
-        <div id="land-section" class="chart-section">
-            <div class="section-header">
-                <h2>🌱 Land Use Impact</h2>
-                <p class="section-description">Agricultural and forest land usage in trade patterns (SDG 15: Life on Land)</p>
-            </div>
-            <div class="chart-grid">
-                <div class="chart-container">
-                    <canvas id="land-use-breakdown"></canvas>
-                </div>
-                <div class="chart-container">
-                    <canvas id="deforestation-risk"></canvas>
-                </div>
-                <div class="chart-container">
-                    <canvas id="agricultural-intensity"></canvas>
-                </div>
-                <div class="chart-container">
-                    <canvas id="land-efficiency"></canvas>
-                </div>
-            </div>
+       <div id="land-section" class="chart-section">
+    <div class="section-header">
+        <h2>🌱 Land Use Impact</h2>
+        <p class="section-description">Agricultural and forest land usage in trade patterns (SDG 15: Life on Land)</p>
+    </div>
+    <div class="chart-grid">
+        <div class="chart-container">
+            <canvas id="land-use-comparison"></canvas>
         </div>
+        <div class="chart-container">
+            <canvas id="land-intensity-sectors"></canvas>
+        </div>
+        <div class="chart-container">
+            <canvas id="land-degradation-risk"></canvas>
+        </div>
+        <div class="chart-container">
+            <canvas id="land-productivity-trends"></canvas>
+        </div>
+    </div>
+</div>
 
         <!-- Energy Tab -->
         <div id="energy-section" class="chart-section">
@@ -232,7 +232,7 @@
             </div>
             <div class="chart-grid">
                 <div class="chart-container">
-                    <canvas id="energy-mix-comparison"></canvas>
+                    <canvas id="energy-consumption-comparison"></canvas>
                 </div>
                 <div class="chart-container">
                     <canvas id="energy-intensity-sectors"></canvas>
@@ -247,48 +247,48 @@
         </div>
 
         <!-- Materials Tab -->
-        <div id="material-section" class="chart-section">
-            <div class="section-header">
-                <h2>🏗️ Material Extraction</h2>
-                <p class="section-description">Raw material usage and circular economy indicators in trade flows</p>
-            </div>
-            <div class="chart-grid">
-                <div class="chart-container">
-                    <canvas id="material-breakdown"></canvas>
-                </div>
-                <div class="chart-container">
-                    <canvas id="material-intensity"></canvas>
-                </div>
-                <div class="chart-container">
-                    <canvas id="recycling-rates"></canvas>
-                </div>
-                <div class="chart-container">
-                    <canvas id="material-footprint"></canvas>
-                </div>
-            </div>
+       <div id="material-section" class="chart-section">
+    <div class="section-header">
+        <h2>🏗️ Material Extraction</h2>
+        <p class="section-description">Raw material usage and circular economy indicators in trade flows</p>
+    </div>
+    <div class="chart-grid">
+        <div class="chart-container">
+            <canvas id="material-flow-comparison"></canvas>
         </div>
+        <div class="chart-container">
+            <canvas id="material-intensity-sectors"></canvas>
+        </div>
+        <div class="chart-container">
+            <canvas id="recycling-rates"></canvas>
+        </div>
+        <div class="chart-container">
+            <canvas id="circular-economy-trends"></canvas>
+        </div>
+    </div>
+</div>
 
         <!-- Employment Tab -->
         <div id="employment-section" class="chart-section">
-            <div class="section-header">
-                <h2>👥 Employment Impact</h2>
-                <p class="section-description">Job creation and labor intensity in international trade (SDG 8: Decent Work and Economic Growth)</p>
-            </div>
-            <div class="chart-grid">
-                <div class="chart-container">
-                    <canvas id="employment-comparison"></canvas>
-                </div>
-                <div class="chart-container">
-                    <canvas id="employment-sectors"></canvas>
-                </div>
-                <div class="chart-container">
-                    <canvas id="productivity-analysis"></canvas>
-                </div>
-                <div class="chart-container">
-                    <canvas id="employment-quality"></canvas>
-                </div>
-            </div>
+    <div class="section-header">
+        <h2>👥 Employment Impact</h2>
+        <p class="section-description">Job creation and labor intensity in international trade (SDG 8: Decent Work and Economic Growth)</p>
+    </div>
+    <div class="chart-grid">
+        <div class="chart-container">
+            <canvas id="jobs-created-comparison"></canvas>
         </div>
+        <div class="chart-container">
+            <canvas id="employment-by-sectors"></canvas>
+        </div>
+        <div class="chart-container">
+            <canvas id="wage-levels"></canvas>
+        </div>
+        <div class="chart-container">
+            <canvas id="employment-growth-trends"></canvas>
+        </div>
+    </div>
+</div>
     </section>
 
     <!-- Data Insights Section -->
