@@ -3429,3 +3429,262 @@ canvas {
     font-family: monospace;
     pointer-events: none;
 }
+
+/* ==========================================
+   3D TOPOGRAPHIC TERRAIN STYLES
+   Pure CSS 3D transforms
+   ========================================== */
+
+/* 3D Scene Container */
+.terrain-3d-scene {
+    width: 100%;
+    height: 100%;
+    perspective: 1200px;
+    perspective-origin: 50% 50%;
+    position: relative;
+    overflow: hidden;
+    background: radial-gradient(ellipse at center, #1a1a2e 0%, #0a0a0f 100%);
+}
+
+/* Terrain Globe */
+.terrain-globe {
+    width: 600px;
+    height: 600px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform-style: preserve-3d;
+    transform: translate(-50%, -50%) rotateX(45deg) rotateY(0deg);
+    transition: transform 0.1s linear;
+}
+
+/* Base Terrain Layer */
+.terrain-base {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    background: 
+        radial-gradient(ellipse at 30% 30%, rgba(74, 144, 226, 0.1) 0%, transparent 50%),
+        radial-gradient(ellipse at 70% 70%, rgba(231, 76, 60, 0.1) 0%, transparent 50%),
+        linear-gradient(135deg, #0f0f19 0%, #1a1a2e 100%);
+    border-radius: 8px;
+    box-shadow: 
+        0 0 60px rgba(0, 0, 0, 0.5),
+        inset 0 0 100px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Terrain Grid */
+.terrain-grid {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    background-image: 
+        repeating-linear-gradient(0deg, 
+            transparent, 
+            transparent 49px, 
+            rgba(255, 255, 255, 0.03) 49px, 
+            rgba(255, 255, 255, 0.03) 50px),
+        repeating-linear-gradient(90deg, 
+            transparent, 
+            transparent 49px, 
+            rgba(255, 255, 255, 0.03) 49px, 
+            rgba(255, 255, 255, 0.03) 50px);
+    pointer-events: none;
+}
+
+/* Countries Container */
+.terrain-countries {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    transform-style: preserve-3d;
+}
+
+/* Individual Terrain Peak */
+.terrain-peak {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    transform-style: preserve-3d;
+    transform: translate(-50%, -50%) translateZ(0);
+    cursor: pointer;
+    animation: peakRise 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    opacity: 0;
+}
+
+@keyframes peakRise {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) translateZ(0) scale(0);
+    }
+    100% {
+        opacity: 1;
+        transform: translate(-50%, -50%) translateZ(var(--peak-height, 50px)) scale(1);
+    }
+}
+
+/* Peak Top Face */
+.peak-top {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    top: -20px;
+    left: 5px;
+    background: var(--peak-color, #4a90e2);
+    transform: rotateX(90deg);
+    box-shadow: 
+        0 0 20px rgba(74, 144, 226, 0.5),
+        inset 0 0 10px rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+/* Peak Side 1 (Front-Right) */
+.peak-side-1 {
+    position: absolute;
+    width: 40px;
+    height: var(--peak-height, 50px);
+    top: 0;
+    left: 5px;
+    background: var(--peak-color, #4a90e2);
+    transform-origin: bottom;
+    transform: rotateY(45deg);
+    box-shadow: inset -5px 0 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Peak Side 2 (Front-Left) */
+.peak-side-2 {
+    position: absolute;
+    width: 40px;
+    height: var(--peak-height, 50px);
+    top: 0;
+    left: 5px;
+    background: var(--peak-color, #4a90e2);
+    transform-origin: bottom;
+    transform: rotateY(-45deg);
+    box-shadow: inset 5px 0 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Peak Base (Shadow) */
+.peak-base {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    top: 0;
+    left: -5px;
+    background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.4) 0%, transparent 70%);
+    transform: translateZ(-1px);
+    border-radius: 50%;
+    filter: blur(8px);
+}
+
+/* Peak Glow */
+.peak-glow {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    top: -5px;
+    left: 0;
+    background: var(--peak-color, #4a90e2);
+    border-radius: 50%;
+    opacity: 0.2;
+    filter: blur(15px);
+    transform: translateZ(-2px);
+    animation: glowPulse 3s ease-in-out infinite;
+}
+
+@keyframes glowPulse {
+    0%, 100% {
+        opacity: 0.2;
+        transform: translateZ(-2px) scale(1);
+    }
+    50% {
+        opacity: 0.4;
+        transform: translateZ(-2px) scale(1.2);
+    }
+}
+
+/* Peak Contour Lines */
+.peak-contour {
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    left: 0;
+    border-top: 1px solid;
+    opacity: 0.3;
+    transform-style: preserve-3d;
+}
+
+/* Hovered Peak */
+.peak-hovered {
+    animation: none;
+    z-index: 10;
+}
+
+.peak-hovered .peak-top {
+    box-shadow: 
+        0 0 40px currentColor,
+        inset 0 0 20px rgba(255, 255, 255, 0.4);
+    filter: brightness(1.3);
+}
+
+.peak-hovered .peak-glow {
+    opacity: 0.6;
+    filter: blur(20px);
+}
+
+.peak-hovered .peak-side-1,
+.peak-hovered .peak-side-2 {
+    filter: brightness(1.2);
+}
+
+/* Responsive Terrain */
+@media (max-width: 1200px) {
+    .terrain-globe {
+        width: 500px;
+        height: 500px;
+    }
+    
+    .terrain-peak {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .peak-top,
+    .peak-side-1,
+    .peak-side-2 {
+        width: 30px;
+    }
+}
+
+@media (max-width: 768px) {
+    .terrain-3d-scene {
+        perspective: 800px;
+    }
+    
+    .terrain-globe {
+        width: 400px;
+        height: 400px;
+    }
+    
+    .terrain-peak {
+        width: 30px;
+        height: 30px;
+    }
+    
+    .peak-top,
+    .peak-side-1,
+    .peak-side-2 {
+        width: 25px;
+    }
+}
+
+/* Loading State Override */
+.topo-3d-canvas {
+    position: relative;
+}
+
+/* Ensure terrain renders above everything */
+.terrain-3d-scene {
+    z-index: 1;
+}

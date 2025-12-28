@@ -208,6 +208,40 @@ screenshots are below :
 Dynamic pathways of environmental impact" is going out of the container
 - works perfect, can you add one more button for the user to download the sankey flow network as png and svg?
 
+## Prompt 11: 
+beneath the sakey chart, i want to add a Topographic Impact Cartogram comparison section. 
+
+A Topographic Impact Cartogram turns each country into a 3D terrain-like tile whose height and shape distort according to environmental impact, trade volume, or both.
+How it works
+* Base map: Normal geographic boundaries, kept recognizable.
+* Extrusion height:
+   * Higher = more environmental impact (CO₂, water, land stress).
+   * You can toggle modes (Impact Mode, Volume Mode, Composite Mode).
+* Topographic rings/contours:
+   * Like elevation rings on a real topographic map, but each ring reflects a threshold of impact or trade.
+* Heat tinting:
+   * Cool colors = low impact
+   * Warm colors (amber → red) = high impact
+   * Soft glows can be added for aesthetic.
+* Dynamic flow lines:
+   * Thin curved lines between countries (export/import flows).
+   * Lines bend more around high “mountains,” showing geopolitical friction visually.
+Interaction
+* Hover a country → highlight ridge lines + show a mini tooltip:
+
+Country: Germany  
+Impact Elevation: High (78)  
+CO₂: 1120  
+Water Use: 540  
+Trade Volume: 920
+Toggle View:
+Topography = Impact
+Topography = Trade
+Topography = Combined Score
+it should be in sync with the countries that the user has selected and with the criteria user wants to select as the environmental factor. 
+
+refer the image for UI, I want these charts to be 3d. use ur best creativity and make sure it looks ultra realistic and new age modern sleek styled. Also, feel free to use any additional external components.
+
 
 
 ## What this experiment achieved
