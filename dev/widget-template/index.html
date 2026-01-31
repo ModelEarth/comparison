@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trade & Environmental Impact Dashboard</title>
+    
+    <!-- CSS Libraries -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Hero Header -->
+    <header class="hero">
+        <div class="hero-content">
+            <h1>International Trade & Environmental Impact</h1>
+            <p>Explore trade flows and environmental data across US, India, and Russia</p>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Debug Panel -->
+        <div class="debug-panel">
+            <h3>📊 Data Loading Progress</h3>
+            <div id="debug-content" class="debug-content">
+                <p>Loading data...</p>
+            </div>
+        </div>
+
+        <!-- Controls Section -->
+        <div class="controls-section">
+            <div class="control-group">
+                <label for="factor-dropdown">Environmental Factor Group:</label>
+                <select id="factor-dropdown">
+                    <option value="">All Factors</option>
+                    <option value="air">Air Pollution</option>
+                    <option value="water">Water Resources</option>
+                    <option value="energy">Energy</option>
+                    <option value="land">Land Use</option>
+                    <option value="materials">Materials</option>
+                    <option value="employment">Employment</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Map Section -->
+        <section class="section">
+            <h2>Country Selection Map</h2>
+            <div id="map" class="map-container">
+                <!-- Country Selector Widget (Floating on Map) -->
+                <div class="country-selector-widget map-widget">
+                    <div class="widget-header">
+                        <div class="widget-title">🌍 Countries</div>
+                        <button class="widget-toggle-btn" id="toggle-country-list" title="Toggle list">
+                            <span class="toggle-icon">▼</span>
+                        </button>
+                        <button class="widget-clear-btn" id="clear-all-countries" title="Clear all selections">✕</button>
+                    </div>
+                    <div class="country-list" id="country-list">
+                        <!-- Countries will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+            <p class="section-subtitle">Click on countries to select/deselect them for comparison</p>
+        </section>
+
+        <!-- Summary Cards -->
+        <section class="section">
+            <h2>Environmental Impact Summary</h2>
+            <div class="cards-grid" id="summary-cards">
+                <!-- Cards will be populated by JavaScript -->
+            </div>
+        </section>
+
+        <!-- Visualizations -->
+        <section class="section">
+            <h2>Country Comparison</h2>
+            <div id="country-chart" class="chart-container"></div>
+        </section>
+
+        <section class="section">
+            <h2>Trade Flow Breakdown</h2>
+            <div id="trade-flow-chart" class="chart-container"></div>
+        </section>
+
+        <section class="section">
+            <h2>Industry Breakdown</h2>
+            <div id="industry-chart" class="chart-container"></div>
+        </section>
+
+        <!-- Dynamic Insights -->
+        <section class="section">
+            <h2>💡 Key Insights</h2>
+            <ul id="insights-list" class="insights-list">
+                <li>Select countries and factors to generate insights</li>
+            </ul>
+        </section>
+    </div>
+
+    <!-- JavaScript Libraries from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    
+    <!-- Main Script -->
+    <script src="script.js"></script>
+</body>
+</html>
