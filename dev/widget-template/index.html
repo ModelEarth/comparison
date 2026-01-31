@@ -47,7 +47,21 @@
         <!-- Map Section -->
         <section class="section">
             <h2>Country Selection Map</h2>
-            <div id="map" class="map-container"></div>
+            <div id="map" class="map-container">
+                <!-- Country Selector Widget (overlaid on map) -->
+                <div class="country-selector-widget map-widget">
+                    <div class="widget-header">
+                        <h3>Select Countries</h3>
+                        <button id="toggle-country-list" class="toggle-btn">▼</button>
+                    </div>
+                    <div id="country-list" class="country-list">
+                        <!-- Countries will be populated by JavaScript -->
+                    </div>
+                    <div class="widget-footer">
+                        <button id="clear-all-countries" class="clear-btn">Clear All</button>
+                    </div>
+                </div>
+            </div>
             <p class="section-subtitle">Click on countries to select/deselect them for comparison</p>
         </section>
 
