@@ -9,8 +9,10 @@ Frontends for tradeflow data with a UN Goal focus.
 [Python and Table Documentation](../exiobase/tradeflow/) - Our source files are output by python in our [exiobase repo](https://github.com/ModelEarth/exiobase/tree/main/tradeflow)
 
 **Tradeflow comparison vibe coding pages**
+[/comparison/dev/widget-template](dev/widget-template/)
 [/comparison/dev/antariksh](dev/antariksh/) -  Using [trade-data](https://github.com/ModelEarth/trade-data/tree/main/year/2019)<!-- 11/24/2025 -->
 [/comparison/dev/harsh](dev/harsh/)
 [/comparison/dev/loren](dev/loren/)
+
 
 
