@@ -11,9 +11,12 @@ let echartsInstances = {};
 let currentAnalysisMode = 'air_emissions';
 let currentIndustryFilter = 'all';
 
-// Country information with coordinates and flags (alphabetized)
+// Base URL for trade-data CSV files (GitHub raw content)
+const DATA_BASE_URL = 'https://raw.githubusercontent.com/ModelEarth/trade-data/main/year/2019';
+
+// Country information with coordinates and flags
+// Only the 14 countries that have data in the trade-data repo
 const COUNTRIES = {
-    'AE': { name: 'United Arab Emirates', coords: [23.4241, 53.8478], flag: '🇦🇪', color: '#8e44ad' },
     'AU': { name: 'Australia', coords: [-25.2744, 133.7751], flag: '🇦🇺', color: '#607d8b' },
     'BR': { name: 'Brazil', coords: [-14.2350, -51.9253], flag: '🇧🇷', color: '#795548' },
     'CA': { name: 'Canada', coords: [56.1304, -106.3468], flag: '🇨🇦', color: '#e91e63' },
@@ -26,9 +29,8 @@ const COUNTRIES = {
     'JP': { name: 'Japan', coords: [36.2048, 138.2529], flag: '🇯🇵', color: '#1abc9c' },
     'KR': { name: 'South Korea', coords: [35.9078, 127.7669], flag: '🇰🇷', color: '#ff5722' },
     'RU': { name: 'Russia', coords: [61.5240, 105.3188], flag: '🇷🇺', color: '#d35400' },
-    'SA': { name: 'Saudi Arabia', coords: [23.8859, 45.0792], flag: '🇸🇦', color: '#27ae60' },
     'US': { name: 'United States', coords: [39.8283, -98.5795], flag: '🇺🇸', color: '#3498db' },
-    'ZA': { name: 'South Africa', coords: [-30.5595, 22.9375], flag: '🇿🇦', color: '#16a085' }
+    'WM': { name: 'Middle East', coords: [29.3117, 47.4818], flag: '🌍', color: '#7f8c8d' }
 };
 
 // Factor groupings for analysis
@@ -63,6 +65,17 @@ const FACTOR_GROUPINGS = {
         description: 'Evaluating health impacts and environmental quality effects of trade activities (SDG 3)',
         factors: ['As', 'Cd', 'Cr', 'Hg', 'Ni', 'Pb', 'HCB', 'PM10', 'PM2.5']
     }
+};
+
+// Maps analysis modes to the exact 'extension' values in factor.csv
+// Actual values: "air_emissions", "employment", "energy", "land", "material", "water"
+const FACTOR_GROUP_KEYWORDS = {
+    air_emissions: ['air_emissions'],
+    employment: ['employment'],
+    energy: ['energy'],
+    water: ['water'],
+    materials: ['material'],
+    health: ['air_emissions']
 };
 
 // Industry category mappings
@@ -201,11 +214,11 @@ function toggleCountrySelection(countryCode) {
             return;
         }
     } else {
-        if (selectedCountries.size < 12) {
+        if (selectedCountries.size < 14) {
             selectedCountries.add(countryCode);
         } else {
             // Show message about maximum countries
-            showNotification('Maximum 12 countries can be selected');
+            showNotification('Maximum 14 countries can be selected');
             return;
         }
     }
@@ -911,18 +924,21 @@ function createWaterCharts() {
 
 // Create placeholder charts for other categories
 function createLandCharts() {
+    // TODO: Populate with real trade-data CSV (same pattern as air emissions ECharts)
+    // Use FACTOR_GROUP_KEYWORDS.materials with extension-based matching against factor.csv
     console.log('Creating land use charts...');
-    // Implementation similar to air and water charts
 }
 
 function createEnergyCharts() {
+    // TODO: Populate with real trade-data CSV (same pattern as air emissions ECharts)
+    // Use FACTOR_GROUP_KEYWORDS.energy with extension-based matching against factor.csv
     console.log('Creating energy charts...');
-    // Implementation similar to air and water charts
 }
 
 function createMaterialCharts() {
+    // TODO: Populate with real trade-data CSV (same pattern as air emissions ECharts)
+    // Use FACTOR_GROUP_KEYWORDS.materials with extension-based matching against factor.csv
     console.log('Creating material charts...');
-    // Implementation similar to air and water charts
 }
 
 function createEmploymentCharts() {
@@ -1221,7 +1237,7 @@ async function loadTradeDataSystem() {
 // Load industry reference data
 async function loadIndustryData() {
     try {
-        const response = await fetch('../../../trade-data/year/2019/industry.csv');
+        const response = await fetch(`${DATA_BASE_URL}/industry.csv`);
         const csvText = await response.text();
         const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true });
         
@@ -1243,7 +1259,7 @@ async function loadIndustryData() {
 // Load factor reference data
 async function loadFactorData() {
     try {
-        const response = await fetch('../../../trade-data/year/2019/factor.csv');
+        const response = await fetch(`${DATA_BASE_URL}/factor.csv`);
         const csvText = await response.text();
         const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true });
         
@@ -1281,33 +1297,25 @@ async function loadSelectedCountriesData() {
 }
 
 // Load specific country trade flow data
+// Only trade.csv and trade_factor.csv exist per country/flow in the trade-data repo
 async function loadCountryTradeFlow(countryCode, tradeFlow) {
     try {
-        const baseUrl = `../../../trade-data/year/2019/${countryCode}/${tradeFlow}`;
-        
-        // Try to load multiple files in parallel
-        const filePromises = [
+        const baseUrl = `${DATA_BASE_URL}/${countryCode}/${tradeFlow}`;
+
+        const [tradeCSV, factorCSV] = await Promise.all([
             fetch(`${baseUrl}/trade.csv`).then(r => r.ok ? r.text() : null),
-            fetch(`${baseUrl}/trade_factor.csv`).then(r => r.ok ? r.text() : null),
-            fetch(`${baseUrl}/trade_impact.csv`).then(r => r.ok ? r.text() : null),
-            fetch(`${baseUrl}/trade_employment.csv`).then(r => r.ok ? r.text() : null),
-            fetch(`${baseUrl}/trade_resource.csv`).then(r => r.ok ? r.text() : null)
-        ];
-        
-        const [tradeCSV, factorCSV, impactCSV, employmentCSV, resourceCSV] = await Promise.all(filePromises);
-        
+            fetch(`${baseUrl}/trade_factor.csv`).then(r => r.ok ? r.text() : null)
+        ]);
+
         if (!tradeData[countryCode]) {
             tradeData[countryCode] = {};
         }
-        
+
         tradeData[countryCode][tradeFlow] = {
             trade: tradeCSV ? Papa.parse(tradeCSV, { header: true, skipEmptyLines: true }).data : [],
-            factors: factorCSV ? Papa.parse(factorCSV, { header: true, skipEmptyLines: true }).data : [],
-            impacts: impactCSV ? Papa.parse(impactCSV, { header: true, skipEmptyLines: true }).data : [],
-            employment: employmentCSV ? Papa.parse(employmentCSV, { header: true, skipEmptyLines: true }).data : [],
-            resources: resourceCSV ? Papa.parse(resourceCSV, { header: true, skipEmptyLines: true }).data : []
+            factors: factorCSV ? Papa.parse(factorCSV, { header: true, skipEmptyLines: true }).data : []
         };
-        
+
     } catch (error) {
         console.warn(`Could not load ${tradeFlow} data for ${countryCode}:`, error);
     }
@@ -1385,29 +1393,39 @@ function createTradeFlowComparisonChart() {
     
     const option = {
         title: {
-            text: 'Trade Flow Environmental Impact by Country',
-            textStyle: { fontSize: 14, fontWeight: 'bold' }
+            show: false
         },
         tooltip: {
             trigger: 'axis',
             formatter: function(params) {
                 let result = `${params[0].axisValue}<br/>`;
                 params.forEach(param => {
-                    result += `${param.seriesName}: ${param.value.toLocaleString()}<br/>`;
+                    result += `${param.seriesName}: ${formatNumber(param.value)}<br/>`;
                 });
                 return result;
             }
         },
         legend: {
-            data: ['Domestic', 'Exports', 'Imports']
+            data: ['Domestic', 'Exports', 'Imports'],
+            top: 0
+        },
+        grid: {
+            left: 60,
+            right: 15,
+            bottom: 30,
+            top: 35
         },
         xAxis: {
             type: 'category',
-            data: data.countries
+            data: data.countries,
+            axisLabel: { fontSize: 11 }
         },
         yAxis: {
             type: 'value',
-            name: 'Impact Value'
+            axisLabel: {
+                formatter: function(val) { return formatNumber(val); },
+                fontSize: 10
+            }
         },
         series: [
             {
@@ -1440,13 +1458,10 @@ function createIndustrySectorChart() {
     const data = analyzeIndustrySectors();
     
     const option = {
-        title: {
-            text: 'Industry Sector Impact Distribution',
-            textStyle: { fontSize: 14, fontWeight: 'bold' }
-        },
+        title: { show: false },
         tooltip: {
             formatter: function(params) {
-                return `${params.name}<br/>Impact: ${params.value.toLocaleString()}<br/>Share: ${((params.value / data.total) * 100).toFixed(1)}%`;
+                return `${params.name}<br/>Impact: ${formatNumber(params.value)}<br/>Share: ${((params.value / data.total) * 100).toFixed(1)}%`;
             }
         },
         series: [{
@@ -1454,12 +1469,19 @@ function createIndustrySectorChart() {
             data: data.sectors,
             roam: false,
             nodeClick: false,
-            breadcrumb: {
-                show: false
-            },
+            top: 5,
+            left: 5,
+            right: 5,
+            bottom: 5,
+            breadcrumb: { show: false },
             itemStyle: {
                 borderColor: '#fff',
                 borderWidth: 2
+            },
+            label: {
+                show: true,
+                formatter: '{b}',
+                fontSize: 11
             },
             levels: [{
                 itemStyle: {
@@ -1478,86 +1500,109 @@ function createIndustrySectorChart() {
 // Chart 3: Country Performance Matrix
 function createCountryPerformanceChart() {
     const data = analyzeCountryPerformance();
-    
+
     const option = {
-        title: {
-            text: 'Country Performance vs Trade Volume',
-            textStyle: { fontSize: 14, fontWeight: 'bold' }
-        },
+        title: { show: false },
         tooltip: {
             formatter: function(params) {
                 const point = params.data;
-                return `${point.name}<br/>Trade Volume: ${point.value[0].toLocaleString()}<br/>Environmental Impact: ${point.value[1].toLocaleString()}`;
+                return `${point.name}<br/>Trade Volume: ${formatNumber(point.value[0])}<br/>Impact: ${formatNumber(point.value[1])}`;
             }
+        },
+        grid: {
+            left: 70,
+            right: 20,
+            bottom: 45,
+            top: 15
         },
         xAxis: {
             type: 'value',
             name: 'Trade Volume',
             nameLocation: 'middle',
-            nameGap: 40
+            nameGap: 28,
+            nameTextStyle: { fontSize: 11 },
+            axisLabel: {
+                formatter: function(val) { return formatNumber(val); },
+                fontSize: 10
+            }
         },
         yAxis: {
             type: 'value',
-            name: 'Environmental Impact',
+            name: 'Impact',
             nameLocation: 'middle',
-            nameGap: 50
+            nameGap: 55,
+            nameTextStyle: { fontSize: 11 },
+            axisLabel: {
+                formatter: function(val) { return formatNumber(val); },
+                fontSize: 10
+            }
         },
         series: [{
             type: 'scatter',
-            symbolSize: function(data, params) {
-                return Math.sqrt(data[1]) * 0.1 + 10;
-            },
+            symbolSize: 20,
             data: data.points,
+            label: {
+                show: true,
+                formatter: function(params) { return params.data.name; },
+                position: 'right',
+                fontSize: 11
+            },
             itemStyle: {
-                opacity: 0.7
+                opacity: 0.8
             }
         }]
     };
-    
+
     echartsInstances.chart3.setOption(option, true);
     document.getElementById('chart3-title').textContent = 'Country Environmental Performance Matrix';
 }
 
-// Chart 4: Trade Network Analysis
+// Chart 4: Top Export Destinations
 function createTradeNetworkChart() {
-    const data = analyzeTradeNetwork();
-    
+    const data = analyzeTopExportDestinations();
+
     const option = {
-        title: {
-            text: 'Global Trade Network Flow',
-            textStyle: { fontSize: 14, fontWeight: 'bold' }
-        },
+        title: { show: false },
         tooltip: {
-            trigger: 'item',
+            trigger: 'axis',
+            axisPointer: { type: 'shadow' },
             formatter: function(params) {
-                if (params.dataType === 'edge') {
-                    return `${params.data.source} → ${params.data.target}<br/>Flow: ${params.data.value.toLocaleString()}`;
-                } else {
-                    return `${params.data.name}<br/>Total: ${params.data.value.toLocaleString()}`;
-                }
+                let result = `${params[0].axisValue}<br/>`;
+                params.forEach(param => {
+                    result += `${param.seriesName}: ${formatNumber(param.value)}<br/>`;
+                });
+                return result;
             }
         },
-        series: [{
-            type: 'sankey',
-            layout: 'none',
-            emphasis: {
-                focus: 'adjacency'
-            },
-            data: data.nodes,
-            links: data.links,
-            itemStyle: {
-                borderWidth: 1,
-                borderColor: '#aaa'
-            },
-            lineStyle: {
-                color: 'source',
-                curveness: 0.5
+        legend: {
+            top: 0,
+            itemWidth: 12,
+            itemHeight: 12,
+            textStyle: { fontSize: 11 }
+        },
+        grid: {
+            left: 35,
+            right: 15,
+            bottom: 30,
+            top: 30
+        },
+        yAxis: {
+            type: 'category',
+            data: data.destinations,
+            axisLabel: { fontSize: 11 }
+        },
+        xAxis: {
+            type: 'value',
+            axisLabel: {
+                formatter: function(val) { return formatNumber(val); },
+                fontSize: 10
             }
-        }]
+        },
+        series: data.series
     };
-    
+
     echartsInstances.chart4.setOption(option, true);
-    document.getElementById('chart4-title').textContent = 'Trade Network Flow Analysis';
+    document.getElementById('chart4-title').textContent = 'Top Export Destinations';
 }
 
 // Data analysis functions
@@ -1587,67 +1632,99 @@ function analyzeTradeFlowImpacts() {
 function analyzeIndustrySectors() {
     const sectorImpacts = {};
     let total = 0;
-    
-    // Aggregate impacts by industry category
+    const extensions = FACTOR_GROUP_KEYWORDS[currentAnalysisMode] || [];
+
     for (const countryCode of selectedCountries) {
         const countryTradeData = tradeData[countryCode] || {};
-        
+
         Object.values(countryTradeData).forEach(flowData => {
-            if (flowData && flowData.trade) {
-                flowData.trade.forEach(trade => {
-                    const industry = trade.industry1;
-                    const amount = parseFloat(trade.amount) || 0;
-                    
-                    const category = getIndustryCategory(industry);
-                    if (!sectorImpacts[category]) {
-                        sectorImpacts[category] = 0;
-                    }
-                    sectorImpacts[category] += amount;
-                    total += amount;
-                });
-            }
+            if (!flowData || !flowData.trade || !flowData.factors) return;
+
+            // Map trade_id to industry code and name
+            const tradeIndustry = {};
+            flowData.trade.forEach(trade => {
+                const code = trade.industry1;
+                if (currentIndustryFilter !== 'all' && !matchesIndustryFilter(code)) return;
+                const info = industryData[code];
+                tradeIndustry[trade.trade_id] = info ? info.name : code;
+            });
+
+            // Sum impact_value by industry, filtered by current analysis mode
+            flowData.factors.forEach(factor => {
+                const factorInfo = factorData[factor.factor_id];
+                if (!factorInfo || !extensions.includes(factorInfo.extension)) return;
+
+                const industryName = tradeIndustry[factor.trade_id];
+                if (!industryName) return;
+                const val = parseFloat(factor.impact_value) || 0;
+                if (!sectorImpacts[industryName]) sectorImpacts[industryName] = 0;
+                sectorImpacts[industryName] += val;
+                total += val;
+            });
         });
     }
-    
-    const sectors = Object.entries(sectorImpacts).map(([name, value]) => ({
-        name,
-        value: Math.round(value)
-    }));
-    
+
+    const sectors = Object.entries(sectorImpacts)
+        .map(([name, value]) => ({ name, value: Math.round(value) }))
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 15);
+
     return { sectors, total };
+}
+
+// Check if an industry code belongs to the currently selected industry filter
+function matchesIndustryFilter(industryCode) {
+    const filterIndustries = INDUSTRY_CATEGORIES[currentIndustryFilter];
+    if (!filterIndustries) return true;
+    return filterIndustries.includes(industryCode);
 }
 
 function analyzeCountryPerformance() {
     const points = [];
-    
+    const extensions = FACTOR_GROUP_KEYWORDS[currentAnalysisMode] || [];
+
     for (const countryCode of selectedCountries) {
         const countryName = COUNTRIES[countryCode]?.name || countryCode;
         const countryTradeData = tradeData[countryCode] || {};
-        
+
         let totalVolume = 0;
         let totalImpact = 0;
-        
+
         Object.values(countryTradeData).forEach(flowData => {
-            if (flowData && flowData.trade) {
+            // Build valid trade_ids for industry filter
+            let validTradeIds = null;
+            if (currentIndustryFilter !== 'all' && flowData && flowData.trade) {
+                validTradeIds = new Set();
+                flowData.trade.forEach(trade => {
+                    if (matchesIndustryFilter(trade.industry1)) {
+                        validTradeIds.add(trade.trade_id);
+                        totalVolume += parseFloat(trade.amount) || 0;
+                    }
+                });
+            } else if (flowData && flowData.trade) {
                 flowData.trade.forEach(trade => {
                     totalVolume += parseFloat(trade.amount) || 0;
                 });
             }
-            
+
             if (flowData && flowData.factors) {
                 flowData.factors.forEach(factor => {
-                    totalImpact += parseFloat(factor.impact_value) || 0;
+                    if (validTradeIds && !validTradeIds.has(factor.trade_id)) return;
+                    const factorInfo = factorData[factor.factor_id];
+                    if (factorInfo && extensions.includes(factorInfo.extension)) {
+                        totalImpact += parseFloat(factor.impact_value) || 0;
+                    }
                 });
             }
         });
-        
+
         points.push({
             name: countryName,
             value: [Math.round(totalVolume), Math.round(totalImpact)],
             itemStyle: { color: COUNTRIES[countryCode]?.color || '#666' }
         });
     }
-    
+
     return { points };
 }
 
@@ -1677,7 +1754,7 @@ function analyzeTradeNetwork() {
             countryTradeData.exports.trade.forEach(trade => {
                 const targetRegion = trade.region2;
                 const amount = parseFloat(trade.amount) || 0;
-                
+
                 if (!exportsByRegion[targetRegion]) {
                     exportsByRegion[targetRegion] = 0;
                 }
@@ -1699,20 +1776,76 @@ function analyzeTradeNetwork() {
     return { nodes, links };
 }
 
+// Aggregate top 10 export destinations across selected countries
+function analyzeTopExportDestinations() {
+    const destTotals = {};
+
+    for (const countryCode of selectedCountries) {
+        const countryTradeData = tradeData[countryCode] || {};
+        if (countryTradeData.exports && countryTradeData.exports.trade) {
+            countryTradeData.exports.trade.forEach(trade => {
+                const dest = trade.region2;
+                if (!dest || dest === countryCode) return;
+                if (!destTotals[dest]) destTotals[dest] = {};
+                if (!destTotals[dest][countryCode]) destTotals[dest][countryCode] = 0;
+                destTotals[dest][countryCode] += parseFloat(trade.amount) || 0;
+            });
+        }
+    }
+
+    // Sort by total volume, take top 10
+    const sorted = Object.entries(destTotals)
+        .map(([dest, byCountry]) => ({
+            dest,
+            total: Object.values(byCountry).reduce((a, b) => a + b, 0),
+            byCountry
+        }))
+        .sort((a, b) => b.total - a.total)
+        .slice(0, 10)
+        .reverse();
+
+    const destinations = sorted.map(d => d.dest);
+    const countries = Array.from(selectedCountries);
+    const colors = ['#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6'];
+    const series = countries.map((code, i) => ({
+        name: COUNTRIES[code]?.name || code,
+        type: 'bar',
+        stack: 'total',
+        data: sorted.map(d => Math.round(d.byCountry[code] || 0)),
+        itemStyle: { color: colors[i % colors.length] }
+    }));
+
+    return { destinations, series };
+}
+
 // Helper functions
+// Matches trade_factor rows to the current analysis mode using the factor.csv extension column
+// Optionally filters by industry when currentIndustryFilter is set
 function calculateFlowImpact(flowData) {
     if (!flowData || !flowData.factors) return 0;
-    
+
     let totalImpact = 0;
-    const relevantFactors = FACTOR_GROUPINGS[currentAnalysisMode]?.factors || [];
-    
+    const extensions = FACTOR_GROUP_KEYWORDS[currentAnalysisMode] || [];
+
+    // Build set of valid trade_ids if industry filter is active
+    let validTradeIds = null;
+    if (currentIndustryFilter !== 'all' && flowData.trade) {
+        validTradeIds = new Set();
+        flowData.trade.forEach(trade => {
+            if (matchesIndustryFilter(trade.industry1)) {
+                validTradeIds.add(trade.trade_id);
+            }
+        });
+    }
+
     flowData.factors.forEach(factor => {
+        if (validTradeIds && !validTradeIds.has(factor.trade_id)) return;
         const factorInfo = factorData[factor.factor_id];
-        if (factorInfo && relevantFactors.some(rf => factorInfo.stressor.includes(rf))) {
+        if (factorInfo && extensions.includes(factorInfo.extension)) {
             totalImpact += parseFloat(factor.impact_value) || 0;
         }
     });
-    
+
     return Math.round(totalImpact);
 }
 
