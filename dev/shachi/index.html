@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>International Trade & Environmental Impact Comparison</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css" />
+</head>
+<body>
+    <header class="hero">
+        <h1>International Trade & Environmental Impact Comparison</h1>
+        <p class="subtitle">Analyzing sustainability across nations in alignment with UN Sustainable Development Goals</p>
+    </header>
+
+    <main class="container">
+        <div id="loading-status" class="status-message">Loading trade and environmental impact data...</div>
+        
+        <div id="debug-panel" class="debug-panel">
+            <h3>Data Loading Status <button id="toggle-debug" class="toggle-btn">Hide</button></h3>
+            <div id="debug-log"></div>
+        </div>
+
+        <section class="map-section">
+            <h2>Select Countries for Comparison</h2>
+            <p class="section-description">Select countries from the map or use the regional panels below</p>
+            
+            <button id="sidebar-toggle" class="sidebar-toggle-btn" aria-label="Toggle sidebar">
+                <span class="toggle-icon">◀</span>
+            </button>
+            
+            <div class="map-controls-wrapper">
+                <div class="country-selector-panel">
+                    <div class="selector-header">
+                        <h3>Country Selection</h3>
+                        <div class="selection-actions">
+                            <button class="action-btn select-all" onclick="selectAllCountries()">
+                                <span>✓</span> All
+                            </button>
+                            <button class="action-btn clear-all" onclick="clearAllCountries()">
+                                <span>✕</span> Clear
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="region-selector">
+                        <div class="region-section">
+                            <button class="region-toggle" onclick="toggleRegion('americas')">
+                                <span class="region-icon">🌎</span>
+                                <span>Americas (3)</span>
+                                <span class="toggle-arrow">▼</span>
+                            </button>
+                            <div id="region-americas" class="country-buttons-region">
+                                <button class="country-btn" data-country="US" onclick="toggleCountry('US')">
+                                    <span class="fi fi-us btn-flag"></span>
+                                    <span class="btn-name">United States <span class="country-code">US</span></span>
+                                </button>
+                                <button class="country-btn" data-country="CA" onclick="toggleCountry('CA')">
+                                    <span class="fi fi-ca btn-flag"></span>
+                                    <span class="btn-name">Canada <span class="country-code">CA</span></span>
+                                </button>
+                                <button class="country-btn" data-country="BR" onclick="toggleCountry('BR')">
+                                    <span class="fi fi-br btn-flag"></span>
+                                    <span class="btn-name">Brazil <span class="country-code">BR</span></span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="region-section">
+                            <button class="region-toggle" onclick="toggleRegion('europe')">
+                                <span class="region-icon">🇪🇺</span>
+                                <span>Europe (5)</span>
+                                <span class="toggle-arrow">▼</span>
+                            </button>
+                            <div id="region-europe" class="country-buttons-region" style="display: none;">
+                                <button class="country-btn" data-country="GB" onclick="toggleCountry('GB')">
+                                    <span class="fi fi-gb btn-flag"></span>
+                                    <span class="btn-name">United Kingdom <span class="country-code">GB</span></span>
+                                </button>
+                                <button class="country-btn" data-country="DE" onclick="toggleCountry('DE')">
+                                    <span class="fi fi-de btn-flag"></span>
+                                    <span class="btn-name">Germany <span class="country-code">DE</span></span>
+                                </button>
+                                <button class="country-btn" data-country="FR" onclick="toggleCountry('FR')">
+                                    <span class="fi fi-fr btn-flag"></span>
+                                    <span class="btn-name">France <span class="country-code">FR</span></span>
+                                </button>
+                                <button class="country-btn" data-country="IT" onclick="toggleCountry('IT')">
+                                    <span class="fi fi-it btn-flag"></span>
+                                    <span class="btn-name">Italy <span class="country-code">IT</span></span>
+                                </button>
+                                <button class="country-btn" data-country="RU" onclick="toggleCountry('RU')">
+                                    <span class="fi fi-ru btn-flag"></span>
+                                    <span class="btn-name">Russia <span class="country-code">RU</span></span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="region-section">
+                            <button class="region-toggle" onclick="toggleRegion('asia')">
+                                <span class="region-icon">🌏</span>
+                                <span>Asia (4)</span>
+                                <span class="toggle-arrow">▼</span>
+                            </button>
+                            <div id="region-asia" class="country-buttons-region" style="display: none;">
+                                <button class="country-btn" data-country="CN" onclick="toggleCountry('CN')">
+                                    <span class="fi fi-cn btn-flag"></span>
+                                    <span class="btn-name">China <span class="country-code">CN</span></span>
+                                </button>
+                                <button class="country-btn" data-country="JP" onclick="toggleCountry('JP')">
+                                    <span class="fi fi-jp btn-flag"></span>
+                                    <span class="btn-name">Japan <span class="country-code">JP</span></span>
+                                </button>
+                                <button class="country-btn" data-country="IN" onclick="toggleCountry('IN')">
+                                    <span class="fi fi-in btn-flag"></span>
+                                    <span class="btn-name">India <span class="country-code">IN</span></span>
+                                </button>
+                                <button class="country-btn" data-country="KR" onclick="toggleCountry('KR')">
+                                    <span class="fi fi-kr btn-flag"></span>
+                                    <span class="btn-name">South Korea <span class="country-code">KR</span></span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="region-section">
+                            <button class="region-toggle" onclick="toggleRegion('other')">
+                                <span class="region-icon">🌍</span>
+                                <span>Other (2)</span>
+                                <span class="toggle-arrow">▼</span>
+                            </button>
+                            <div id="region-other" class="country-buttons-region" style="display: none;">
+                                <button class="country-btn" data-country="AU" onclick="toggleCountry('AU')">
+                                    <span class="fi fi-au btn-flag"></span>
+                                    <span class="btn-name">Australia <span class="country-code">AU</span></span>
+                                </button>
+                                <button class="country-btn" data-country="WM" onclick="toggleCountry('WM')">
+                                    <span class="btn-flag globe-icon">🌍</span>
+                                    <span class="btn-name">Middle East <span class="country-code">WM</span></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="map"></div>
+            </div>
+        </section>
+
+        <section class="summary-section">
+            <div id="country-cards"></div>
+        </section>
+
+        <section class="factor-selection-section">
+            <div class="factor-header">
+                <h3>🌍 Environmental Factor Group</h3>
+                <p class="factor-subtitle">Select a category to analyze environmental impacts</p>
+            </div>
+            <div class="factor-buttons">
+                <button class="factor-btn active" data-factor="air">
+                    <span class="factor-icon">💨</span>
+                    <span class="factor-name">Air Emissions</span>
+                </button>
+                <button class="factor-btn" data-factor="water">
+                    <span class="factor-icon">💧</span>
+                    <span class="factor-name">Water Use</span>
+                </button>
+                <button class="factor-btn" data-factor="energy">
+                    <span class="factor-icon">⚡</span>
+                    <span class="factor-name">Energy</span>
+                </button>
+                <button class="factor-btn" data-factor="land">
+                    <span class="factor-icon">🌳</span>
+                    <span class="factor-name">Land Use</span>
+                </button>
+                <button class="factor-btn" data-factor="materials">
+                    <span class="factor-icon">📦</span>
+                    <span class="factor-name">Materials</span>
+                </button>
+                <button class="factor-btn" data-factor="employment">
+                    <span class="factor-icon">👥</span>
+                    <span class="factor-name">Employment</span>
+                </button>
+            </div>
+        </section>
+        <section class="storyline-section">
+            <div class="section-header">
+                <div class="section-icon">🌍</div>
+                <div class="section-title-group">
+                    <h2>Environmental Impact Journey</h2>
+                    <p class="section-subtitle">An interactive timeline of trade flows and their environmental footprint</p>
+                </div>
+            </div>
+            
+            <div class="timeline-controls">
+                <button class="timeline-view-btn active" data-view="journey" onclick="switchTimelineView('journey')">
+                    <span class="btn-icon">🗺️</span> Journey View
+                </button>
+                <button class="timeline-view-btn" data-view="comparison" onclick="switchTimelineView('comparison')">
+                    <span class="btn-icon">⚖️</span> Side-by-Side
+                </button>
+                <button class="timeline-view-btn" data-view="flow" onclick="switchTimelineView('flow')">
+                    <span class="btn-icon">🌊</span> Flow Animation
+                </button>
+            </div>
+            
+            <div id="storyline-content" class="timeline-journey"></div>
+        </section>
+
+        <section class="charts-section category-section">
+            <div class="section-header">
+                <div class="section-icon">📊</div>
+                <div class="section-title-group">
+                    <h2>Core Comparative Analysis</h2>
+                    <p class="section-subtitle">Fundamental metrics and breakdowns</p>
+                </div>
+            </div>
+            
+            <div class="chart-grid">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>Country Comparison</h3>
+                        <span class="chart-badge">Primary</span>
+                    </div>
+                    <p class="chart-description">Total environmental impact by country</p>
+                    <div id="chart-comparison" class="chart"></div>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>Trade Flow Breakdown</h3>
+                        <span class="chart-badge">Stacked</span>
+                    </div>
+                    <p class="chart-description">Domestic vs exports vs imports</p>
+                    <div id="chart-tradeflow" class="chart"></div>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>Industry Breakdown</h3>
+                        <span class="chart-badge">Multi-Series</span>
+                    </div>
+                    <p class="chart-description">Top 15 industries by impact</p>
+                    <div id="chart-industry" class="chart"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="gauges-section category-section">
+            <div class="section-header">
+                <div class="section-icon">⚡</div>
+                <div class="section-title-group">
+                    <h2>Impact Intensity Meters</h2>
+                    <p class="section-subtitle">Real-time intensity indicators for each country</p>
+                </div>
+            </div>
+            <div id="gauges-container" class="gauges-grid"></div>
+        </section>
+
+        <section class="multidim-section category-section">
+            <div class="section-header">
+                <div class="section-icon">🎯</div>
+                <div class="section-title-group">
+                    <h2>Multi-Dimensional Analysis</h2>
+                    <p class="section-subtitle">Complex relationships and correlations</p>
+                </div>
+            </div>
+            
+            <div class="chart-row">
+                <div class="chart-container-wide featured-chart">
+                    <div class="chart-header">
+                        <h3>Multi-Dimensional Impact Bubble Chart</h3>
+                        <span class="chart-badge">3D Visualization</span>
+                    </div>
+                    <p class="chart-description">Bubble size = Total impact | X-axis = Domestic | Y-axis = Exports</p>
+                    <div id="chart-bubble" class="chart-large"></div>
+                </div>
+            </div>
+
+            <div class="chart-row">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>Environmental Factor Radar</h3>
+                        <span class="chart-badge">Multi-Factor</span>
+                    </div>
+                    <p class="chart-description">All 6 environmental dimensions at once</p>
+                    <div id="chart-radar" class="chart"></div>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3>Cumulative Impact Growth</h3>
+                        <span class="chart-badge">Trend</span>
+                    </div>
+                    <p class="chart-description">Stacked area showing contributions</p>
+                    <div id="chart-area" class="chart"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="distribution-section category-section">
+            <div class="section-header">
+                <div class="section-icon">📈</div>
+                <div class="section-title-group">
+                    <h2>Distribution & Composition</h2>
+                    <p class="section-subtitle">Proportional breakdowns and hierarchies</p>
+                </div>
+            </div>
+            
+            <div class="chart-row dual-pie-row">
+                <div class="chart-container pie-chart-half">
+                    <div class="chart-header">
+                        <h3>Domestic vs Exports</h3>
+                        <span class="chart-badge">Proportional</span>
+                    </div>
+                    <p class="chart-description">Production vs international trade outflow</p>
+                    <div id="chart-pie-exports" class="chart"></div>
+                </div>
+                <div class="chart-container pie-chart-half">
+                    <div class="chart-header">
+                        <h3>Domestic vs Imports</h3>
+                        <span class="chart-badge">Proportional</span>
+                    </div>
+                    <p class="chart-description">Production vs international trade inflow</p>
+                    <div id="chart-pie-imports" class="chart"></div>
+                </div>
+            </div>
+            <div class="chart-row">
+                <div class="chart-container-wide">
+                    <div class="chart-header">
+                        <h3>Comparative Tree Map</h3>
+                        <span class="chart-badge">Hierarchical</span>
+                    </div>
+                    <p class="chart-description">Nested view of countries and trade flows</p>
+                    <div id="chart-treemap" class="chart-large"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="pattern-section category-section">
+            <div class="section-header">
+                <div class="section-icon">🔍</div>
+                <div class="section-title-group">
+                    <h2>Pattern Recognition</h2>
+                    <p class="section-subtitle">Identify trends and hotspots</p>
+                </div>
+            </div>
+            
+            <div class="chart-row">
+                <div class="chart-container-wide featured-chart">
+                    <div class="chart-header">
+                        <h3>Country Impact Heatmap</h3>
+                        <span class="chart-badge">Matrix View</span>
+                    </div>
+                    <p class="chart-description">Environmental impacts across all factor groups</p>
+                    <div id="chart-heatmap" class="chart-large"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="relationships-section category-section">
+            <div class="section-header">
+                <div class="section-icon">🔗</div>
+                <div class="section-title-group">
+                    <h2>Trade Relationships</h2>
+                    <p class="section-subtitle">Interconnections and trade network visualization</p>
+                </div>
+            </div>
+            
+            <div class="chart-row">
+                <div class="chart-container-wide featured-chart">
+                    <div class="chart-header">
+                        <h3>Trade Relationships Chord Diagram</h3>
+                        <span class="chart-badge">Network View</span>
+                    </div>
+                    <p class="chart-description">Visual network showing trade flow relationships and connections between countries</p>
+                    <div id="chart-chord" class="chart-large"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="flow-section category-section">
+            <div class="section-header">
+        <!-- ==========================================
+             FLOW-RINGS VISUALIZATION SECTION
+             ========================================== -->
+        
+        <section class="flow-rings-section category-section">
+            <div class="section-header">
+                <div class="section-icon">💫</div>
+                <div class="section-title-group">
+                    <h2>Flow-Rings Visualization</h2>
+                    <p class="section-subtitle">Concentric trade flow analysis with dynamic country selection</p>
+                </div>
+            </div>
+            
+            <!-- Control Panel -->
+            <div class="flow-rings-controls">
+                <div class="control-group">
+                    <label>Category Toggles:</label>
+                    <div id="category-toggles" class="category-toggles">
+                        <!-- Populated dynamically by JavaScript -->
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <button class="flow-btn" onclick="if(typeof initFlowRingsSimple === 'function') initFlowRingsSimple(); else alert('Script not loaded yet!');" 
+                            style="background: #f59e0b; font-size: 16px; padding: 12px 24px;">
+                        🔄 CLICK HERE TO RENDER
+                    </button>
+                    <button class="flow-btn" onclick="if(typeof renderFlowRings === 'function') renderFlowRings();">
+                        ↻ Refresh
+                    </button>
+                </div>
+                
+                <div class="control-group">
+                    <label>Export Options:</label>
+                    <div class="button-group">
+                        <button class="flow-btn export-btn" onclick="exportFlowSVG()">
+                            <span>📥</span> Export SVG
+                        </button>
+                        <button class="flow-btn export-btn" onclick="exportFlowPNG()">
+                            <span>📥</span> Export PNG
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Visualization Container -->
+            <div class="flow-rings-container">
+                <div id="flow-rings-viz" class="flow-rings-viz">
+                    <!-- SVG generated by D3.js -->
+                </div>
+                
+                <!-- Side Panel for Details -->
+                <div id="flow-rings-panel" class="flow-rings-panel">
+                    <div class="panel-header">
+                        <h4>Selection Details</h4>
+                        <button class="close-panel" onclick="closeFlowPanel()">×</button>
+                    </div>
+                    <div id="flow-panel-content" class="panel-content">
+                        <p class="panel-placeholder">Click on an arc to see detailed breakdown</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tooltip -->
+            <div id="flow-tooltip" class="flow-tooltip"></div>
+            
+            <!-- Usage Instructions -->
+            <div class="flow-instructions">
+                <h4>How to Use:</h4>
+                <ul>
+                    <li><strong>Country Selection:</strong> Uses countries selected in the main dashboard selector above</li>
+                    <li><strong>Toggle Categories:</strong> Click category buttons to show/hide specific environmental factors</li>
+                    <li><strong>Hover:</strong> Mouse over arcs and connectors to see detailed information in tooltips</li>
+                    <li><strong>Click:</strong> Click on any arc to open the side panel with detailed breakdown and sparkline</li>
+                    <li><strong>Export:</strong> Save high-resolution SVG or PNG images of the current view</li>
+                </ul>
+            </div>
+        </section>
+        </section>
+        
+        <section class="charts-section category-section">
+            <div class="section-header">
+                <div class="section-icon">🌊</div>
+                <div class="section-title-group">
+                    <h2>Flow Visualization</h2>
+                    <p class="section-subtitle">Dynamic pathways of environmental impact</p>
+                </div>
+            </div>
+            
+            <div class="chart-row">
+                <div class="chart-container-wide featured-chart">
+                    <div class="chart-header">
+                        <h3>Trade Flow Sankey Diagram</h3>
+                        <span class="chart-badge">Flow Diagram</span>
+                    </div>
+                    <p class="chart-description">Visual streams showing impact magnitude through trade channels</p>
+                    <div id="chart-sankey" class="chart-large"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="charts-section category-section">
+            <div class="section-header">
+                <div class="section-icon">🌐</div>
+                <div class="section-title-group">
+                    <h2>Global Trade Flow Network</h2>
+                    <p class="section-subtitle">Chord-Sankey hybrid showing trade relationships and environmental impacts</p>
+                </div>
+            </div>
+            
+            <div class="chart-row">
+                <div class="chart-container-wide featured-chart">
+                    <div class="chart-header">
+                        <h3>Trade Flow Connections</h3>
+                        <span class="chart-badge">Interactive Network</span>
+                    </div>
+                    <p class="chart-description">
+                        Circular network showing trade relationships • Ribbon width = trade volume • Color = environmental impact
+                    </p>
+                    <div class="chart-controls">
+                        <button class="chart-control-btn active" data-mode="all" onclick="setChordMode('all')">
+                            🌍 All Flows
+                        </button>
+                        <button class="chart-control-btn" data-mode="exports" onclick="setChordMode('exports')">
+                            📤 Exports
+                        </button>
+                        <button class="chart-control-btn" data-mode="imports" onclick="setChordMode('imports')">
+                            📥 Imports
+                        </button>
+                        <button class="chart-control-btn" onclick="initChordSankey()">
+                            🔄 Refresh
+                        </button>
+                        <button class="chart-control-btn" onclick="exportChordSankeyAsSVG()">
+                            📥 SVG
+                        </button>
+                        <button class="chart-control-btn" onclick="exportChordSankeyAsPNG()">
+                            📥 PNG
+                        </button>
+                    </div>
+                    <div id="chart-chord-sankey" class="chart-xlarge"></div>
+                    <div id="chord-tooltip" class="flow-tooltip"></div>
+                </div>
+            </div>
+
+            <div class="chart-instructions">
+                <div class="instruction-item">
+                    <span class="instruction-icon">👆</span>
+                    <strong>Hover</strong> over country arcs or ribbons to see detailed trade statistics
+                </div>
+                <div class="instruction-item">
+                    <span class="instruction-icon">🖱️</span>
+                    <strong>Click</strong> on a country to lock focus on its trade connections
+                </div>
+                <div class="instruction-item">
+                    <span class="instruction-icon">🎨</span>
+                    <strong>Color</strong> indicates environmental impact: 
+                    <span style="color: #2ecc71;">Green (Low)</span> → 
+                    <span style="color: #f39c12;">Orange (Med)</span> → 
+                    <span style="color: #e74c3c;">Red (High)</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             3D TOPOGRAPHIC IMPACT CARTOGRAM
+             ========================================== -->
+        <section class="topo-section charts-section category-section">
+            <div class="section-header">
+                <div class="section-icon">🗻</div>
+                <div class="section-title-group">
+                    <h2>Topographic Impact Cartogram</h2>
+                    <p class="section-subtitle">3D terrain visualization where height represents environmental impact intensity</p>
+                </div>
+            </div>
+            
+            <div class="topo-container">
+                <!-- Info Panel -->
+                <div class="topo-info-panel">
+                    <div class="topo-description">
+                        <h3>How to Read This Map</h3>
+                        <p>
+                            Each country is represented as a 3D terrain tile. The height and topographic contours 
+                            show the magnitude of environmental impact, trade volume, or a composite score.
+                        </p>
+                        
+                        <div class="topo-legend">
+                            <h4>Terrain Height Indicates:</h4>
+                            <div class="legend-items">
+                                <div class="legend-item">
+                                    <div class="legend-peak" style="background: linear-gradient(to top, #2ecc71, #3498db)"></div>
+                                    <span>Low Impact (0-50)</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-peak" style="background: linear-gradient(to top, #3498db, #f39c12)"></div>
+                                    <span>Medium Impact (50-75)</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-peak" style="background: linear-gradient(to top, #f39c12, #e74c3c)"></div>
+                                    <span>High Impact (75-100)</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="topo-features">
+                            <h4>Visual Features:</h4>
+                            <ul>
+                                <li><strong>Contour Lines</strong> - Like topographic maps, showing elevation levels</li>
+                                <li><strong>Color Gradient</strong> - Cool (green/blue) to warm (orange/red)</li>
+                                <li><strong>3D Terrain</strong> - Realistic mountain-like formations</li>
+                                <li><strong>Glow Effects</strong> - Subtle illumination around high-impact regions</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- Mode Controls -->
+                    <div class="topo-controls">
+                        <h4>Visualization Mode</h4>
+                        <div class="topo-mode-buttons">
+                            <button class="topo-mode-btn active" data-mode="impact" onclick="updateTopoMode('impact')">
+                                <span class="mode-icon">🌡️</span>
+                                <span class="mode-label">Impact Mode</span>
+                                <span class="mode-desc">Height = Environmental Impact</span>
+                            </button>
+                            <button class="topo-mode-btn" data-mode="volume" onclick="updateTopoMode('volume')">
+                                <span class="mode-icon">📦</span>
+                                <span class="mode-label">Volume Mode</span>
+                                <span class="mode-desc">Height = Trade Volume</span>
+                            </button>
+                            <button class="topo-mode-btn" data-mode="composite" onclick="updateTopoMode('composite')">
+                                <span class="mode-icon">⚖️</span>
+                                <span class="mode-label">Composite Mode</span>
+                                <span class="mode-desc">Height = Impact × Volume</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Camera Controls Info -->
+                    <div class="topo-interaction-guide">
+                        <h4>3D Navigation:</h4>
+                        <div class="interaction-hints">
+                            <div class="hint-item">
+                                <span class="hint-icon">🖱️</span>
+                                <span><strong>Left Drag</strong> - Rotate view</span>
+                            </div>
+                            <div class="hint-item">
+                                <span class="hint-icon">🖱️</span>
+                                <span><strong>Right Drag</strong> - Pan camera</span>
+                            </div>
+                            <div class="hint-item">
+                                <span class="hint-icon">🔍</span>
+                                <span><strong>Scroll</strong> - Zoom in/out</span>
+                            </div>
+                            <div class="hint-item">
+                                <span class="hint-icon">👆</span>
+                                <span><strong>Hover</strong> - View country details</span>
+                            </div>
+                            <div class="hint-item">
+                                <span class="hint-icon">🖱️</span>
+                                <span><strong>Click</strong> - Highlight country</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Stats Summary -->
+                    <div class="topo-stats-summary">
+                        <h4>Current Selection:</h4>
+                        <div class="summary-stat">
+                            <span class="stat-label">Countries Displayed:</span>
+                            <span class="stat-value" id="topo-country-count">14</span>
+                        </div>
+                        <div class="summary-stat">
+                            <span class="stat-label">Environmental Factor:</span>
+                            <span class="stat-value" id="topo-current-factor">Air Quality</span>
+                        </div>
+                        <div class="summary-stat">
+                            <span class="stat-label">Visualization Mode:</span>
+                            <span class="stat-value" id="topo-current-mode">Impact</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 3D Visualization Container -->
+                <div class="topo-3d-wrapper">
+                    <div id="topo-3d-container" class="topo-3d-canvas"></div>
+                    
+                    <!-- Loading Overlay -->
+                    <div class="topo-loading active" id="topo-loading">
+                        <div class="loading-spinner"></div>
+                        <p>Rendering 3D Terrain...</p>
+                        <button onclick="initPlotlyTopo()" style="margin-top: 20px; padding: 10px 20px; background: #4a90e2; border: none; border-radius: 8px; color: white; cursor: pointer; font-size: 14px;">
+                            Click to Initialize 3D View
+                        </button>
+                    </div>
+                    
+                    <!-- Tooltip -->
+                    <div id="topo-tooltip" class="topo-tooltip">
+                        <div class="topo-tooltip-header">
+                            <strong>Country Name</strong>
+                        </div>
+                        <div class="topo-tooltip-body">
+                            <div class="topo-stat">
+                                <span class="topo-stat-label">Impact Elevation:</span>
+                                <span class="topo-stat-value">85</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- View Controls Overlay -->
+                    <div class="topo-view-controls">
+                        <button class="view-control-btn" title="Reset Camera" onclick="resetTopoCamera()">
+                            <span>🎯</span>
+                        </button>
+                        <button class="view-control-btn" title="Toggle Auto-Rotate" onclick="toggleAutoRotate()">
+                            <span>🔄</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+
+        <section class="insights-section">
+            <h2>Key Insights</h2>
+            <div id="insights"></div>
+        </section>
+    </main>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="script.js"></script>
+
+
+
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+</body>
+</html>
