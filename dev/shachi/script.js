@@ -2034,7 +2034,7 @@ async function loadAllData() {
     // LOAD ALL 14 COUNTRIES
     for (const code of Object.keys(COUNTRIES)) {
         debugLog(`--- Loading ${COUNTRIES[code].name} (${code}) ---`);
-        showStatus(`Loading data for ${COUNTRIES[code].name}...`);
+        showStatus(`Loading trade and environmental data for ${COUNTRIES[code].name}...`);
         
         tradeData[code] = {};
         tradeLookup[code] = {};
@@ -2075,7 +2075,7 @@ async function loadAllData() {
         debugLog(`=== LOAD SUMMARY: ${loadingErrors.length} ERRORS ===`, true);
     } else {
         showStatus(`✓ All data loaded successfully in ${loadTime}s!`);
-        debugLog('=== ALL DATA LOADED SUCCESSFULLY ===');
+        debugLog('=== ALL DATA LOADED SUCCESSFULLY === Shachi Dev Build');
     }
     
     dataLoadingComplete = true;
