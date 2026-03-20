@@ -36,7 +36,7 @@ https://model.earth/localsite/css/styles/
 
 ### Map Integration
 
-Use the map javascript in [team/projects/map/](../team/projects/map/#map=dca)
+Use the map javascript in [team/projects/map/](../team/projects/map/#map=airports)
 
 ### Country Select (Legend)
 
