@@ -561,7 +561,7 @@ function calculateCountryImpact(country, factorGroup = null) {
             flowData.tradeFactor.forEach((row, idx) => {
                 const factorId = row.factor_id || row.factor;
                 const group = state.factorMapping[factorId];
-                const value = parseFloat(row.impact_value) || parseFloat(row.coefficient) || 0;
+                const value = parseFloat(row.level) || parseFloat(row.coefficient) || 0;
                 
                 // Debug first few rows
                 if (idx < 2) {
@@ -691,7 +691,7 @@ function calculateFlowImpact(country, flow, factorGroup = null) {
             const factorId = row.factor_id || row.factor;
             const group = state.factorMapping[factorId];
             if (!targetGroup || group === targetGroup) {
-                const value = parseFloat(row.impact_value) || parseFloat(row.coefficient) || 0;
+                const value = parseFloat(row.level) || parseFloat(row.coefficient) || 0;
                 total += Math.max(0, value);
             }
         });
@@ -824,7 +824,7 @@ function renderIndustryChart() {
                         if (tradeRow) {
                             const industryId = tradeRow.industry_id;
                             const industryName = state.industryData[industryId]?.name || industryId;
-                            const value = parseFloat(tfRow.impact_value) || parseFloat(tfRow.coefficient) || 0;
+                            const value = parseFloat(tfRow.level) || parseFloat(tfRow.coefficient) || 0;
                             industryImpact[industryName] = (industryImpact[industryName] || 0) + Math.max(0, value);
                         }
                     }
@@ -1096,7 +1096,7 @@ window.debugDashboard = function() {
                     console.log(`    sample row:`, {
                         factor_id: sample.factor_id,
                         trade_id: sample.trade_id,
-                        impact_value: sample.impact_value,
+                        level: sample.level,
                         coefficient: sample.coefficient
                     });
                 }

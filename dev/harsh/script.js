@@ -2475,7 +2475,7 @@ function analyzeCountryPerformance() {
             
             if (flowData && flowData.factors) {
                 flowData.factors.forEach(factor => {
-                    totalImpact += parseFloat(factor.impact_value) || 0;
+                    totalImpact += parseFloat(factor.level) || 0;
                 });
             }
         });
@@ -2588,7 +2588,7 @@ function calculateFlowImpact(flowData) {
     flowData.factors.forEach(factor => {
         const factorInfo = factorData[factor.factor_id];
         if (factorInfo && relevantFactors.some(rf => factorInfo.stressor.includes(rf))) {
-            totalImpact += parseFloat(factor.impact_value) || 0;
+            totalImpact += parseFloat(factor.level) || 0;
         }
     });
     

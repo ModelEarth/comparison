@@ -288,7 +288,7 @@ function calculateTotalByFlow(code, factorGroup, flow) {
         const factor = factorLookup[factorId];
         
         if (factor && factor.group === factorGroup) {
-            const value = parseFloat(row.impact_value) || parseFloat(row.coefficient) || 0;
+            const value = parseFloat(row.level) || parseFloat(row.coefficient) || 0;
             total += value;
         }
     });
@@ -319,7 +319,7 @@ function calculateByIndustry(code, factorGroup) {
                     const industry = industryLookup[industryId];
                     const industryName = industry ? industry.name : industryId;
                     
-                    const value = parseFloat(row.impact_value) || parseFloat(row.coefficient) || 0;
+                    const value = parseFloat(row.level) || parseFloat(row.coefficient) || 0;
                     result[industryName] = (result[industryName] || 0) + value;
                 }
             }

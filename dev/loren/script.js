@@ -1649,14 +1649,14 @@ function analyzeIndustrySectors() {
                 tradeIndustry[trade.trade_id] = info ? info.name : code;
             });
 
-            // Sum impact_value by industry, filtered by current analysis mode
+            // Sum level by industry, filtered by current analysis mode
             flowData.factors.forEach(factor => {
                 const factorInfo = factorData[factor.factor_id];
                 if (!factorInfo || !extensions.includes(factorInfo.extension)) return;
 
                 const industryName = tradeIndustry[factor.trade_id];
                 if (!industryName) return;
-                const val = parseFloat(factor.impact_value) || 0;
+                const val = parseFloat(factor.level) || 0;
                 if (!sectorImpacts[industryName]) sectorImpacts[industryName] = 0;
                 sectorImpacts[industryName] += val;
                 total += val;
@@ -1712,7 +1712,7 @@ function analyzeCountryPerformance() {
                     if (validTradeIds && !validTradeIds.has(factor.trade_id)) return;
                     const factorInfo = factorData[factor.factor_id];
                     if (factorInfo && extensions.includes(factorInfo.extension)) {
-                        totalImpact += parseFloat(factor.impact_value) || 0;
+                        totalImpact += parseFloat(factor.level) || 0;
                     }
                 });
             }
@@ -1842,7 +1842,7 @@ function calculateFlowImpact(flowData) {
         if (validTradeIds && !validTradeIds.has(factor.trade_id)) return;
         const factorInfo = factorData[factor.factor_id];
         if (factorInfo && extensions.includes(factorInfo.extension)) {
-            totalImpact += parseFloat(factor.impact_value) || 0;
+            totalImpact += parseFloat(factor.level) || 0;
         }
     });
 

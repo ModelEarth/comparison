@@ -47,7 +47,7 @@ A collection of prompt experiments and widget implementations for the ModelEarth
 - Map `factor.csv` extension column to environmental groups
 - Load `trade_factor.csv` for each country/flow combination
 - Use `trade.csv` to map `trade_id` to industry information
-- Aggregate `impact_value` by factor group
+- Aggregate `level` by factor group
 
 #### Design Specifications
 - Modern, clean design with gradient hero header

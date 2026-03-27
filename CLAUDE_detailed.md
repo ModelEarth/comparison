@@ -152,7 +152,7 @@ const AVAILABLE_COUNTRIES = [
 **trade_factor.csv:**
 - `trade_id` - Links to trade.csv
 - `factor_id` - Links to factor.csv
-- `impact_value` - Environmental impact measurement
+- `level` - Environmental impact measurement
 
 ---
 
@@ -679,7 +679,7 @@ function updateIndustryChart() {
                         .forEach(factorRow => {
                             const factor = factorLookup[factorRow.factor_id];
                             if (factor && getFactorGroup(factor.extension) === currentFactorGroup) {
-                                industryTotals[industryName] += parseFloat(factorRow.impact_value) || 0;
+                                industryTotals[industryName] += parseFloat(factorRow.level) || 0;
                             }
                         });
                 });
@@ -2298,7 +2298,7 @@ function calculateTradeFlows(countries) {
                             .forEach(factorRow => {
                                 const factor = factorLookup[factorRow.factor_id];
                                 if (factor && getFactorGroup(factor.extension) === currentFactorGroup) {
-                                    flow += parseFloat(factorRow.impact_value) || 0;
+                                    flow += parseFloat(factorRow.level) || 0;
                                 }
                             });
                     }
@@ -3450,7 +3450,7 @@ function calculateTotalByFlow(code, factorGroup, flow) {
     factorData.forEach(row => {
         const factor = factorLookup[row.factor_id];
         if (factor && getFactorGroup(factor.extension) === factorGroup) {
-            total += parseFloat(row.impact_value) || 0;
+            total += parseFloat(row.level) || 0;
         }
     });
     
@@ -3493,7 +3493,7 @@ function aggregateByIndustry(countries, factorGroup) {
                     .forEach(factorRow => {
                         const factor = factorLookup[factorRow.factor_id];
                         if (factor && getFactorGroup(factor.extension) === factorGroup) {
-                            industryTotals[industryName] += parseFloat(factorRow.impact_value) || 0;
+                            industryTotals[industryName] += parseFloat(factorRow.level) || 0;
                         }
                     });
             });

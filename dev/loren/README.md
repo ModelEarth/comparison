@@ -20,10 +20,10 @@ The four ECharts panels in the Air Emissions section were fully coded but render
 
 **Factor matching fix:**
 - Switched from stressor-based substring matching to exact extension-based matching using `factor.csv` extension column values (`air_emissions`, `employment`, `energy`, `land`, `material`, `water`)
-- Removed `coefficient` fallback in impact calculation (coefficient values are 10-100x larger than `impact_value` and inflated results to quadrillions)
+- Removed `coefficient` fallback in impact calculation (coefficient values are 10-100x larger than `level` and inflated results to quadrillions)
 
 **Chart improvements:**
-- Treemap (Chart 2): now aggregates `impact_value` by industry name (from `industry.csv`) filtered by analysis mode, showing top 15 industries instead of broken category codes
+- Treemap (Chart 2): now aggregates `level` by industry name (from `industry.csv`) filtered by analysis mode, showing top 15 industries instead of broken category codes
 - Scatter (Chart 3): filters environmental impact by the selected analysis mode instead of summing all factors
 - Replaced empty Sankey (Chart 4) with Top 10 Export Destinations stacked bar chart, which always has data regardless of country selection
 - All charts respond to both the Analysis Focus and Industry Focus dropdowns

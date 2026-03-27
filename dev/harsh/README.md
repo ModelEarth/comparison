@@ -46,7 +46,7 @@ Dynamic insights section with bullet points
 
 Data Processing:
 
-Load industry.csv and factor.csv first for reference lookups Map factor.csv's "extension" column to environmental groups (air, water, energy, etc.) Load trade_factor.csv for each country/flow combination Use trade.csv to map trade_id to industry information Aggregate impact_value from trade_factor.csv by factor group
+Load industry.csv and factor.csv first for reference lookups Map factor.csv's "extension" column to environmental groups (air, water, energy, etc.) Load trade_factor.csv for each country/flow combination Use trade.csv to map trade_id to industry information Aggregate level from trade_factor.csv by factor group
 
 Design:
 
