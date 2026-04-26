@@ -133,7 +133,7 @@ also, currently we are using apache charts, why dnt you go and use echarts to ma
 
 also I want you to use the following colour code for the entire UI 
 
-https://model.earth/localsite/css/styles/#style=notion
+https://model.earth/cms/themes/#style=notion
 
 # Follow up:
 -refer the screenshots 

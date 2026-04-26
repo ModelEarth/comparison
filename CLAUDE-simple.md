@@ -28,10 +28,10 @@ The exception is files starting with bea, which contain US state data.
 
 Include our tailwind compliant css style sheet:
 
-localsite/css/styles/notion.css
+cms/themes/notion.css
 
 The style samples can be viewed at:
-https://model.earth/localsite/css/styles/
+https://model.earth/cms/themes/
 
 
 ### Map Integration
