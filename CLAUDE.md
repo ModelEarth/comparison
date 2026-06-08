@@ -1,8 +1,17 @@
-# International Comparison Dashboard - Development Guide
+## Trade Comparison Dashboard - Development Guide
 
-## Overview
+This guide documents reusable chart components and patterns for building comparison visualizations with EXIOBASE tradeflow data and country-specifi data like BEA. 
 
-This guide documents reusable chart components and patterns for building comparison visualizations with EXIOBASE tradeflow data. Each component links to working implementations in the `/dev/antariksh/` folder.
+
+The following Sanky charts and TradeFlow map are the best starting points for updates to the shared comparison tools. Savar had been adding state-to-state trade visualizations to the same process.
+
+[State-to-State Sankey](/trade-data/state-dashboard/sankey.html#topn=34)  
+[State TradeFlow Map](/trade-data/state-trade-map/)
+
+Components below link to sample in the `/dev/antariksh/` folder. 
+Those are likely not the most recent.
+
+Instead, the work in `/dev/antariksh/` can be updated to share location legends and filters with both the [timeline](../../localsite/timeline/) and [sankey tradeflow](../../profile/charts/sankey/).
 
 ---
 
