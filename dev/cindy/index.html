@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Country Trade Comparison</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <main class="page-shell">
+        <section class="comparison-card" aria-labelledby="page-title">
+            <div class="card-header">
+                <div>
+                    <p class="eyebrow">Mock 2025 trade snapshot</p>
+                    <h1 id="page-title">Country Trade Comparison</h1>
+                </div>
+                <span class="status-pill">USD billions</span>
+            </div>
+
+            <form class="country-controls" aria-label="Choose countries to compare">
+                <label>
+                    Country A
+                    <select id="country-a"></select>
+                </label>
+
+                <button class="swap-button" id="swap-countries" type="button" aria-label="Swap countries">
+                    <span aria-hidden="true">&#8644;</span>
+                </button>
+
+                <label>
+                    Country B
+                    <select id="country-b"></select>
+                </label>
+            </form>
+
+            <div class="comparison-grid" id="comparison-grid"></div>
+
+            <section class="balance-panel" aria-labelledby="balance-title">
+                <div>
+                    <p class="eyebrow">Trade balance difference</p>
+                    <h2 id="balance-title">Who runs the stronger balance?</h2>
+                </div>
+                <div class="balance-result" id="balance-result"></div>
+            </section>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
